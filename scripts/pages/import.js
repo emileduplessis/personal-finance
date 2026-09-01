@@ -49,8 +49,11 @@
 
   /* ---------- STEP 1: load ---------- */
   async function loadAccounts() {
-    state.accounts = await AccountStore.getAll();
     const sel = $('impAccount');
+    /* sel ships data-loading so it shimmers instead of showing "No accounts"
+       while the account list is still on the wire */
+    try { state.accounts = await AccountStore.getAll(); }
+    finally { clearFieldLoading(sel); }
     if (!state.accounts.length) {
       sel.innerHTML = `<option value="">No accounts</option>`;
       $('impNoAccount').style.display = 'block';

@@ -604,21 +604,35 @@ document.addEventListener('DOMContentLoaded', async () => {
   const user = await SupaAuth.requireAuth();
   if (!user) return;
 
-  await loadFormOptions();
-  renderPresets();
+  /* The page ships first-paint placeholders (see subscriptions.html); if the
+     load fails they'd shimmer forever, so settle them in the catch. */
+  try {
+    await loadFormOptions();
+    renderPresets();
 
-  /* auto-log due subscriptions */
-  const logged = await autoLogDue();
-  if (logged.length) {
-    const banner = document.getElementById('autoLogBanner');
-    const msg    = document.getElementById('autoLogMsg');
-    if (banner && msg) {
-      msg.textContent = `Auto-logged: ${logged.join(', ')}`;
-      banner.style.display = '';
+    /* auto-log due subscriptions */
+    const logged = await autoLogDue();
+    if (logged.length) {
+      const banner = document.getElementById('autoLogBanner');
+      const msg    = document.getElementById('autoLogMsg');
+      if (banner && msg) {
+        msg.textContent = `Auto-logged: ${logged.join(', ')}`;
+        banner.style.display = '';
+      }
     }
-  }
 
-  await renderPage();
+    await renderPage();
+  } catch (err) {
+    console.error('Subscriptions error:', err);
+    ['statMonthly', 'statYearly', 'statActive', 'statDue'].forEach(id => setText(id, '—'));
+    showErrorState('subsList', "Couldn't load your subscriptions. " + (err.message || ''), () => location.reload());
+    showErrorState('upcomingList', 'Upcoming bills unavailable.');
+    showErrorState('patternList', 'Insights unavailable.');
+    ['trendSkeleton', 'catSkeleton'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+  }
 
   /* add button */
   document.getElementById('addSubBtn')?.addEventListener('click', openAddForm);

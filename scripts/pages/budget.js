@@ -279,6 +279,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (err) {
     console.error('Budget error:', err);
     showErrorState('budgetCategoryList', "Couldn't load your budget. " + (err.message || ''), () => location.reload());
+    /* the summary strip ships shimmer placeholders — don't leave them running */
+    ['summaryBudget', 'summarySpent', 'summaryRemaining'].forEach(id => setText(id, '—'));
   }
 
   document.getElementById('prevMonthBtn')?.addEventListener('click', () => {

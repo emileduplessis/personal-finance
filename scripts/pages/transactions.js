@@ -115,6 +115,10 @@ async function populateFilters() {
   const bulkCat = document.getElementById('bulkCategory');
   if (bulkCat) bulkCat.innerHTML = `<option value="">Recategorize…</option>` +
     cats.map(c => `<option value="${c.id}">${c.icon || ''} ${escapeHTML(c.name)}</option>`).join('');
+  /* the two filter selects ship data-loading so they shimmer instead of
+     sitting there empty while the categories/accounts are in flight */
+  clearFieldLoading(catSel);
+  clearFieldLoading(accSel);
 }
 
 /* ---- query + client-side sort ---- */
@@ -155,15 +159,17 @@ async function renderStats() {
 }
 
 /* ---- list ---- */
+/* Mirrors the placeholder rows baked into accounts.html, so re-renders (filter
+   changes, search) look the same as the very first paint. */
 function txSkeleton() {
-  return [1,2,3,4,5].map(() => `
-    <div class="tx-item">
-      <div class="skeleton" style="width:40px;height:40px;border-radius:8px;flex-shrink:0;"></div>
+  return [[50,30,65],[38,26,52],[58,33,70],[45,29,60],[52,24,58]].map(([w1, w2, amt]) => `
+    <div class="tx-item" aria-hidden="true">
+      <div class="skeleton skeleton-avatar"></div>
       <div class="tx-info">
-        <div class="skeleton skeleton-text" style="width:50%"></div>
-        <div class="skeleton skeleton-text" style="width:30%"></div>
+        <div class="skeleton skeleton-text" style="width:${w1}%"></div>
+        <div class="skeleton skeleton-text" style="width:${w2}%;margin-bottom:0"></div>
       </div>
-      <div class="skeleton skeleton-text" style="width:65px"></div>
+      <div class="skeleton skeleton-text" style="width:${amt}px;margin-bottom:0"></div>
     </div>`).join('');
 }
 
@@ -443,6 +449,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (err) {
     console.error('Transactions error:', err);
     showErrorState('txListFull', "Couldn't load transactions. " + (err.message || ''), () => location.reload());
+    /* don't leave the stat bar and filter selects shimmering */
+    ['statIncome','statExpense','statNet','statCount'].forEach(id => setText(id, '—'));
+    clearFieldLoading();
   }
 
   /* search (debounced) */

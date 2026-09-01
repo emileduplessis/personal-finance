@@ -317,6 +317,9 @@ select.form-control {
 .error-state {
   display: flex; flex-direction: column; align-items: center; gap: 10px;
   padding: 40px 24px; text-align: center; color: var(--color-text-muted);
+  /* Several targets (account tiles, wallet cards) are grid containers — span
+     the full row there. Ignored everywhere else. */
+  grid-column: 1 / -1;
 }
 .error-state svg { color: var(--color-expense); opacity: 0.85; }
 .error-state__msg { font-size: 0.875rem; max-width: 340px; line-height: 1.55; }
@@ -545,3 +548,76 @@ body.addtx-open { overflow: hidden; }
 .crypto-add__row { display: flex; gap: 8px; flex-wrap: wrap; }
 .crypto-add__row .settings-select { flex: 0 0 auto; }
 .crypto-add__row .form-control { flex: 1 1 140px; min-width: 120px; }
+
+/* ============================================================
+   First-paint loading states
+   ------------------------------------------------------------
+   Every page script is a plain (render-blocking) <script> at the end of
+   <body>, and the data behind it comes from Supabase over the network. On a
+   slow connection the static markup is what the user stares at for seconds —
+   so a panel that ships "$0.00" / "No transactions yet" in its HTML reads as
+   "you have nothing", not "this is still loading".
+
+   These placeholders therefore live in the STATIC HTML, not in JS: they paint
+   before the bundle has even downloaded. Page scripts overwrite the container
+   (innerHTML / textContent) on their first render, which removes them; form
+   controls are cleared explicitly via clearFieldLoading() in ui.js.
+   ============================================================ */
+
+/* Composite skeletons ------------------------------------------------- */
+
+.skeleton-avatar { width: 40px; height: 40px; border-radius: var(--radius-sm); flex-shrink: 0; }
+.skeleton-avatar--sm { width: 30px; height: 30px; }
+.skeleton-avatar--round { border-radius: 50%; }
+
+/* Inline shimmer sized in ch, so it sits on the same baseline as the number
+   it stands in for. Width mirrors a typical formatted amount. */
+.skeleton-num {
+  display: inline-block; vertical-align: -0.14em;
+  height: 0.82em; width: 5.5ch;
+  border-radius: var(--radius-sm);
+}
+.skeleton-num--sm { width: 3.5ch; }
+.skeleton-num--lg { width: 8ch; }
+
+/* One row of a list placeholder: avatar · two stacked lines · trailing amount */
+.skeleton-row { display: flex; align-items: center; gap: 12px; padding: 14px 0; }
+.skeleton-row + .skeleton-row { border-top: 1px solid var(--color-border); }
+.skeleton-row__lines { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 7px; }
+.skeleton-row__lines .skeleton-text { margin-bottom: 0; }
+.skeleton-list { padding: 0 20px; }
+.skeleton-list--flush { padding: 0; }
+
+/* Card-grid placeholder (accounts, wallets, …) */
+.skeleton-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+
+/* Fade the whole placeholder a touch so it never competes with real content
+   that lands beside it. */
+.skeleton-row, .skeleton-grid, .skeleton-list { opacity: 0.85; }
+
+/* Form controls waiting on their options/value ------------------------ */
+
+/* Animating background-COLOR (not background) keeps select's arrow image.
+   color:transparent hides any placeholder <option> text underneath, so an
+   account picker never flashes "No accounts — create one first" before the
+   accounts have actually arrived. */
+select[data-loading], input[data-loading], textarea[data-loading] {
+  color: transparent;
+  pointer-events: none;
+  animation: fieldPulse 1.4s ease-in-out infinite;
+}
+select[data-loading]::placeholder,
+input[data-loading]::placeholder,
+textarea[data-loading]::placeholder { color: transparent; }
+@keyframes fieldPulse {
+  0%, 100% { background-color: var(--color-surface-2); }
+  50%      { background-color: var(--color-border); }
+}
+
+/* Respect reduced motion: keep the shape, drop the animation. */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton { animation: none; background: var(--color-border); }
+  select[data-loading], input[data-loading], textarea[data-loading] {
+    animation: none; background-color: var(--color-border);
+  }
+}

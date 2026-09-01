@@ -60,11 +60,14 @@
     {
       /* the original dashboard, exactly as the live site renders it:
          two independent columns, l* = main column, r* = side column */
+      /* Overview is deliberately NOT placed here: the base template leaves it
+         out. It's still a real panel — Focus and Compact use it, and it stays
+         in the slot picker, so it can be dropped into any Classic slot. */
       id: 'classic', label: 'Classic', type: 'columns',
-      slots: ['l1', 'l2', 'l3', 'l4', 'l5', 'r1', 'r2', 'r3', 'r4', 'r5'],
+      slots: ['l1', 'l2', 'l3', 'l4', 'l5', 'r1', 'r2', 'r3', 'r4'],
       assign: {
         l1: 'accounts', l2: 'crypto', l3: 'moneyDuo', l4: 'nwGoal', l5: 'balanceChart',
-        r1: 'quickLog', r2: 'budgetWatch', r3: 'upcomingBills', r4: 'transactions', r5: 'overview',
+        r1: 'quickLog', r2: 'budgetWatch', r3: 'upcomingBills', r4: 'transactions',
       },
     },
     {
@@ -337,11 +340,22 @@
       cols = [...g.querySelectorAll('.dash-col')];
     }
     const assign = curAssign();
+    const placed = new Set();
     for (const s of d.slots) {
       const el = panelEl(assign[s]);
       if (!el) continue;
       el.dataset.slot = s;
+      placed.add(assign[s]);
       cols[s[0] === 'l' ? 0 : 1].appendChild(el);   /* appendChild moves */
+    }
+    /* A panel this design doesn't place (Overview in Classic) must be marked
+       unplaced, exactly as applyGrid does. Without this it would keep the slot
+       a locked template gave it and linger outside both columns — a stray item
+       in the .dash-body grid, reading as a third column. */
+    for (const p of PANELS) {
+      if (placed.has(p.id)) continue;
+      const el = panelEl(p.id);
+      if (el) el.dataset.slot = 'none';
     }
   }
 

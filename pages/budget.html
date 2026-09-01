@@ -61,15 +61,15 @@
         <div class="budget-summary-strip">
           <div class="card budget-summary-card">
             <div class="budget-summary-card__label">Total Budget</div>
-            <div class="budget-summary-card__value" id="summaryBudget">—</div>
+            <div class="budget-summary-card__value" id="summaryBudget"><span class="skeleton skeleton-num"></span></div>
           </div>
           <div class="card budget-summary-card">
             <div class="budget-summary-card__label">Spent</div>
-            <div class="budget-summary-card__value budget-summary-card__value--expense" id="summarySpent">—</div>
+            <div class="budget-summary-card__value budget-summary-card__value--expense" id="summarySpent"><span class="skeleton skeleton-num"></span></div>
           </div>
           <div class="card budget-summary-card">
             <div class="budget-summary-card__label" id="summaryRemainingLabel">Remaining</div>
-            <div class="budget-summary-card__value" id="summaryRemaining">—</div>
+            <div class="budget-summary-card__value" id="summaryRemaining"><span class="skeleton skeleton-num"></span></div>
           </div>
         </div>
 
@@ -99,7 +99,11 @@
             <span class="budget-list-header__nums">Spent / Budget</span>
           </div>
           <div id="budgetCategoryList">
-            <div class="empty-state">Loading…</div>
+            <div class="budget-row" aria-hidden="true"><div class="budget-row__cat"><span class="skeleton skeleton-avatar skeleton-avatar--sm" style="width:20px;height:20px"></span><span class="skeleton skeleton-text" style="width:72%;margin-bottom:0"></span></div><div class="budget-bar-wrap"><span class="skeleton" style="flex:1;height:8px;border-radius:999px"></span></div><div class="budget-row__numbers"><span class="skeleton skeleton-text" style="width:110px;margin-bottom:0"></span></div></div>
+            <div class="budget-row" aria-hidden="true"><div class="budget-row__cat"><span class="skeleton skeleton-avatar skeleton-avatar--sm" style="width:20px;height:20px"></span><span class="skeleton skeleton-text" style="width:58%;margin-bottom:0"></span></div><div class="budget-bar-wrap"><span class="skeleton" style="flex:1;height:8px;border-radius:999px"></span></div><div class="budget-row__numbers"><span class="skeleton skeleton-text" style="width:110px;margin-bottom:0"></span></div></div>
+            <div class="budget-row" aria-hidden="true"><div class="budget-row__cat"><span class="skeleton skeleton-avatar skeleton-avatar--sm" style="width:20px;height:20px"></span><span class="skeleton skeleton-text" style="width:66%;margin-bottom:0"></span></div><div class="budget-bar-wrap"><span class="skeleton" style="flex:1;height:8px;border-radius:999px"></span></div><div class="budget-row__numbers"><span class="skeleton skeleton-text" style="width:110px;margin-bottom:0"></span></div></div>
+            <div class="budget-row" aria-hidden="true"><div class="budget-row__cat"><span class="skeleton skeleton-avatar skeleton-avatar--sm" style="width:20px;height:20px"></span><span class="skeleton skeleton-text" style="width:50%;margin-bottom:0"></span></div><div class="budget-bar-wrap"><span class="skeleton" style="flex:1;height:8px;border-radius:999px"></span></div><div class="budget-row__numbers"><span class="skeleton skeleton-text" style="width:110px;margin-bottom:0"></span></div></div>
+            <div class="budget-row" aria-hidden="true"><div class="budget-row__cat"><span class="skeleton skeleton-avatar skeleton-avatar--sm" style="width:20px;height:20px"></span><span class="skeleton skeleton-text" style="width:63%;margin-bottom:0"></span></div><div class="budget-bar-wrap"><span class="skeleton" style="flex:1;height:8px;border-radius:999px"></span></div><div class="budget-row__numbers"><span class="skeleton skeleton-text" style="width:110px;margin-bottom:0"></span></div></div>
           </div>
         </div>
 

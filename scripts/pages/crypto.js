@@ -113,7 +113,13 @@ async function renderCryptoPage() {
 
   let wallets;
   try { wallets = await CryptoStore.getAll(); }
-  catch (e) { listEl.innerHTML = `<div class="empty-state" style="grid-column:1/-1;background:var(--color-surface);color:var(--color-expense);padding:24px;">${escapeHTML(e.message || 'Failed to load wallets')}</div>`; return; }
+  catch (e) {
+    listEl.innerHTML = `<div class="empty-state" style="grid-column:1/-1;background:var(--color-surface);color:var(--color-expense);padding:24px;">${escapeHTML(e.message || 'Failed to load wallets')}</div>`;
+    /* the hero ships shimmer placeholders (crypto.html) — settle them too */
+    totalEl.textContent = '—';
+    countEl.textContent = 'wallets unavailable';
+    return;
+  }
 
   countEl.textContent = `${wallets.length} wallet${wallets.length === 1 ? '' : 's'}`;
 

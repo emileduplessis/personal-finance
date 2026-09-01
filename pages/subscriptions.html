@@ -50,19 +50,19 @@
         <div class="budget-summary-strip" style="grid-template-columns:repeat(4,1fr);">
           <div class="card budget-summary-card">
             <div class="budget-summary-card__label">Monthly Cost</div>
-            <div class="budget-summary-card__value" id="statMonthly">—</div>
+            <div class="budget-summary-card__value" id="statMonthly"><span class="skeleton skeleton-num"></span></div>
           </div>
           <div class="card budget-summary-card">
             <div class="budget-summary-card__label">Yearly Cost</div>
-            <div class="budget-summary-card__value" id="statYearly">—</div>
+            <div class="budget-summary-card__value" id="statYearly"><span class="skeleton skeleton-num"></span></div>
           </div>
           <div class="card budget-summary-card">
             <div class="budget-summary-card__label">Active</div>
-            <div class="budget-summary-card__value" id="statActive">—</div>
+            <div class="budget-summary-card__value" id="statActive"><span class="skeleton skeleton-num skeleton-num--sm"></span></div>
           </div>
           <div class="card budget-summary-card">
             <div class="budget-summary-card__label">Due This Month</div>
-            <div class="budget-summary-card__value" id="statDue">—</div>
+            <div class="budget-summary-card__value" id="statDue"><span class="skeleton skeleton-num skeleton-num--sm"></span></div>
           </div>
         </div>
 
@@ -87,7 +87,11 @@
                   Add subscription
                 </button>
               </div>
-              <div id="subsList"></div>
+              <div id="subsList">
+                <div class="subs-row" aria-hidden="true"><div class="skeleton subs-row__dot"></div><div class="subs-row__info"><div class="skeleton skeleton-text" style="width:46%"></div><div class="skeleton skeleton-text" style="width:68%;margin-bottom:0;height:11px"></div></div><div class="skeleton skeleton-text" style="width:64px;margin-bottom:0"></div></div>
+                <div class="subs-row" aria-hidden="true"><div class="skeleton subs-row__dot"></div><div class="subs-row__info"><div class="skeleton skeleton-text" style="width:38%"></div><div class="skeleton skeleton-text" style="width:60%;margin-bottom:0;height:11px"></div></div><div class="skeleton skeleton-text" style="width:64px;margin-bottom:0"></div></div>
+                <div class="subs-row" aria-hidden="true"><div class="skeleton subs-row__dot"></div><div class="subs-row__info"><div class="skeleton skeleton-text" style="width:52%"></div><div class="skeleton skeleton-text" style="width:72%;margin-bottom:0;height:11px"></div></div><div class="skeleton skeleton-text" style="width:64px;margin-bottom:0"></div></div>
+              </div>
             </div>
 
             <!-- Paused -->
@@ -212,7 +216,10 @@
                 <h3 class="card-title">Upcoming bills</h3>
                 <span style="font-size:.75rem;color:var(--color-text-muted);">Next 30 days</span>
               </div>
-              <div id="upcomingList" style="max-height:260px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--color-border) transparent;"></div>
+              <div id="upcomingList" style="max-height:260px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--color-border) transparent;">
+                <div class="subs-row" aria-hidden="true"><div class="subs-row__info"><div class="skeleton skeleton-text" style="width:44%"></div><div class="skeleton skeleton-text" style="width:62%;margin-bottom:0;height:11px"></div></div><div class="skeleton skeleton-text" style="width:56px;margin-bottom:0"></div></div>
+                <div class="subs-row" aria-hidden="true"><div class="subs-row__info"><div class="skeleton skeleton-text" style="width:56%"></div><div class="skeleton skeleton-text" style="width:50%;margin-bottom:0;height:11px"></div></div><div class="skeleton skeleton-text" style="width:56px;margin-bottom:0"></div></div>
+              </div>
             </div>
 
             <!-- Category breakdown -->
@@ -232,7 +239,10 @@
               <div class="card-header" style="padding:14px 20px;">
                 <h3 class="card-title">Pattern insights</h3>
               </div>
-              <div id="patternList" style="padding:0 0 4px;"></div>
+              <div id="patternList" style="padding:0 0 4px;">
+                <div style="padding:14px 20px;" aria-hidden="true"><div class="skeleton skeleton-text" style="width:72%"></div><div class="skeleton skeleton-text" style="width:48%;margin-bottom:0;height:11px"></div></div>
+                <div style="padding:14px 20px;" aria-hidden="true"><div class="skeleton skeleton-text" style="width:60%"></div><div class="skeleton skeleton-text" style="width:38%;margin-bottom:0;height:11px"></div></div>
+              </div>
             </div>
 
           </div>

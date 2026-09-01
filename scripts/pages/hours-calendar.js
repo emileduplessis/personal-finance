@@ -376,6 +376,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (err) {
     console.error('Hours calendar error:', err);
     showErrorState('calBody', "Couldn't load your shifts. " + (err.message || ''), () => location.reload());
+    /* the summary strip ships shimmer placeholders — settle them */
+    ['calPay', 'calHours', 'calHoursSub', 'calRate', 'calDays', 'calDaysSub']
+      .forEach(id => { const el = document.getElementById(id); if (el) el.textContent = '—'; });
   }
 
   document.getElementById('calPrev')?.addEventListener('click', () => step(-1));

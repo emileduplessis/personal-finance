@@ -51,13 +51,13 @@
         <div class="card crypto-hero">
           <div class="crypto-hero__label">Crypto portfolio · <span id="cryptoCurrency">CAD</span></div>
           <div class="crypto-hero__row">
-            <div class="font-display crypto-hero__total" id="cryptoTotal">—</div>
+            <div class="font-display crypto-hero__total" id="cryptoTotal"><span class="skeleton skeleton-num skeleton-num--lg"></span></div>
             <span class="delta delta--flat" id="cryptoHeroChange" hidden></span>
           </div>
           <div class="crypto-alloc" id="cryptoAlloc" hidden></div>
           <div class="crypto-legend" id="cryptoLegend" hidden></div>
           <div class="crypto-hero__meta">
-            <span id="cryptoWalletCount">0 wallets</span> · read-only ·
+            <span id="cryptoWalletCount"><span class="skeleton skeleton-num"></span></span> · read-only ·
             <a href="#" id="cryptoRefresh">refresh</a>
           </div>
         </div>
@@ -100,7 +100,10 @@
         </div>
 
         <!-- Wallet tiles -->
-        <div class="term-cells dash-tiles" id="cryptoList"></div>
+        <div class="term-cells dash-tiles" id="cryptoList">
+          <div class="acct-tile crypto-acct-tile" aria-hidden="true"><div class="acct-tile__top"><span class="skeleton skeleton-avatar skeleton-avatar--sm"></span><div class="acct-tile__id" style="flex:1"><div class="skeleton skeleton-text" style="width:62%"></div><div class="skeleton skeleton-text" style="width:40%;margin-bottom:0"></div></div></div><div class="acct-tile__row2"><div class="skeleton skeleton-text" style="width:54%;height:20px;margin-bottom:0"></div></div></div>
+          <div class="acct-tile crypto-acct-tile" aria-hidden="true"><div class="acct-tile__top"><span class="skeleton skeleton-avatar skeleton-avatar--sm"></span><div class="acct-tile__id" style="flex:1"><div class="skeleton skeleton-text" style="width:48%"></div><div class="skeleton skeleton-text" style="width:44%;margin-bottom:0"></div></div></div><div class="acct-tile__row2"><div class="skeleton skeleton-text" style="width:46%;height:20px;margin-bottom:0"></div></div></div>
+        </div>
 
       </div>
     </main>

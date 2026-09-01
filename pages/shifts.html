@@ -102,23 +102,23 @@
               <div class="hours-stat__label">This week
                 <span class="flow-pill flow-pill--flat" id="weekDelta" hidden></span>
               </div>
-              <div class="hours-stat__value" id="weekPay">—</div>
-              <div class="hours-stat__sub" id="weekHours">— h</div>
+              <div class="hours-stat__value" id="weekPay"><span class="skeleton skeleton-num"></span></div>
+              <div class="hours-stat__sub" id="weekHours"><span class="skeleton skeleton-num skeleton-num--sm"></span></div>
             </div>
             <div class="hours-stat">
               <div class="hours-stat__label">This month</div>
-              <div class="hours-stat__value" id="monthPay">—</div>
-              <div class="hours-stat__sub" id="monthHours">— h</div>
+              <div class="hours-stat__value" id="monthPay"><span class="skeleton skeleton-num"></span></div>
+              <div class="hours-stat__sub" id="monthHours"><span class="skeleton skeleton-num skeleton-num--sm"></span></div>
             </div>
             <div class="hours-stat">
               <div class="hours-stat__label">Effective rate</div>
-              <div class="hours-stat__value" id="effRate">—</div>
+              <div class="hours-stat__value" id="effRate"><span class="skeleton skeleton-num"></span></div>
               <div class="hours-stat__sub" id="effRateSub">per hour · 30d</div>
             </div>
             <div class="hours-stat">
               <div class="hours-stat__label">All-time</div>
-              <div class="hours-stat__value" id="totalPay">—</div>
-              <div class="hours-stat__sub" id="totalShifts">— shifts</div>
+              <div class="hours-stat__value" id="totalPay"><span class="skeleton skeleton-num"></span></div>
+              <div class="hours-stat__sub" id="totalShifts"><span class="skeleton skeleton-num skeleton-num--sm"></span></div>
             </div>
           </div>
 
@@ -178,7 +178,7 @@
             </div>
           </div>
           <div class="term__body">
-            <div class="hours-bars" id="hoursBars"></div>
+            <div class="hours-bars" id="hoursBars"><div class="hbar" aria-hidden="true"><div class="hbar__val"></div><div class="hbar__track"><div class="skeleton" style="width:100%;height:42%"></div></div><div class="hbar__label"></div></div><div class="hbar" aria-hidden="true"><div class="hbar__val"></div><div class="hbar__track"><div class="skeleton" style="width:100%;height:66%"></div></div><div class="hbar__label"></div></div><div class="hbar" aria-hidden="true"><div class="hbar__val"></div><div class="hbar__track"><div class="skeleton" style="width:100%;height:54%"></div></div><div class="hbar__label"></div></div><div class="hbar" aria-hidden="true"><div class="hbar__val"></div><div class="hbar__track"><div class="skeleton" style="width:100%;height:78%"></div></div><div class="hbar__label"></div></div><div class="hbar" aria-hidden="true"><div class="hbar__val"></div><div class="hbar__track"><div class="skeleton" style="width:100%;height:48%"></div></div><div class="hbar__label"></div></div><div class="hbar" aria-hidden="true"><div class="hbar__val"></div><div class="hbar__track"><div class="skeleton" style="width:100%;height:70%"></div></div><div class="hbar__label"></div></div><div class="hbar" aria-hidden="true"><div class="hbar__val"></div><div class="hbar__track"><div class="skeleton" style="width:100%;height:58%"></div></div><div class="hbar__label"></div></div><div class="hbar" aria-hidden="true"><div class="hbar__val"></div><div class="hbar__track"><div class="skeleton" style="width:100%;height:84%"></div></div><div class="hbar__label"></div></div><div class="hbar" aria-hidden="true"><div class="hbar__val"></div><div class="hbar__track"><div class="skeleton" style="width:100%;height:50%"></div></div><div class="hbar__label"></div></div><div class="hbar" aria-hidden="true"><div class="hbar__val"></div><div class="hbar__track"><div class="skeleton" style="width:100%;height:64%"></div></div><div class="hbar__label"></div></div></div>
           </div>
         </section>
 
@@ -195,8 +195,8 @@
               <div class="goal-display" id="goalDisplay">
                 <div class="goal-ring" id="goalRing"></div>
                 <div class="goal-info">
-                  <div class="goal-info__pct" id="goalPct">—</div>
-                  <div class="goal-info__detail" id="goalDetail">No goal set yet</div>
+                  <div class="goal-info__pct" id="goalPct"><span class="skeleton skeleton-num skeleton-num--sm"></span></div>
+                  <div class="goal-info__detail" id="goalDetail"><span class="skeleton skeleton-text" style="display:inline-block;width:11ch;margin-bottom:0"></span></div>
                   <div class="goal-info__pace" id="goalPace"></div>
                 </div>
               </div>
@@ -246,7 +246,7 @@
               <span class="term-label" id="dowBest"></span>
             </div>
             <div class="term__body">
-              <div class="dow-grid" id="dowGrid"></div>
+              <div class="dow-grid" id="dowGrid"><div class="dow-col" aria-hidden="true"><div class="dow-col__track"><div class="skeleton" style="width:100%;height:38%"></div></div><div class="dow-col__day">&nbsp;</div></div><div class="dow-col" aria-hidden="true"><div class="dow-col__track"><div class="skeleton" style="width:100%;height:72%"></div></div><div class="dow-col__day">&nbsp;</div></div><div class="dow-col" aria-hidden="true"><div class="dow-col__track"><div class="skeleton" style="width:100%;height:55%"></div></div><div class="dow-col__day">&nbsp;</div></div><div class="dow-col" aria-hidden="true"><div class="dow-col__track"><div class="skeleton" style="width:100%;height:80%"></div></div><div class="dow-col__day">&nbsp;</div></div><div class="dow-col" aria-hidden="true"><div class="dow-col__track"><div class="skeleton" style="width:100%;height:46%"></div></div><div class="dow-col__day">&nbsp;</div></div><div class="dow-col" aria-hidden="true"><div class="dow-col__track"><div class="skeleton" style="width:100%;height:64%"></div></div><div class="dow-col__day">&nbsp;</div></div><div class="dow-col" aria-hidden="true"><div class="dow-col__track"><div class="skeleton" style="width:100%;height:30%"></div></div><div class="dow-col__day">&nbsp;</div></div></div>
             </div>
           </section>
 
@@ -259,7 +259,7 @@
             <div class="term__body">
               <form class="quick-log" id="quickLogForm">
                 <div class="day-chips" id="quickDayChips"></div>
-                <select id="qlJob" class="form-control quick-log__job" aria-label="Job"></select>
+                <select id="qlJob" class="form-control quick-log__job" aria-label="Job" data-loading></select>
                 <div class="quick-log__row">
                   <div class="quick-log__field">
                     <input type="number" id="qlHours" class="form-control" min="0" step="0.25"
@@ -285,7 +285,10 @@
             <button type="button" class="btn btn--ghost btn--sm" id="addJobBtn">+ Add job</button>
           </div>
           <div class="term__body term__body--flush">
-            <div id="jobList"></div>
+            <div id="jobList">
+              <div class="job-row" aria-hidden="true"><div class="job-row__main"><div class="skeleton skeleton-text" style="width:34%"></div><div class="skeleton skeleton-text" style="width:52%;height:11px;margin-bottom:0"></div></div><div class="skeleton skeleton-text" style="width:70px;margin-bottom:0"></div></div>
+              <div class="job-row" aria-hidden="true"><div class="job-row__main"><div class="skeleton skeleton-text" style="width:26%"></div><div class="skeleton skeleton-text" style="width:44%;height:11px;margin-bottom:0"></div></div><div class="skeleton skeleton-text" style="width:70px;margin-bottom:0"></div></div>
+            </div>
           </div>
         </section>
 
@@ -307,7 +310,7 @@
 
             <div class="form-group">
               <label class="form-label" for="sJob">Job</label>
-              <select id="sJob" class="form-control"></select>
+              <select id="sJob" class="form-control" data-loading></select>
             </div>
 
             <div class="shift-form-grid">
@@ -357,11 +360,11 @@
             <div class="shift-form-grid shift-income-fields" id="shiftIncomeFields">
               <div class="form-group">
                 <label class="form-label" for="sAccount">Deposit to</label>
-                <select id="sAccount" class="form-control"></select>
+                <select id="sAccount" class="form-control" data-loading></select>
               </div>
               <div class="form-group">
                 <label class="form-label" for="sCategory">Income category</label>
-                <select id="sCategory" class="form-control"></select>
+                <select id="sCategory" class="form-control" data-loading></select>
               </div>
             </div>
 
@@ -407,7 +410,10 @@
             </div>
             <div class="term__body term__body--flush">
               <div id="shiftsList">
-                <div class="empty-state">Loading…</div>
+                <div class="shift-row" aria-hidden="true"><div class="shift-row__main"><div class="skeleton skeleton-text" style="width:44%"></div><div class="skeleton skeleton-text" style="width:66%;height:11px;margin-bottom:0"></div></div><div class="shift-row__figs"><div class="skeleton skeleton-text" style="width:62px"></div><div class="skeleton skeleton-text" style="width:40px;height:11px;margin-bottom:0;margin-left:auto"></div></div></div>
+                <div class="shift-row" aria-hidden="true"><div class="shift-row__main"><div class="skeleton skeleton-text" style="width:38%"></div><div class="skeleton skeleton-text" style="width:58%;height:11px;margin-bottom:0"></div></div><div class="shift-row__figs"><div class="skeleton skeleton-text" style="width:62px"></div><div class="skeleton skeleton-text" style="width:40px;height:11px;margin-bottom:0;margin-left:auto"></div></div></div>
+                <div class="shift-row" aria-hidden="true"><div class="shift-row__main"><div class="skeleton skeleton-text" style="width:50%"></div><div class="skeleton skeleton-text" style="width:72%;height:11px;margin-bottom:0"></div></div><div class="shift-row__figs"><div class="skeleton skeleton-text" style="width:62px"></div><div class="skeleton skeleton-text" style="width:40px;height:11px;margin-bottom:0;margin-left:auto"></div></div></div>
+                <div class="shift-row" aria-hidden="true"><div class="shift-row__main"><div class="skeleton skeleton-text" style="width:41%"></div><div class="skeleton skeleton-text" style="width:61%;height:11px;margin-bottom:0"></div></div><div class="shift-row__figs"><div class="skeleton skeleton-text" style="width:62px"></div><div class="skeleton skeleton-text" style="width:40px;height:11px;margin-bottom:0;margin-left:auto"></div></div></div>
               </div>
             </div>
           </section>

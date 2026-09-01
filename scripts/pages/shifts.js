@@ -1082,6 +1082,8 @@ async function loadOptions() {
     _incomeCats.map(c => `<option value="${c.id}">${escapeHTML(c.name)}</option>`).join('');
   ['sAccount', 'jAccount'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = acctOpts; });
   ['sCategory', 'jCategory'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = catOpts; });
+  /* these ship data-loading so they shimmer rather than sitting empty */
+  ['sAccount', 'sCategory'].forEach(clearFieldLoading);
 }
 
 /* Load saved jobs and (re)fill the quick-log + form selectors. Keeps the
@@ -1116,6 +1118,7 @@ function populateJobSelects() {
       '<option value="__new__">+ New job…</option>';
     sj.value = _jobs.some(j => j.id === keep) ? keep : '';
   }
+  ['qlJob', 'sJob'].forEach(clearFieldLoading);
 }
 
 /* ============================================================
@@ -1243,6 +1246,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (err) {
     console.error('Hours Tracker error:', err);
     showErrorState('shiftsList', "Couldn't load your shifts. " + (err.message || ''), () => location.reload());
+    /* the page ships first-paint placeholders (shifts.html) — settle them all
+       so nothing is left shimmering after a failed load */
+    ['weekPay', 'weekHours', 'monthPay', 'monthHours', 'effRate', 'totalPay', 'totalShifts',
+     'goalPct', 'goalDetail'].forEach(id => setText(id, '—'));
+    showErrorState('jobList', 'Jobs unavailable.');
+    ['hoursBars', 'dowGrid'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = '';
+    });
+    clearFieldLoading();
   }
 
   /* quick log + mark-as-paid */

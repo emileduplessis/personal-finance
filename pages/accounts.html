@@ -52,32 +52,36 @@
           <button type="button" class="accounts-summary" id="accountsSummary" aria-expanded="false" aria-controls="accountsGrid">
             <span class="accounts-summary__left">
               <span class="accounts-summary__dot"></span>
-              <span class="accounts-summary__count" id="accountsSummaryCount">— accounts</span>
+              <span class="accounts-summary__count" id="accountsSummaryCount"><span class="skeleton skeleton-num"></span></span>
               <span class="accounts-summary__sep">·</span>
-              <span class="accounts-summary__total" id="accountsSummaryTotal">—</span>
+              <span class="accounts-summary__total" id="accountsSummaryTotal"><span class="skeleton skeleton-num"></span></span>
             </span>
             <svg class="accounts-summary__chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
-          <div class="accounts-drawer" id="accountsGrid" hidden><div class="spinner"></div></div>
+          <div class="accounts-drawer" id="accountsGrid" hidden>
+            <div class="acc-card" aria-hidden="true"><div class="skeleton skeleton-avatar skeleton-avatar--sm"></div><div class="skeleton skeleton-text" style="width:70%;margin-top:10px;"></div><div class="skeleton skeleton-text" style="width:50%;margin-top:8px;height:16px;margin-bottom:0"></div></div>
+            <div class="acc-card" aria-hidden="true"><div class="skeleton skeleton-avatar skeleton-avatar--sm"></div><div class="skeleton skeleton-text" style="width:70%;margin-top:10px;"></div><div class="skeleton skeleton-text" style="width:50%;margin-top:8px;height:16px;margin-bottom:0"></div></div>
+            <div class="acc-card" aria-hidden="true"><div class="skeleton skeleton-avatar skeleton-avatar--sm"></div><div class="skeleton skeleton-text" style="width:70%;margin-top:10px;"></div><div class="skeleton skeleton-text" style="width:50%;margin-top:8px;height:16px;margin-bottom:0"></div></div>
+          </div>
         </section>
 
         <!-- ── Filtered stat bar (slim) ─────────────────────────── -->
         <div class="tx-statbar">
           <div class="tx-stat">
             <div class="tx-stat__label">Income</div>
-            <div class="tx-stat__value tx-stat__value--income" id="statIncome">—</div>
+            <div class="tx-stat__value tx-stat__value--income" id="statIncome"><span class="skeleton skeleton-num"></span></div>
           </div>
           <div class="tx-stat">
             <div class="tx-stat__label">Expense</div>
-            <div class="tx-stat__value tx-stat__value--expense" id="statExpense">—</div>
+            <div class="tx-stat__value tx-stat__value--expense" id="statExpense"><span class="skeleton skeleton-num"></span></div>
           </div>
           <div class="tx-stat">
             <div class="tx-stat__label">Net</div>
-            <div class="tx-stat__value" id="statNet">—</div>
+            <div class="tx-stat__value" id="statNet"><span class="skeleton skeleton-num"></span></div>
           </div>
           <div class="tx-stat">
             <div class="tx-stat__label">Transactions</div>
-            <div class="tx-stat__value" id="statCount">—</div>
+            <div class="tx-stat__value" id="statCount"><span class="skeleton skeleton-num skeleton-num--sm"></span></div>
           </div>
         </div>
 
@@ -100,8 +104,8 @@
             </div>
 
             <div class="tx-toolbar__row tx-toolbar__row--filters">
-              <select id="filterCategory" class="select--sm"></select>
-              <select id="filterAccount" class="select--sm"></select>
+              <select id="filterCategory" class="select--sm" data-loading aria-label="Filter by category"></select>
+              <select id="filterAccount" class="select--sm" data-loading aria-label="Filter by account"></select>
               <select id="txRange" class="select--sm" title="Date range">
                 <option value="all">All time</option>
                 <option value="month">This month</option>
@@ -146,7 +150,13 @@
               <button id="bulkDelete" class="btn btn--danger btn--sm" disabled>Delete</button>
               <button id="bulkCancel" class="btn btn--ghost btn--sm">Done</button>
             </div>
-            <div class="tx-list-full" id="txListFull"><div class="spinner"></div></div>
+            <div class="tx-list-full" id="txListFull">
+              <div class="tx-item" aria-hidden="true"><div class="skeleton skeleton-avatar"></div><div class="tx-info"><div class="skeleton skeleton-text" style="width:50%"></div><div class="skeleton skeleton-text" style="width:30%;margin-bottom:0"></div></div><div class="skeleton skeleton-text" style="width:65px;margin-bottom:0"></div></div>
+              <div class="tx-item" aria-hidden="true"><div class="skeleton skeleton-avatar"></div><div class="tx-info"><div class="skeleton skeleton-text" style="width:38%"></div><div class="skeleton skeleton-text" style="width:26%;margin-bottom:0"></div></div><div class="skeleton skeleton-text" style="width:52px;margin-bottom:0"></div></div>
+              <div class="tx-item" aria-hidden="true"><div class="skeleton skeleton-avatar"></div><div class="tx-info"><div class="skeleton skeleton-text" style="width:58%"></div><div class="skeleton skeleton-text" style="width:33%;margin-bottom:0"></div></div><div class="skeleton skeleton-text" style="width:70px;margin-bottom:0"></div></div>
+              <div class="tx-item" aria-hidden="true"><div class="skeleton skeleton-avatar"></div><div class="tx-info"><div class="skeleton skeleton-text" style="width:45%"></div><div class="skeleton skeleton-text" style="width:29%;margin-bottom:0"></div></div><div class="skeleton skeleton-text" style="width:60px;margin-bottom:0"></div></div>
+              <div class="tx-item" aria-hidden="true"><div class="skeleton skeleton-avatar"></div><div class="tx-info"><div class="skeleton skeleton-text" style="width:52%"></div><div class="skeleton skeleton-text" style="width:24%;margin-bottom:0"></div></div><div class="skeleton skeleton-text" style="width:58px;margin-bottom:0"></div></div>
+            </div>
             <div class="pagination" id="pagination"></div>
           </div>
         </section>

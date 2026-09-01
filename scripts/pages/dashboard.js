@@ -17,20 +17,23 @@ try {
 } catch (_) {}
 let _dashboardReady = false;
 
+/* index.html already ships these placeholders so they paint before this script
+   has even downloaded (see "First-paint loading states" in components.css).
+   This re-applies them for a re-render — matching markup, so nothing jumps. */
 function showSkeletons() {
-  ['totalBalance','monthIncome','monthExpense','monthNet'].forEach(id => {
+  ['totalBalance','monthIncome','monthExpense','monthNet','ninetyDayChange','yearChange'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.innerHTML = `<div class="skeleton skeleton-title" style="width:70%;display:inline-block;"></div>`;
+    if (el) el.innerHTML = `<span class="skeleton skeleton-num${id === 'totalBalance' ? ' skeleton-num--lg' : ''}"></span>`;
   });
   const recentEl = document.getElementById('recentTransactions');
-  if (recentEl) recentEl.innerHTML = [1,2,3].map(() => `
-    <div class="tx-item">
-      <div class="skeleton" style="width:40px;height:40px;border-radius:8px;flex-shrink:0;"></div>
+  if (recentEl) recentEl.innerHTML = [55,42,62].map(w => `
+    <div class="tx-item" aria-hidden="true">
+      <div class="skeleton skeleton-avatar"></div>
       <div class="tx-info">
-        <div class="skeleton skeleton-text" style="width:55%"></div>
-        <div class="skeleton skeleton-text" style="width:35%"></div>
+        <div class="skeleton skeleton-text" style="width:${w}%"></div>
+        <div class="skeleton skeleton-text" style="width:${Math.round(w * 0.6)}%;margin-bottom:0"></div>
       </div>
-      <div class="skeleton skeleton-text" style="width:60px"></div>
+      <div class="skeleton skeleton-text" style="width:60px;margin-bottom:0"></div>
     </div>`).join('');
 }
 
@@ -843,7 +846,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (err) {
     console.error('Dashboard error:', err);
     showToast('Error loading data: ' + err.message, 'error');
-    ['totalBalance','monthIncome','monthExpense','monthNet'].forEach(id => setText(id, '—'));
+    ['totalBalance','monthIncome','monthExpense','monthNet',
+     'monthIncomeSub','monthExpenseSub','ninetyDayChange','yearChange'].forEach(id => setText(id, '—'));
+    /* The panels ship first-paint skeletons (see index.html) — without this
+       they'd shimmer forever on a failed load. One Retry, on the top panel. */
+    showErrorState('accountTiles', "Couldn't load your accounts. Check your connection.", () => location.reload());
+    showErrorState('allocationList', 'Balances unavailable.');
+    showErrorState('recentTransactions', 'Transactions unavailable.');
   } finally {
     window.hideAppLoader?.();   /* data rendered (or errored) — fade the boot screen out */
   }

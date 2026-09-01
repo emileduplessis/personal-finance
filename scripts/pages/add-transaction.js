@@ -57,6 +57,9 @@ async function populateAccountSelects() {
 
   const tip = document.getElementById('noAccountTip');
   if (tip) tip.style.display = accounts.length ? 'none' : 'block';
+  /* both selects ship data-loading, so the "No accounts — create one first"
+     placeholder can't flash before we actually know there are none */
+  ['txAccount', 'txToAccount'].forEach(clearFieldLoading);
 }
 
 async function renderCategoryPicker() {
@@ -346,6 +349,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (err) {
     console.error('Form error:', err);
     showToast('Error loading form: ' + err.message, 'error');
+    /* hand the fields back and clear the category placeholders */
+    clearFieldLoading();
+    const picker = document.getElementById('categoryPicker');
+    if (picker) picker.innerHTML = '';
   }
 
   document.querySelectorAll('.type-btn').forEach(btn => {

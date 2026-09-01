@@ -50,6 +50,11 @@ async function renderSpending() {
 
   const rangeTx = PeriodEngine.filter(allTx, from, to);
 
+  /* The data is in — retire the first-paint chart placeholders (spending.html).
+     From here on the real charts, or their "no data" overlays, take over. */
+  document.getElementById('spendCatSkeleton')?.setAttribute('hidden', '');
+  document.getElementById('spendTrendSkeleton')?.setAttribute('hidden', '');
+
   const totals = SummaryEngine.getTotals(rangeTx);
   const net = totals.income - totals.expense;
 
@@ -152,6 +157,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (err) {
     console.error('Spending page error:', err);
     showErrorState('spendingBreakdown', "Couldn't load your cash flow. " + (err.message || ''), () => location.reload());
+    ['spendTotal', 'spendIncome', 'spendNet'].forEach(id => setText(id, '—'));
+    ['spendCatSkeleton', 'spendTrendSkeleton'].forEach(id =>
+      document.getElementById(id)?.setAttribute('hidden', ''));
   }
 
   /* Spending / Income toggle */

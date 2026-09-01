@@ -190,7 +190,28 @@ function showErrorState(target, message, onRetry) {
     </div>`;
   const btn = el.querySelector('[data-retry]');
   if (btn) btn.addEventListener('click', () => onRetry());
+  clearFieldLoading(el);
 }
+
+/* --- First-paint loading state on form controls ---
+   Inputs/selects whose options or value come from the network ship with
+   data-loading in the static HTML (see .form-control[data-loading]) so they
+   shimmer instead of showing an empty or zeroed field on a slow connection.
+   Page scripts call this once the field is populated.
+   `root` is an element, an element id, or omitted for the whole document. */
+function clearFieldLoading(root) {
+  const scope = (typeof root === 'string' ? document.getElementById(root) : root) || document;
+  if (!scope) return;
+  if (scope.removeAttribute && scope.hasAttribute?.('data-loading')) scope.removeAttribute('data-loading');
+  scope.querySelectorAll?.('[data-loading]').forEach(el => el.removeAttribute('data-loading'));
+}
+
+/* Safety net: a page script that throws before it clears its fields would
+   leave them shimmering (and unusable — data-loading sets pointer-events:none)
+   forever. Hand them back after a beat regardless. */
+window.addEventListener('load', () => {
+  setTimeout(() => clearFieldLoading(), 15000);
+});
 
 /* --- Number count-up animation --- */
 function animateValue(el, endValue, formatter, duration = 550) {

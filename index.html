@@ -94,7 +94,7 @@
         <div class="statbar__cell statbar__cell--balance">
           <div class="term-label">Current balance <span id="heroMonthLabel"></span></div>
           <div class="statbar__balance-row">
-            <div class="rail-balance font-display" id="totalBalance">$0.00</div>
+            <div class="rail-balance font-display" id="totalBalance"><span class="skeleton skeleton-num skeleton-num--lg"></span></div>
             <span class="flow-pill flow-pill--flat" id="balanceChangePill" hidden>—</span>
           </div>
         </div>
@@ -108,11 +108,11 @@
         </div>
         <div class="statbar__cell" title="Net change over the shorter window">
           <div class="term-label" id="shortChangeLabel">90 days</div>
-          <div class="rail-mini__value" id="ninetyDayChange">—</div>
+          <div class="rail-mini__value" id="ninetyDayChange"><span class="skeleton skeleton-num"></span></div>
         </div>
         <div class="statbar__cell" title="Net change over the longer window">
           <div class="term-label" id="longChangeLabel">1 year</div>
-          <div class="rail-mini__value" id="yearChange">—</div>
+          <div class="rail-mini__value" id="yearChange"><span class="skeleton skeleton-num"></span></div>
         </div>
         <a href="/add-transaction" class="statbar__add">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
@@ -127,8 +127,17 @@
 
         <div class="dash-col">
 
+          <!-- Ships loading tiles, not "No accounts yet" — renderAccounts()
+               replaces the whole container once the accounts arrive. -->
           <div class="term-cells dash-tiles dash-panel" data-panel="accounts" id="accountTiles">
-            <div class="empty-state">No accounts yet. <a href="/transactions">Add one →</a></div>
+            <div class="acct-tile" aria-hidden="true">
+              <div class="acct-tile__row1"><div class="acct-tile__top"><span class="skeleton skeleton-avatar skeleton-avatar--sm"></span><div class="acct-tile__id" style="flex:1"><div class="skeleton skeleton-text" style="width:68%"></div><div class="skeleton skeleton-text" style="width:38%;margin-bottom:0"></div></div></div></div>
+              <div class="acct-tile__row2"><div class="skeleton skeleton-text" style="width:52%;height:20px;margin-bottom:0"></div></div>
+            </div>
+            <div class="acct-tile" aria-hidden="true">
+              <div class="acct-tile__row1"><div class="acct-tile__top"><span class="skeleton skeleton-avatar skeleton-avatar--sm"></span><div class="acct-tile__id" style="flex:1"><div class="skeleton skeleton-text" style="width:54%"></div><div class="skeleton skeleton-text" style="width:44%;margin-bottom:0"></div></div></div></div>
+              <div class="acct-tile__row2"><div class="skeleton skeleton-text" style="width:44%;height:20px;margin-bottom:0"></div></div>
+            </div>
           </div>
 
           <!-- Crypto holdings — counts toward net worth, not the cash balance.
@@ -152,7 +161,11 @@
                 <span class="term__title">Allocation</span>
                 <a href="/transactions" class="link--sm">Manage</a>
               </div>
-              <div class="cell-body" id="allocationList"><div class="empty-state">No balances yet.</div></div>
+              <div class="cell-body" id="allocationList">
+                <div class="alloc-row" aria-hidden="true"><span class="skeleton skeleton-avatar skeleton-avatar--sm skeleton-avatar--round" style="width:26px;height:26px"></span><span class="skeleton skeleton-text" style="width:32px;margin-bottom:0"></span><span class="skeleton skeleton-text" style="flex:1;margin-bottom:0"></span><span class="skeleton skeleton-text" style="width:56px;margin-bottom:0"></span></div>
+                <div class="alloc-row" aria-hidden="true"><span class="skeleton skeleton-avatar skeleton-avatar--sm skeleton-avatar--round" style="width:26px;height:26px"></span><span class="skeleton skeleton-text" style="width:32px;margin-bottom:0"></span><span class="skeleton skeleton-text" style="flex:1;margin-bottom:0"></span><span class="skeleton skeleton-text" style="width:56px;margin-bottom:0"></span></div>
+                <div class="alloc-row" aria-hidden="true"><span class="skeleton skeleton-avatar skeleton-avatar--sm skeleton-avatar--round" style="width:26px;height:26px"></span><span class="skeleton skeleton-text" style="width:32px;margin-bottom:0"></span><span class="skeleton skeleton-text" style="flex:1;margin-bottom:0"></span><span class="skeleton skeleton-text" style="width:56px;margin-bottom:0"></span></div>
+              </div>
             </div>
             <div class="cell">
               <div class="cell-head">
@@ -164,23 +177,23 @@
                   <div class="month-row">
                     <div>
                       <div class="month-row__label">Income</div>
-                      <div class="month-row__sub" id="monthIncomeSub">0 transactions</div>
+                      <div class="month-row__sub" id="monthIncomeSub"><span class="skeleton skeleton-num skeleton-num--sm"></span></div>
                     </div>
-                    <div class="month-row__value month-row__value--income" id="monthIncome">$0.00</div>
+                    <div class="month-row__value month-row__value--income" id="monthIncome"><span class="skeleton skeleton-num"></span></div>
                   </div>
                   <div class="month-row">
                     <div>
                       <div class="month-row__label">Expenses</div>
-                      <div class="month-row__sub" id="monthExpenseSub">0 transactions</div>
+                      <div class="month-row__sub" id="monthExpenseSub"><span class="skeleton skeleton-num skeleton-num--sm"></span></div>
                     </div>
-                    <div class="month-row__value month-row__value--expense" id="monthExpense">$0.00</div>
+                    <div class="month-row__value month-row__value--expense" id="monthExpense"><span class="skeleton skeleton-num"></span></div>
                   </div>
                   <div class="month-row">
                     <div>
                       <div class="month-row__label">Net</div>
                       <div class="month-row__sub">income − expenses</div>
                     </div>
-                    <div class="month-row__value" id="monthNet">$0.00</div>
+                    <div class="month-row__value" id="monthNet"><span class="skeleton skeleton-num"></span></div>
                   </div>
                 </div>
               </div>
@@ -345,12 +358,18 @@
             </div>
             <div class="term__body term__body--flush">
               <div class="transaction-list" id="recentTransactions">
-                <div class="empty-state">No transactions yet. <a href="/add-transaction">Add one →</a></div>
+                <div class="tx-item" aria-hidden="true"><div class="skeleton skeleton-avatar"></div><div class="tx-info"><div class="skeleton skeleton-text" style="width:55%"></div><div class="skeleton skeleton-text" style="width:35%;margin-bottom:0"></div></div><div class="skeleton skeleton-text" style="width:60px;margin-bottom:0"></div></div>
+                <div class="tx-item" aria-hidden="true"><div class="skeleton skeleton-avatar"></div><div class="tx-info"><div class="skeleton skeleton-text" style="width:42%"></div><div class="skeleton skeleton-text" style="width:28%;margin-bottom:0"></div></div><div class="skeleton skeleton-text" style="width:52px;margin-bottom:0"></div></div>
+                <div class="tx-item" aria-hidden="true"><div class="skeleton skeleton-avatar"></div><div class="tx-info"><div class="skeleton skeleton-text" style="width:62%"></div><div class="skeleton skeleton-text" style="width:31%;margin-bottom:0"></div></div><div class="skeleton skeleton-text" style="width:66px;margin-bottom:0"></div></div>
               </div>
             </div>
           </div>
 
-          <div class="term dash-panel" data-panel="overview">
+          <!-- Overview is not part of the base (Classic) template, so it starts
+               unplaced — data-slot="none" hides it without removing it. It stays
+               a real panel: the Focus and Compact designs place it, and it can be
+               picked into any Classic slot via Customize. -->
+          <div class="term dash-panel" data-panel="overview" data-slot="none">
             <div class="term__head term__head--stack">
               <div class="term__head-row">
                 <span class="term__title">Overview</span>

@@ -29,11 +29,13 @@ async function renderAccountsGrid(data) {
   const el = document.getElementById('accountsGrid');
   if (!el) return;
 
+  /* Same placeholder cards accounts.html ships, so a re-render (after adding or
+     editing an account) matches the very first paint. */
   el.innerHTML = [1, 2, 3].map(() => `
-    <div class="acc-card">
-      <div class="acc-card__avatar skeleton" style="width:30px;height:30px;border-radius:8px;"></div>
+    <div class="acc-card" aria-hidden="true">
+      <div class="skeleton skeleton-avatar skeleton-avatar--sm"></div>
       <div class="skeleton skeleton-text" style="width:70%;margin-top:10px;"></div>
-      <div class="skeleton skeleton-text" style="width:50%;margin-top:8px;height:16px;"></div>
+      <div class="skeleton skeleton-text" style="width:50%;margin-top:8px;height:16px;margin-bottom:0"></div>
     </div>`).join('');
 
   const { accounts, balanceMap } = data || await loadAccountsWithBalances();
@@ -201,6 +203,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (err) {
     console.error('Accounts error:', err);
     showErrorState('accountsGrid', "Couldn't load your accounts. " + (err.message || ''), () => location.reload());
+    /* the collapsed summary ships shimmer placeholders — settle them */
+    const cnt = document.getElementById('accountsSummaryCount');
+    const tot = document.getElementById('accountsSummaryTotal');
+    if (cnt) cnt.textContent = 'Accounts unavailable';
+    if (tot) tot.textContent = '—';
   }
 
   document.getElementById('accForm')?.addEventListener('submit', async e => {

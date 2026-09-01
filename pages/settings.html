@@ -55,7 +55,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               </div>
               <div class="settings-row__info">
-                <div class="settings-row__title" id="userEmail">—</div>
+                <div class="settings-row__title" id="userEmail"><span class="skeleton skeleton-num skeleton-num--lg"></span></div>
                 <div class="settings-row__sub">Signed in</div>
               </div>
             </div>
@@ -79,7 +79,7 @@
               </span>
               <div class="settings-row__info">
                 <div class="settings-row__title">Transactions</div>
-                <div class="settings-row__sub" id="txCount">—</div>
+                <div class="settings-row__sub" id="txCount"><span class="skeleton skeleton-num"></span></div>
               </div>
             </div>
             <div class="settings-divider"></div>
@@ -89,7 +89,7 @@
               </span>
               <div class="settings-row__info">
                 <div class="settings-row__title">Accounts</div>
-                <div class="settings-row__sub" id="accCount">—</div>
+                <div class="settings-row__sub" id="accCount"><span class="skeleton skeleton-num"></span></div>
               </div>
             </div>
           </div>
@@ -107,7 +107,7 @@
                 <div class="settings-row__title">Currency</div>
                 <div class="settings-row__sub">Formats how amounts display — it doesn't convert existing values</div>
               </div>
-              <select id="currencySelect" class="settings-select">
+              <select id="currencySelect" class="settings-select" data-loading>
                 <option value="USD">USD — US Dollar</option>
                 <option value="EUR">EUR — Euro</option>
                 <option value="GBP">GBP — British Pound</option>
@@ -129,17 +129,12 @@
                 <div class="settings-row__title">Default account</div>
                 <div class="settings-row__sub">Pre-selected when adding a transaction</div>
               </div>
-              <select id="defaultAccountSelect" class="settings-select"></select>
+              <select id="defaultAccountSelect" class="settings-select" data-loading></select>
             </div>
-          </div>
-        </section>
 
-        <!-- Goals — switch individual goal widgets off without losing their
-             target. Hiding a goal only hides its panel; the saved target stays,
-             so switching it back on restores it. -->
-        <section class="settings-section">
-          <div class="settings-section__label">Goals</div>
-          <div class="settings-group">
+            <!-- Goal switches. Turning one off only hides its panel; the saved
+                 target stays, so switching it back on restores it. -->
+            <div class="settings-divider"></div>
             <div class="settings-row">
               <span class="settings-row__icon settings-row__icon--muted">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
@@ -182,7 +177,7 @@
                 <div class="settings-row__title">Default job</div>
                 <div class="settings-row__sub">What quick-logged hours are logged against</div>
               </div>
-              <select id="jobDefaultSelect" class="settings-select"></select>
+              <select id="jobDefaultSelect" class="settings-select" data-loading></select>
             </div>
             <div class="settings-divider"></div>
             <div class="settings-row">
@@ -193,7 +188,7 @@
                 <div class="settings-row__title">Hourly rate</div>
                 <div class="settings-row__sub">Your default pay per hour</div>
               </div>
-              <input type="number" id="jobRate" class="settings-select" placeholder="0.00" min="0" step="0.01" />
+              <input type="number" id="jobRate" class="settings-select" placeholder="0.00" min="0" step="0.01" data-loading />
             </div>
             <div class="settings-divider"></div>
             <div class="settings-row">
@@ -204,7 +199,7 @@
                 <div class="settings-row__title">Deposit to</div>
                 <div class="settings-row__sub">Where logged hours land as income</div>
               </div>
-              <select id="jobAccountSelect" class="settings-select"></select>
+              <select id="jobAccountSelect" class="settings-select" data-loading></select>
             </div>
           </div>
         </section>

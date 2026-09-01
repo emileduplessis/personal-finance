@@ -111,7 +111,7 @@
             <div class="form-grid" style="margin-top:16px;">
               <div class="form-group">
                 <label class="form-label" for="txAccount">Account *</label>
-                <select id="txAccount" class="form-control"></select>
+                <select id="txAccount" class="form-control" data-loading></select>
               </div>
               <div class="form-group">
                 <label class="form-label" for="txNote">Note</label>
@@ -123,14 +123,14 @@
             <!-- To Account (transfers only) -->
             <div class="form-group" id="toAccountGroup" style="display:none;margin-top:16px;">
               <label class="form-label" for="txToAccount">To Account *</label>
-              <select id="txToAccount" class="form-control"></select>
+              <select id="txToAccount" class="form-control" data-loading></select>
             </div>
 
             <!-- Category picker -->
             <div class="form-group form-group--full" style="margin-top:20px;">
               <p class="form-section-title">Category</p>
               <div class="cat-suggestion" id="catSuggestion" hidden></div>
-              <div class="category-grid" id="categoryPicker"></div>
+              <div class="category-grid" id="categoryPicker"><span class="skeleton" style="height:64px" aria-hidden="true"></span><span class="skeleton" style="height:64px" aria-hidden="true"></span><span class="skeleton" style="height:64px" aria-hidden="true"></span><span class="skeleton" style="height:64px" aria-hidden="true"></span><span class="skeleton" style="height:64px" aria-hidden="true"></span><span class="skeleton" style="height:64px" aria-hidden="true"></span><span class="skeleton" style="height:64px" aria-hidden="true"></span><span class="skeleton" style="height:64px" aria-hidden="true"></span></div>
               <div id="budgetHint" hidden style="margin-top:10px;font-size:.8125rem;line-height:1.5;color:var(--color-text-muted);"></div>
             </div>
 

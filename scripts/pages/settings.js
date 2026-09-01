@@ -150,12 +150,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     const accEl = document.getElementById('accCount');
     if (txEl)  txEl.textContent  = `${txs.length} transaction${txs.length !== 1 ? 's' : ''}`;
     if (accEl) accEl.textContent = `${accs.length} account${accs.length !== 1 ? 's' : ''}`;
-  } catch (_) {}
+  } catch (_) {
+    /* counts ship shimmer placeholders (settings.html) — don't leave them running */
+    ['txCount', 'accCount'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = 'unavailable';
+    });
+  }
 
   /* Currency selector */
   const currencySelect = document.getElementById('currencySelect');
   if (currencySelect) {
-    SettingsStore.getCurrency().then(c => { currencySelect.value = c; });
+    SettingsStore.getCurrency()
+      .then(c => { currencySelect.value = c; })
+      .finally(() => clearFieldLoading(currencySelect));
     currencySelect.addEventListener('change', async () => {
       await SettingsStore.setCurrency(currencySelect.value);
       showToast('Currency updated — amounts are re-formatted, not converted', 'success');
@@ -235,7 +243,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         showToast('Job defaults saved', 'success');
       });
     }
-  } catch (_) {}
+  } catch (_) {
+    /* fall through — the finally below still hands the fields back */
+  } finally {
+    /* these selects/inputs ship data-loading so they shimmer instead of
+       showing "— None —" / an empty rate while the data is in flight */
+    ['defaultAccountSelect', 'jobDefaultSelect', 'jobAccountSelect', 'jobRate'].forEach(clearFieldLoading);
+  }
 
   /* CSV export */
   document.getElementById('exportCsvBtn')?.addEventListener('click', async () => {

@@ -1091,3 +1091,18 @@ body.dash-dragging { user-select: none; }
   .first-run { padding: 16px 14px; }
   .first-run__head { flex-direction: column; gap: 10px; }
 }
+
+/* Donut counterpart to .chart-skeleton — a pulsing ring behind the canvas.
+   Used by the Cash-flow category donut and the Subscriptions category donut
+   (which referenced this modifier before it existed, and so showed nothing). */
+.chart-skeleton--donut { align-items: center; justify-content: center; padding: 12px; }
+.chart-skeleton--donut::after {
+  content: '';
+  width: min(58%, 132px); aspect-ratio: 1;
+  border-radius: 50%;
+  border: 17px solid var(--color-surface-2);
+  animation: skeletonPulse 1.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .chart-skeleton--donut::after { animation: none; opacity: 0.5; }
+}

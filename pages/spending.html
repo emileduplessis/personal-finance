@@ -75,17 +75,17 @@
         <div class="spending-summary-chips">
           <span class="hero-stat-chip">
             <span class="hero-stat-chip__label">Spent</span>
-            <span class="hero-stat-chip__value" id="spendTotal" style="color:var(--color-expense)">$0.00</span>
+            <span class="hero-stat-chip__value" id="spendTotal" style="color:var(--color-expense)"><span class="skeleton skeleton-num"></span></span>
           </span>
           <span class="hero-stat-chip__sep">·</span>
           <span class="hero-stat-chip">
             <span class="hero-stat-chip__label">Income</span>
-            <span class="hero-stat-chip__value" id="spendIncome" style="color:var(--color-income)">$0.00</span>
+            <span class="hero-stat-chip__value" id="spendIncome" style="color:var(--color-income)"><span class="skeleton skeleton-num"></span></span>
           </span>
           <span class="hero-stat-chip__sep">·</span>
           <span class="hero-stat-chip">
             <span class="hero-stat-chip__label">Net</span>
-            <span class="hero-stat-chip__value" id="spendNet">$0.00</span>
+            <span class="hero-stat-chip__value" id="spendNet"><span class="skeleton skeleton-num"></span></span>
           </span>
         </div>
       </div>
@@ -98,9 +98,16 @@
         <div class="cat-overview__body">
           <div class="chart-container chart-container--donut cat-overview__donut">
             <canvas id="categoryCanvas" role="img" aria-label="Category breakdown donut chart"></canvas>
-            <div class="chart-empty" id="categoryChartEmpty"><span>No data this period.</span></div>
+            <div class="chart-skeleton chart-skeleton--donut" id="spendCatSkeleton"></div>
+            <!-- hidden until renderSpending() knows there really is no data -->
+            <div class="chart-empty" id="categoryChartEmpty" hidden><span>No data this period.</span></div>
           </div>
-          <div id="spendingBreakdown" class="spending-breakdown cat-overview__list"></div>
+          <div id="spendingBreakdown" class="spending-breakdown cat-overview__list">
+            <div class="spending-item" aria-hidden="true"><div class="spending-item__icon"><span class="skeleton skeleton-avatar skeleton-avatar--sm" style="width:18px;height:18px"></span></div><div class="spending-item__info"><div class="skeleton skeleton-text" style="width:64%"></div><div class="spending-item__bar-wrap"><span class="skeleton" style="display:block;height:6px;width:88%"></span></div></div><div class="spending-item__meta"><span class="skeleton skeleton-text" style="width:62px;margin-bottom:0"></span></div></div>
+            <div class="spending-item" aria-hidden="true"><div class="spending-item__icon"><span class="skeleton skeleton-avatar skeleton-avatar--sm" style="width:18px;height:18px"></span></div><div class="spending-item__info"><div class="skeleton skeleton-text" style="width:52%"></div><div class="spending-item__bar-wrap"><span class="skeleton" style="display:block;height:6px;width:62%"></span></div></div><div class="spending-item__meta"><span class="skeleton skeleton-text" style="width:62px;margin-bottom:0"></span></div></div>
+            <div class="spending-item" aria-hidden="true"><div class="spending-item__icon"><span class="skeleton skeleton-avatar skeleton-avatar--sm" style="width:18px;height:18px"></span></div><div class="spending-item__info"><div class="skeleton skeleton-text" style="width:58%"></div><div class="spending-item__bar-wrap"><span class="skeleton" style="display:block;height:6px;width:44%"></span></div></div><div class="spending-item__meta"><span class="skeleton skeleton-text" style="width:62px;margin-bottom:0"></span></div></div>
+            <div class="spending-item" aria-hidden="true"><div class="spending-item__icon"><span class="skeleton skeleton-avatar skeleton-avatar--sm" style="width:18px;height:18px"></span></div><div class="spending-item__info"><div class="skeleton skeleton-text" style="width:46%"></div><div class="spending-item__bar-wrap"><span class="skeleton" style="display:block;height:6px;width:30%"></span></div></div><div class="spending-item__meta"><span class="skeleton skeleton-text" style="width:62px;margin-bottom:0"></span></div></div>
+          </div>
         </div>
       </section>
 
@@ -112,7 +119,15 @@
         </div>
         <div class="chart-container">
           <canvas id="trendCanvas" role="img" aria-label="Monthly trend bar chart"></canvas>
-          <div class="chart-empty" id="trendChartEmpty"><span>No data yet.</span></div>
+          <div class="chart-skeleton" id="spendTrendSkeleton">
+            <div class="chart-skeleton__bar" style="height:55%"></div>
+            <div class="chart-skeleton__bar" style="height:80%"></div>
+            <div class="chart-skeleton__bar" style="height:45%"></div>
+            <div class="chart-skeleton__bar" style="height:70%"></div>
+            <div class="chart-skeleton__bar" style="height:60%"></div>
+            <div class="chart-skeleton__bar" style="height:85%"></div>
+          </div>
+          <div class="chart-empty" id="trendChartEmpty" hidden><span>No data yet.</span></div>
         </div>
       </section>
 
