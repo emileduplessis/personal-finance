@@ -5,9 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#000000" />
   <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg" />
-  <title>Flow Net Worth — precise personal finance tracker</title>
-  <meta name="description" content="A sharp, fast personal finance tracker. Accounts, budgets, cash-flow forecasts, work-hours tracking, and read-only crypto balances — your data stays yours." />
+  <title>Free Budget &amp; Personal Finance Tracker | Flow Net Worth</title>
+  <meta name="description" content="Free personal finance tracker. Log spending in seconds, set budgets, forecast cash flow, and track hourly pay and crypto. No ads, no account needed." />
   <link rel="canonical" href="https://flownetworth.com/" />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+  <link rel="apple-touch-icon" href="/icons/icon-180.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="alternate" type="text/plain" href="/llms.txt" title="LLM summary" />
 
   <!-- Returning visitors (signed in, guest data, or been in the app before) skip
        the pitch and go straight to the dashboard. Auth callbacks that land on "/"
@@ -34,8 +38,86 @@
   <meta property="og:url" content="https://flownetworth.com/" />
   <meta property="og:title" content="Flow Net Worth — precise personal finance" />
   <meta property="og:description" content="Know your financial state in seconds. Log a transaction without friction. No ads, no data selling — export or delete everything, anytime." />
-  <meta property="og:image" content="https://flownetworth.com/icons/icon-512.png" />
-  <meta name="twitter:card" content="summary" />
+  <meta property="og:image" content="https://flownetworth.com/icons/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Flow Net Worth — Know your financial state in seconds." />
+  <meta property="og:locale" content="en_US" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Flow Net Worth — free personal finance tracker" />
+  <meta name="twitter:description" content="Budgets, a 30-day cash-flow forecast, hourly-pay tracking and read-only crypto balances. No ads, no data selling." />
+  <meta name="twitter:image" content="https://flownetworth.com/icons/og-image.png" />
+
+  <!-- Structured data: lets search engines and AI answer engines identify the
+       product, its price (free) and the FAQ answers below. Keep in sync with
+       the visible FAQ section. -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://flownetworth.com/#org",
+        "name": "Flow Net Worth",
+        "url": "https://flownetworth.com/",
+        "logo": "https://flownetworth.com/icons/icon-512.png",
+        "email": "support@flownetworth.com"
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://flownetworth.com/#website",
+        "url": "https://flownetworth.com/",
+        "name": "Flow Net Worth",
+        "publisher": { "@id": "https://flownetworth.com/#org" },
+        "inLanguage": "en"
+      },
+      {
+        "@type": "WebApplication",
+        "@id": "https://flownetworth.com/#app",
+        "name": "Flow Net Worth",
+        "url": "https://flownetworth.com/",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "Web, iOS, Android, Windows, macOS (installable PWA)",
+        "browserRequirements": "Requires a modern browser with JavaScript",
+        "description": "A free personal finance tracker for accounts, transactions, monthly budgets, 30-day cash-flow forecasts, hourly work-pay tracking and read-only BTC/SOL crypto balances.",
+        "image": "https://flownetworth.com/icons/og-image.png",
+        "publisher": { "@id": "https://flownetworth.com/#org" },
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "featureList": [
+          "Income, expense and transfer tracking across multiple accounts",
+          "Category suggestions from your own transaction history",
+          "Per-category monthly budgets with suggested amounts",
+          "30-day cash-flow forecast with low-balance warning",
+          "Automatic spending insights and recurring-charge detection",
+          "Subscription tracking",
+          "Hourly work tracking with payday reconciliation",
+          "Read-only Bitcoin and Solana balances from a public address",
+          "CSV import and export",
+          "Use without an account; sync across devices after sign-up"
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://flownetworth.com/#faq",
+        "mainEntity": [
+          { "@type": "Question", "name": "Is Flow Net Worth free?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. Flow Net Worth is free to use, with no card required and no ads." } },
+          { "@type": "Question", "name": "Do I need an account to use it?",
+            "acceptedAnswer": { "@type": "Answer", "text": "No. You can start immediately and your data stays in your browser. If you create an account later, everything you entered moves into it and syncs across your devices." } },
+          { "@type": "Question", "name": "Does Flow Net Worth connect to my bank?",
+            "acceptedAnswer": { "@type": "Answer", "text": "No. There is no bank login or bank-connection service. You add transactions yourself in a few seconds, or import them from a CSV file exported by your bank." } },
+          { "@type": "Question", "name": "Is it safe to add my crypto wallet?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Flow Net Worth only reads balances from a public Bitcoin or Solana address. It never asks for private keys or seed phrases and cannot move funds." } },
+          { "@type": "Question", "name": "Can it track pay from hourly or cash work?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. Log the hours you work, and on payday enter what you were actually paid. The difference from the estimate is booked automatically." } },
+          { "@type": "Question", "name": "Can I export or delete my data?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. Settings has a one-click CSV export and a permanent delete. Your data is never sold, and each account's rows are isolated with row-level security." } }
+        ]
+      }
+    ]
+  }
+  </script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -92,7 +174,21 @@
     .lp-trust { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 12px 48px; align-items: start; }
     .lp-trust h2 { margin: 0; }
 
+    .lp-faq { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 12px 48px;
+              align-items: start; margin-bottom: 56px; }
+    .lp-faq h2 { font-size: 1.0625rem; margin: 0; }
+    .lp-faq__list { border-top: 1px solid var(--color-border); }
+    .lp-faq details { border-bottom: 1px solid var(--color-border); }
+    .lp-faq summary { cursor: pointer; list-style: none; padding: 16px 28px 16px 0; font-size: .875rem;
+                      font-weight: 600; position: relative; }
+    .lp-faq summary::-webkit-details-marker { display: none; }
+    .lp-faq summary::after { content: '+'; position: absolute; right: 4px; top: 14px;
+                             font-family: var(--font-display); color: var(--color-text-light); }
+    .lp-faq details[open] summary::after { content: '−'; }
+    .lp-faq details p { font-size: .8125rem; line-height: 1.65; color: var(--color-text-muted); margin: 0 0 16px; max-width: 64ch; }
+
     @media (max-width: 960px) {
+      .lp-faq { grid-template-columns: 1fr; }
       .lp-hero { grid-template-columns: 1fr; }
       .lp-features { grid-template-columns: repeat(2, 1fr); }
       .lp-trust { grid-template-columns: 1fr; }
@@ -125,6 +221,8 @@
       </div>
     </header>
 
+    <main>
+    <h2 class="sr-only">Features</h2>
     <div class="lp-features">
       <div class="lp-feature">
         <span class="n">01</span>
@@ -174,6 +272,43 @@
         <li>The fine print, in plain language: <a href="/privacy" style="color:var(--color-text);">Privacy</a> · <a href="/terms" style="color:var(--color-text);">Terms</a>.</li>
       </ul>
     </section>
+
+    <!-- Mirrors the FAQPage JSON-LD in <head>; edit both together. -->
+    <section class="lp-faq" aria-labelledby="faq-title">
+      <h2 id="faq-title">Questions</h2>
+      <div class="lp-faq__list">
+        <details>
+          <summary>Is Flow Net Worth free?</summary>
+          <p>Yes. Flow Net Worth is free to use, with no card required and no ads.</p>
+        </details>
+        <details>
+          <summary>Do I need an account to use it?</summary>
+          <p>No. You can start immediately and your data stays in your browser. If you create an account later,
+          everything you entered moves into it and syncs across your devices.</p>
+        </details>
+        <details>
+          <summary>Does Flow Net Worth connect to my bank?</summary>
+          <p>No. There is no bank login or bank-connection service. You add transactions yourself in a few seconds,
+          or import them from a CSV file exported by your bank.</p>
+        </details>
+        <details>
+          <summary>Is it safe to add my crypto wallet?</summary>
+          <p>Flow Net Worth only reads balances from a public Bitcoin or Solana address. It never asks for private
+          keys or seed phrases and cannot move funds.</p>
+        </details>
+        <details>
+          <summary>Can it track pay from hourly or cash work?</summary>
+          <p>Yes. Log the hours you work, and on payday enter what you were actually paid. The difference from the
+          estimate is booked automatically.</p>
+        </details>
+        <details>
+          <summary>Can I export or delete my data?</summary>
+          <p>Yes. Settings has a one-click CSV export and a permanent delete. Your data is never sold, and each
+          account's rows are isolated with row-level security.</p>
+        </details>
+      </div>
+    </section>
+    </main>
 
     <footer class="lp-foot">
       <span>Flow</span><span>·</span>

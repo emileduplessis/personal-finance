@@ -81,5 +81,15 @@ unchecked item. `[user]` = needs an action only the account owner can do.
 - [x] PRODUCT.md Users section rewritten for a public audience (no hardcoded
       personal defaults rule added)
 - [x] Custom domain: flownetworth.com
+- [x] SEO/GEO pass (2026-10-07): JSON-LD (Organization, WebApplication,
+      FAQPage), visible FAQ, 1200x630 OG image, llms.txt, AI crawlers allowed
+      in robots.txt, sitemap lastmod. Google Search Console + sitemap done.
+- [ ] Bing Webmaster Tools (in progress by user; import from GSC works)
+- [ ] Content pages (later): short guides that rank for searches the landing
+      can't, e.g. "track irregular / cash pay", "budget without linking your
+      bank", "read-only crypto net worth". One page each, add to sitemap.xml
+      + llms.txt, link from the landing footer.
+- [ ] Add `sameAs` links to the Organization JSON-LD once social profiles /
+      Product Hunt exist
 - [ ] Optional: screenshots on the landing page, swap `/` to the landing
       for logged-out visitors

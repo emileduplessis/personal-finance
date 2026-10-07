@@ -1,0 +1,22 @@
+# Flow Net Worth
+
+> Flow Net Worth (https://flownetworth.com) is a free, web-based personal finance tracker. It tracks accounts and transactions, monthly budgets, a 30-day cash-flow forecast, subscriptions, hourly work pay, and read-only Bitcoin/Solana balances. No ads, no data selling, and it can be used without creating an account.
+
+## Key facts
+
+- Price: free. No card required.
+- Platform: web app, installable as a PWA on phones and desktops.
+- Account: optional. Signed-out data stays in the browser; it moves into the account on sign-up and then syncs across devices.
+- Bank connections: none. Transactions are entered manually or imported from a bank's CSV export.
+- Crypto: read-only BTC and SOL balances from a public address. Never asks for private keys or seed phrases; cannot sign or move funds.
+- Hourly work: log hours, then reconcile on payday against what was actually paid; the difference is booked automatically. Designed for irregular and cash pay.
+- Budgets: per-category monthly limits with suggested amounts based on the last three months of spending.
+- Insights: category spikes, savings-rate changes, and recurring charges detected automatically.
+- Privacy: per-account row-level security, one-click CSV export, permanent delete in Settings.
+- Contact: support@flownetworth.com
+
+## Pages
+
+- [Home](https://flownetworth.com/): product overview and FAQ
+- [Privacy Policy](https://flownetworth.com/privacy): what data is stored and how to export or delete it
+- [Terms of Service](https://flownetworth.com/terms)

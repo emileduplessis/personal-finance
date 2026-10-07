@@ -1,4 +1,29 @@
+# Search engines and AI answer engines are welcome on the public pages.
+# App screens carry <meta name="robots" content="noindex">, so they stay crawlable
+# (the tag must be readable) but are never indexed.
 User-agent: *
+Allow: /
+Disallow: /api/
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
 Allow: /
 
 Sitemap: https://flownetworth.com/sitemap.xml
