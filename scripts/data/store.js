@@ -35,13 +35,19 @@ function accountToCamel(r) {
   };
 }
 
+/* An income/expense saved without a category is filed under "Other" — one
+   rule for every page (the dashboard, Cash Flow, Budget and the filters
+   used to show it as "—", "Other" and nothing, respectively). Transfers
+   have no category. */
+const FALLBACK_CATEGORY = 'cat-other';
+
 function txToCamel(r) {
   return {
     id:          r.id,
     date:        r.date,
     amount:      Number(r.amount),
     type:        r.type,
-    categoryId:  r.category_id,
+    categoryId:  r.category_id || (r.type === 'transfer' ? null : FALLBACK_CATEGORY),
     accountId:   r.account_id,
     toAccountId: r.to_account_id,
     note:        r.note,
@@ -170,7 +176,8 @@ const TransactionStore = {
       let q = sb.from('transactions').select('*');
       if (from)       q = q.gte('date', from);
       if (to)         q = q.lte('date', to);
-      if (categoryId) q = q.eq('category_id', categoryId);
+      /* "Other" also holds uncategorized rows (null in the DB) — filter it client-side */
+      if (categoryId && categoryId !== FALLBACK_CATEGORY) q = q.eq('category_id', categoryId);
       if (accountId)  q = q.or(`account_id.eq.${accountId},to_account_id.eq.${accountId}`);
       if (type)       q = q.eq('type', type);
       if (search)     q = q.ilike('note', `%${search}%`);
@@ -185,7 +192,8 @@ const TransactionStore = {
       if (rows.length < PAGE) break;
       offset += PAGE;
     }
-    return all.map(txToCamel);
+    const txs = all.map(txToCamel);
+    return categoryId === FALLBACK_CATEGORY ? txs.filter(t => t.categoryId === FALLBACK_CATEGORY) : txs;
   },
 
   async thisMonth() {
@@ -1336,6 +1344,17 @@ function formatCurrency(amount) {
   }).format(Math.abs(amount));
 }
 
+/* formatCurrency() is unsigned by design (lists add their own +/−). These are
+   for figures that can legitimately go negative — balances, nets, changes —
+   where dropping the sign would misstate the number. Amounts that round to
+   zero get no minus. */
+function formatBalance(amount) {
+  return (amount <= -0.005 ? '−' : '') + formatCurrency(amount);
+}
+function formatSigned(amount) {
+  return (amount <= -0.005 ? '−' : '+') + formatCurrency(amount);
+}
+
 function formatDate(isoDate) {
   if (!isoDate) return '';
   return new Date(isoDate + 'T00:00:00').toLocaleDateString('en-US', {
@@ -1580,5 +1599,5 @@ const CSVService = {
    are exposed (the CSV tokenizer + formatters); the store methods need a live
    Supabase client and aren't unit-testable here. */
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { CSVService, isoLocal, formatCurrency, formatDate, formatDateShort };
+  module.exports = { CSVService, isoLocal, formatCurrency, formatBalance, formatSigned, formatDate, formatDateShort };
 }

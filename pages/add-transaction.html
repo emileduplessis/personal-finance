@@ -38,6 +38,18 @@
        and only stack them on an actual phone-width screen. */
     html.embed .form-grid { grid-template-columns: 1fr 1fr; }
     @media (max-width: 520px) { html.embed .form-grid { grid-template-columns: 1fr; } }
+    /* Leave room for the popup's ✕ (top-right, outside the iframe) so it
+       doesn't sit on top of the Transfer button. */
+    html.embed .type-toggle { margin-right: 40px; }
+    /* The form is taller than the popup — pin the save button to the bottom of
+       the frame so it's always visible, even after a validation message. */
+    html.embed #formActions {
+      position: sticky; bottom: 0; z-index: 2;
+      margin-top: 20px !important; padding: 12px 0 16px;
+      background: var(--color-surface);
+      box-shadow: 0 -1px 0 var(--color-border);
+    }
+    html.embed .main-content { padding-bottom: 0; }
   </style>
 </head>
 <body data-title="Add Transaction" data-title-id="formTitle">

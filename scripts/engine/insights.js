@@ -19,13 +19,20 @@ const InsightsEngine = {
      - `recurring` is the known scheduled items (active subscriptions),
        expanded across the horizon by their frequency.
 
-     opts: { horizonDays=30, lookbackDays=90, recurring=[], asOf=new Date(), band=1 }
+     - Below `minHistoryDays` of history there is no trend to speak of (one
+       coffee on day one would extrapolate to −30 coffees), so the run-rate
+       is held at 0 and only scheduled bills move the line; basis.trendReady
+       says which case applies.
+
+     opts: { horizonDays=30, lookbackDays=90, minHistoryDays=14, recurring=[],
+             asOf=new Date(), band=1 }
      Returns points[0..horizon] plus a summary (end balance, low point,
      below-zero detection, basis). */
   forecastBalance(transactions, accounts, opts = {}) {
     const {
       horizonDays  = 30,
       lookbackDays = 90,
+      minHistoryDays = 14,
       recurring    = [],
       asOf         = new Date(),
       band         = 1,
@@ -66,11 +73,12 @@ const InsightsEngine = {
       dailyNet[t.date] = (dailyNet[t.date] || 0) + eff;
       windowNet += eff; sampleCount++;
     });
-    const runRate = windowNet / elapsed;
+    const trendReady = ageDays >= minHistoryDays;
+    const runRate = trendReady ? windowNet / elapsed : 0;
 
     /* volatility: stddev of daily net across the elapsed days (zero-filled) */
     let vol = 0;
-    if (elapsed > 1) {
+    if (trendReady && elapsed > 1) {
       const mean = windowNet / elapsed;
       let sumSq = 0;
       for (let i = 0; i < elapsed; i++) {
@@ -142,7 +150,7 @@ const InsightsEngine = {
       belowZero:     !!belowZero,
       belowZeroDate: belowZero ? belowZero.date : null,
       riskBelowZero: !!riskBelow,
-      basis:         { lookbackDays: elapsed, sampleCount },
+      basis:         { lookbackDays: elapsed, sampleCount, trendReady, minHistoryDays },
     };
   },
   /* Recommend a monthly budget per expense category from trailing history.

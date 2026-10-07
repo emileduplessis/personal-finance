@@ -9,6 +9,23 @@ const ACCOUNT_COLORS = [
 
 let editingAccountId = null;
 
+/* Balances are signed: money you owe is negative. A credit card's form field
+   asks for the amount owed (a positive number) and stores its negation, so
+   a card with $500 owing lowers the total instead of adding to it. */
+const isDebtType = type => type === 'credit';
+const balanceToField = (type, bal) => (isDebtType(type) ? -bal : bal);
+const fieldToBalance = (type, val) => (isDebtType(type) ? -val : val) || 0;
+
+function syncBalanceField() {
+  const debt  = isDebtType(document.getElementById('accType')?.value);
+  const label = document.getElementById('accBalanceLabel');
+  const hint  = document.getElementById('accBalanceHint');
+  if (label) label.textContent = debt ? 'Amount owed' : 'Starting Balance';
+  if (hint)  hint.textContent  = debt
+    ? 'What you owe on this card today. It counts against your balance; purchases add to it, payments (transfers in) reduce it.'
+    : 'Balance as of today — transactions adjust it from here.';
+}
+
 async function loadAccountsWithBalances() {
   const [accounts, allTx] = await Promise.all([
     AccountStore.getAll(),
@@ -46,7 +63,7 @@ async function renderAccountsGrid(data) {
   const allCard = accounts.length ? `
       <div class="acc-card acc-card--all" data-filter-acc="" role="button" tabindex="0" title="Show all accounts">
         <div class="acc-card__name">All accounts</div>
-        <div class="acc-card__balance" style="color:${total >= 0 ? 'var(--color-income)' : 'var(--color-expense)'}">${formatCurrency(total)}</div>
+        <div class="acc-card__balance" style="color:${total >= 0 ? 'var(--color-income)' : 'var(--color-expense)'}">${formatBalance(total)}</div>
         <div class="acc-card__type">${accounts.length} account${accounts.length === 1 ? '' : 's'}</div>
       </div>` : '';
 
@@ -63,7 +80,7 @@ async function renderAccountsGrid(data) {
           </div>
         </div>
         <div class="acc-card__name" title="${escapeHTML(a.name)}">${escapeHTML(a.name)}</div>
-        <div class="acc-card__balance" style="color:${bal >= 0 ? 'var(--color-income)' : 'var(--color-expense)'}">${formatCurrency(bal)}</div>
+        <div class="acc-card__balance" style="color:${bal >= 0 ? 'var(--color-income)' : 'var(--color-expense)'}">${formatBalance(bal)}</div>
         <div class="acc-card__type">${TYPE_LABEL[a.type] || 'Account'}</div>
       </div>`;
   }).join('');
@@ -164,7 +181,7 @@ function updateAccountsSummary(accounts, balanceMap) {
   if (countEl) countEl.textContent = `${n} account${n === 1 ? '' : 's'}`;
   if (totalEl) {
     const total = accounts.reduce((s, a) => s + (balanceMap[a.id] ?? 0), 0);
-    totalEl.textContent = formatCurrency(total);
+    totalEl.textContent = formatBalance(total);
     totalEl.style.color = total >= 0 ? 'var(--color-income)' : 'var(--color-expense)';
   }
   /* no accounts yet → open so the "New account" card is reachable */
@@ -181,7 +198,7 @@ async function openAccountModal(id) {
     if (acc) {
       setValue('accName',    acc.name);
       setValue('accType',    acc.type);
-      setValue('accBalance', acc.initialBalance);
+      setValue('accBalance', balanceToField(acc.type, acc.initialBalance));
       setValue('accColor',   acc.color);
     }
     if (title) title.textContent = 'Edit Account';
@@ -191,6 +208,7 @@ async function openAccountModal(id) {
     setValue('accColor', ACCOUNT_COLORS[accounts.length % ACCOUNT_COLORS.length]);
     if (title) title.textContent = 'New Account';
   }
+  syncBalanceField();
   modal.classList.add('open');
 }
 
@@ -265,12 +283,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (tot) tot.textContent = '—';
   }
 
+  document.getElementById('accType')?.addEventListener('change', syncBalanceField);
   document.getElementById('accForm')?.addEventListener('submit', async e => {
     e.preventDefault();
     const data = {
       name:           document.getElementById('accName').value.trim(),
       type:           document.getElementById('accType').value,
-      initialBalance: parseFloat(document.getElementById('accBalance').value) || 0,
+      initialBalance: fieldToBalance(document.getElementById('accType').value,
+                                     parseFloat(document.getElementById('accBalance').value) || 0),
       color:          document.getElementById('accColor').value,
     };
     if (!data.name) return;

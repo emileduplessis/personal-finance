@@ -61,6 +61,33 @@ test('forecastBalance — run-rate trend', async (t) => {
   });
 });
 
+test('forecastBalance — needs history before trending', async (t) => {
+  await t.test('one expense today does not extrapolate into a 30-day slide', () => {
+    const txns = [{ type: 'expense', amount: 14.75, date: daysBefore(0), accountId: 'a' }];
+    const fc = InsightsEngine.forecastBalance(txns, ACCT, { horizonDays: 30, asOf: ASOF });
+    assert.equal(fc.basis.trendReady, false);
+    assert.equal(fc.runRate, 0);
+    assert.equal(fc.projectedNet, 0);
+    assert.equal(fc.endBalance, fc.current);
+  });
+
+  await t.test('trend kicks in once history reaches minHistoryDays', () => {
+    const txns = [];
+    for (let i = 0; i <= 14; i++) txns.push({ type: 'expense', amount: 10, date: daysBefore(i), accountId: 'a' });
+    const fc = InsightsEngine.forecastBalance(txns, ACCT, { horizonDays: 30, asOf: ASOF });
+    assert.equal(fc.basis.trendReady, true);
+    assert.ok(fc.runRate < 0);
+  });
+
+  await t.test('young history still projects scheduled bills', () => {
+    const recurring = [{ amount: 50, frequency: 'monthly', nextDue: daysAfter(5) }];
+    const txns = [{ type: 'expense', amount: 14.75, date: daysBefore(0), accountId: 'a' }];
+    const fc = InsightsEngine.forecastBalance(txns, ACCT, { horizonDays: 30, asOf: ASOF, recurring });
+    assert.equal(fc.basis.trendReady, false);
+    assert.equal(fc.projectedNet, -50);
+  });
+});
+
 test('forecastBalance — scheduled recurring bills', async (t) => {
   await t.test('a bill due inside the horizon reduces the projected balance', () => {
     const recurring = [{ amount: 200, frequency: 'monthly', nextDue: daysAfter(10), name: 'Rent' }];

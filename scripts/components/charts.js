@@ -68,9 +68,10 @@ const Charts = {
   _fmt(val) {
     const sym = this._currencySymbol();
     const abs = Math.abs(val);
-    if (abs >= 1000000) return `${sym}${(val / 1000000).toFixed(1)}M`;
-    if (abs >= 1000)    return `${sym}${(val / 1000).toFixed(1)}k`;
-    return `${sym}${Math.round(val)}`;
+    const sign = Math.round(val) < 0 ? '−' : '';     /* −$400, not $-400 */
+    if (abs >= 1000000) return `${sign}${sym}${(abs / 1000000).toFixed(1)}M`;
+    if (abs >= 1000)    return `${sign}${sym}${(abs / 1000).toFixed(1)}k`;
+    return `${sign}${sym}${Math.round(abs)}`;
   },
 
   _fmtFull(val) {

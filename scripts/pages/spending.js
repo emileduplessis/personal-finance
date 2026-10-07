@@ -133,7 +133,7 @@ async function renderSpending() {
 
   setText('spendTotal',  formatCurrency(totals.expense));
   setText('spendIncome', formatCurrency(totals.income));
-  setText('spendNet',    (net >= 0 ? '+' : '') + formatCurrency(net));
+  setText('spendNet',    formatSigned(net));
   const netEl = document.getElementById('spendNet');
   if (netEl) netEl.style.color = net >= 0 ? 'var(--color-income)' : 'var(--color-expense)';
 

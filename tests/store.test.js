@@ -15,7 +15,7 @@ const assert = require('node:assert/strict');
 let CURRENCY = 'CAD';
 global.localStorage = { getItem: (k) => (k === 'pf_currency' ? CURRENCY : null) };
 
-const { CSVService, isoLocal, formatCurrency, formatDate, formatDateShort } = require('../scripts/data/store.js');
+const { CSVService, isoLocal, formatCurrency, formatBalance, formatSigned, formatDate, formatDateShort } = require('../scripts/data/store.js');
 
 /* ---- CSV tokenizer (the RFC-4180-ish parser) ---- */
 test('CSVService._parse', async (t) => {
@@ -216,5 +216,28 @@ test('formatCurrency', async (t) => {
     CURRENCY = 'JPY';
     const s = formatCurrency(1000);
     assert.ok(!s.includes('.'), `no decimal point for yen: ${s}`);
+  });
+});
+
+/* ---- signed variants: balances / nets must not lose their minus ---- */
+test('formatBalance / formatSigned', async (t) => {
+  t.after(() => { CURRENCY = 'CAD'; });
+  CURRENCY = 'CAD';
+
+  await t.test('formatBalance: minus only when negative', () => {
+    assert.equal(formatBalance(-14.75), '−' + formatCurrency(14.75));
+    assert.equal(formatBalance(14.75), formatCurrency(14.75));
+    assert.equal(formatBalance(0), formatCurrency(0));
+  });
+
+  await t.test('formatSigned: always + or −', () => {
+    assert.equal(formatSigned(-14.75), '−' + formatCurrency(14.75));
+    assert.equal(formatSigned(14.75), '+' + formatCurrency(14.75));
+    assert.equal(formatSigned(0), '+' + formatCurrency(0));
+  });
+
+  await t.test('amounts that round to zero carry no minus', () => {
+    assert.equal(formatBalance(-0.001), formatCurrency(0));
+    assert.equal(formatSigned(-0.001), '+' + formatCurrency(0));
   });
 });

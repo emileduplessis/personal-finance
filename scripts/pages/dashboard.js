@@ -63,7 +63,7 @@ async function initDashboard() {
   if (heroMonthEl) heroMonthEl.textContent = '· ' + now.toLocaleString('en-US', { month: 'short', year: 'numeric' });
 
   /* cinematic count-up for the balance */
-  animateValue(document.getElementById('totalBalance'), totalBalance, formatCurrency, 1400);
+  animateValue(document.getElementById('totalBalance'), totalBalance, formatBalance, 1400);
   animateValue(document.getElementById('monthIncome'),  monthTotals.income,  formatCurrency);
   animateValue(document.getElementById('monthExpense'), monthTotals.expense, formatCurrency);
   animateValue(document.getElementById('monthNet'), Math.abs(net), v => (net >= 0 ? '+' : '-') + formatCurrency(v));
@@ -116,8 +116,8 @@ async function initDashboard() {
 
   setText('shortChangeLabel', shortW.label);
   setText('longChangeLabel',  longW.label);
-  setText('ninetyDayChange', (shortNet >= 0 ? '+' : '') + formatCurrency(shortNet));
-  setText('yearChange',      (longNet  >= 0 ? '+' : '') + formatCurrency(longNet));
+  setText('ninetyDayChange', formatSigned(shortNet));
+  setText('yearChange',      formatSigned(longNet));
   const ycEl  = document.getElementById('yearChange');
   const ndcEl = document.getElementById('ninetyDayChange');
   if (ycEl)  ycEl.style.color  = longNet  >= 0 ? 'var(--color-income)' : 'var(--color-expense)';
@@ -386,7 +386,7 @@ function renderNwGoal(netWorth) {
   const pct = target > 0 ? Math.max(0, (cur / target) * 100) : 0;
   ringEl.innerHTML = ringSVG(Math.min(pct, 100), pct >= 100 ? 'var(--color-income)' : '#ffffff', 54);
   pctEl.textContent = `${Math.round(pct)}%`;
-  if (detailEl) detailEl.innerHTML = `${formatCurrency(cur)} <span class="nw-goal__of">of ${formatCurrency(target)}</span>`;
+  if (detailEl) detailEl.innerHTML = `${formatBalance(cur)} <span class="nw-goal__of">of ${formatCurrency(target)}</span>`;
   if (paceEl) {
     if (cur >= target) { paceEl.textContent = '✓ Goal reached'; paceEl.className = 'nw-goal__pace nw-goal__pace--up'; }
     else { paceEl.textContent = `▲ ${formatCurrency(target - cur)} to go`; paceEl.className = 'nw-goal__pace'; }
@@ -463,7 +463,7 @@ async function renderCrypto(bankBalance) {
      Count both up like the hero balance so they feel as rewarding, not static. */
   if (nwCell) {
     nwCell.hidden = false;
-    animateValue(document.getElementById('statNetWorth'), bankBalance + snap.total, formatCurrency, 1400);
+    animateValue(document.getElementById('statNetWorth'), bankBalance + snap.total, formatBalance, 1400);
   }
   if (cryCell) {
     cryCell.hidden = false;
@@ -569,9 +569,11 @@ function renderForecast(allTx, accounts, subs) {
     .map(s => ({ amount: s.amount, frequency: s.frequency, nextDue: s.nextDue, name: s.name }));
 
   const fc = InsightsEngine.forecastBalance(allTx, accounts, { horizonDays: 30, recurring });
+  /* too little history for a trend and no bills on the calendar → nothing honest to project */
+  if (!fc.basis.trendReady && !fc.scheduled.length) { hideHead(); return null; }
   if (head) head.hidden = false;
 
-  setText('forecastEnd', formatCurrency(fc.endBalance));
+  setText('forecastEnd', formatBalance(fc.endBalance));
 
   const netEl = document.getElementById('forecastNet');
   if (netEl) {
@@ -596,7 +598,9 @@ function renderForecast(allTx, accounts, subs) {
   }
 
   const bills = fc.scheduled.length;
-  setText('forecastBasis', fc.basis.sampleCount
+  setText('forecastBasis', !fc.basis.trendReady
+    ? `Scheduled bills only — your spending trend joins the forecast after ${fc.basis.minHistoryDays} days of history. An estimate, not a guarantee.`
+    : fc.basis.sampleCount
     ? `Forecast from your ${fc.basis.lookbackDays}-day trend${bills ? ` + ${bills} scheduled bill${bills === 1 ? '' : 's'}` : ''}. An estimate, not a guarantee.`
     : 'Not enough history yet for a confident projection.');
 
@@ -740,7 +744,7 @@ function renderAccounts(accounts, balanceMap, allTx) {
         </div>
         <div class="acct-tile__row2">
           <div class="acct-tile__figures">
-            <div class="acct-tile__bal font-display" style="${bal < 0 ? 'color:var(--color-expense)' : ''}">${formatCurrency(bal)}</div>
+            <div class="acct-tile__bal font-display" style="${bal < 0 ? 'color:var(--color-expense)' : ''}">${formatBalance(bal)}</div>
           </div>
           ${deltaHTML(bal, hist[0])}
         </div>
