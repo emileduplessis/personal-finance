@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#000000" />
+  <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg" />
+  <title>Page not found — Flow Net Worth</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
+  <!-- Absolute paths: this page is served at whatever URL missed. -->
+  <link rel="stylesheet" href="/styles/main.css" />
+  <style>
+    .nf { max-width: 860px; margin: 0 auto; padding: 0 20px; min-height: 100vh; min-height: 100dvh;
+          display: flex; flex-direction: column; }
+    .nf-nav { padding: 22px 0; }
+    .nf-mark { font-family: var(--font-display); font-weight: 700; font-size: 1.125rem; letter-spacing: .04em;
+               color: var(--color-text); text-decoration: none; }
+    .nf-main { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 48px 0 96px; }
+    .nf-code { font-family: var(--font-display); font-size: clamp(4.5rem, 18vw, 8rem); font-weight: 700;
+               line-height: 1; letter-spacing: -.04em; margin: 0 0 22px; font-variant-numeric: tabular-nums; }
+    .nf-main h1 { font-size: clamp(1.375rem, 4vw, 1.75rem); margin: 0 0 12px; letter-spacing: -.01em; }
+    .nf-main p { font-size: .9375rem; line-height: 1.65; color: var(--color-text-muted); max-width: 48ch; margin: 0 0 30px; }
+    .nf-path { font-family: var(--font-display); color: var(--color-text); word-break: break-all; }
+    .nf-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+    .nf-btn { display: inline-block; text-decoration: none; font-family: var(--font-display); font-size: .875rem;
+              padding: 12px 26px; border: 1px solid var(--color-border); color: var(--color-text); }
+    .nf-btn:hover { border-color: var(--color-text); }
+    .nf-btn--primary { background: var(--color-primary); border-color: var(--color-primary);
+                       color: var(--color-primary-contrast, #000); font-weight: 600; }
+    .nf-btn--primary:hover { background: var(--color-primary-dark); border-color: var(--color-primary-dark); }
+  </style>
+</head>
+<body>
+  <div class="nf">
+    <nav class="nf-nav"><a class="nf-mark" href="/">Flow Net Worth</a></nav>
+    <main class="nf-main">
+      <div class="nf-code" aria-hidden="true">404</div>
+      <h1>This page doesn't exist.</h1>
+      <p>Nothing lives at <span class="nf-path" id="nf-path">this address</span>. It may have moved,
+      or the link was mistyped. Your data is untouched.</p>
+      <div class="nf-actions">
+        <a class="nf-btn nf-btn--primary" href="/dashboard">Open dashboard</a>
+        <a class="nf-btn" href="/">Home</a>
+      </div>
+    </main>
+  </div>
+  <script>
+    try { document.getElementById('nf-path').textContent = decodeURIComponent(location.pathname); } catch (_) {}
+  </script>
+</body>
+</html>

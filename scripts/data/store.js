@@ -507,6 +507,34 @@ const SettingsStore = {
     return next;
   },
 
+  /* ---- navigation prefs ------------------------------------------------
+     focus: what the user mainly uses Flow for — 'money' | 'hours' | 'both',
+            asked once on the dashboard; 'hours' turns the bottom-bar + into
+            "Log hours". null = not answered yet.
+     slot:  which section sits in the mobile bottom bar's 4th spot.
+     Synced in ui_prefs.nav and mirrored to localStorage because nav.js renders
+     synchronously on every page, before any await. */
+  NAV_KEY: 'pf_nav',
+  NAV_SLOTS: ['money', 'shifts', 'crypto', 'insights'],
+  NAV_FOCI:  ['money', 'hours', 'both'],
+
+  getNavPrefs() {
+    const p = { focus: null, slot: 'money' };
+    try {
+      const raw = JSON.parse(localStorage.getItem(this.NAV_KEY) || '{}');
+      if (this.NAV_FOCI.includes(raw.focus)) p.focus = raw.focus;
+      if (this.NAV_SLOTS.includes(raw.slot)) p.slot = raw.slot;
+    } catch (_) {}
+    return p;
+  },
+
+  async setNavPrefs(patch) {
+    const next = { ...this.getNavPrefs(), ...patch };
+    try { localStorage.setItem(this.NAV_KEY, JSON.stringify(next)); } catch (_) {}
+    await this.setUiPref({ nav: next });
+    return next;
+  },
+
   /* Misc UI prefs, e.g. { balanceMode } */
   async getUiPrefs() {
     const s = await this._load();
@@ -567,6 +595,15 @@ const SettingsStore = {
         if (up.goals && typeof up.goals === 'object') {
           localStorage.setItem(this.GOALS_KEY, JSON.stringify(up.goals));
         }
+        if (up.nav && typeof up.nav === 'object') {
+          const prev = localStorage.getItem(this.NAV_KEY);
+          localStorage.setItem(this.NAV_KEY, JSON.stringify(up.nav));
+          /* changed on another device — redraw the bar this page already painted */
+          if (prev !== JSON.stringify(up.nav)) window.PFNav?.refresh();
+        } else if (localStorage.getItem(this.NAV_KEY)) {
+          /* chosen on this device before the blob existed — push it up once */
+          try { await this.setUiPref({ nav: this.getNavPrefs() }); } catch (_) {}
+        }
       } else {
         const seed = {};
         const bm = localStorage.getItem('pf_balance_mode');
@@ -577,6 +614,7 @@ const SettingsStore = {
           const goals = JSON.parse(localStorage.getItem(this.GOALS_KEY) || '{}');
           if (goals && Object.keys(goals).length) seed.goals = goals;
         } catch (_) {}
+        if (localStorage.getItem(this.NAV_KEY)) seed.nav = this.getNavPrefs();
         try {
           const tpls = JSON.parse(localStorage.getItem('pf_tx_templates') || '[]');
           if (Array.isArray(tpls) && tpls.length) seed.txTemplates = tpls;

@@ -3,6 +3,9 @@
   "headers": [
     { "source": "**", "headers": [{ "key": "X-Frame-Options", "value": "SAMEORIGIN" }] }
   ],
+  "redirects": [
+    { "source": "/welcome", "destination": "/", "type": 301 }
+  ],
   "rewrites": [
     { "source": "/", "destination": "/index.html" },
     { "source": "/transactions", "destination": "/pages/accounts.html" },

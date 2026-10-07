@@ -38,7 +38,7 @@
      money:   grouped under the Money hub (pill tabs + Money bottom tab)
      sheet:   shown in the mobile "More" sheet                          */
   const NAV_ITEMS = [
-    { id: 'dashboard',     label: 'Dashboard',       icon: 'dashboard',     href: 'index.html',                sidebar: true, bottom: true },
+    { id: 'dashboard',     label: 'Dashboard',       icon: 'dashboard',     href: 'dashboard.html',            sidebar: true, bottom: true },
     { id: 'transactions',  label: 'Transactions',    icon: 'transactions',  href: 'pages/accounts.html',       sidebar: true, bottom: true },
     { id: 'insights',      label: 'Insights',        icon: 'insights',      href: 'pages/insights.html' /* topbar icon only — see renderTopbar */ },
     /* `alt`: extra page keys that keep this item highlighted — the calendar is a
@@ -57,9 +57,10 @@
 
   /* Clean, absolute section URLs. The files still live at /pages/*.html and are
      exposed at these paths by rewrites (vercel.json / serve.json), so links
-     never carry the "pages/" folder or a ".html" suffix. The dashboard is "/". */
+     never carry the "pages/" folder or a ".html" suffix. The dashboard is
+     "/dashboard"; "/" is the public landing page. */
   const CLEAN = {
-    'index.html':                 '/',
+    'dashboard.html':             '/dashboard',
     'pages/accounts.html':        '/transactions',
     'pages/shifts.html':          '/hours-tracker',
     'pages/hours-calendar.html':  '/hours-calendar',
@@ -92,20 +93,47 @@
   const onMoneyPage = moneyItems.some(isActive);
   const moneyMatch = moneyItems.map(n => resolve(n.href)).join(',');
 
-  /* ---- sidebar ---- */
+  /* data-match for ui.js's active-link pass, which otherwise only compares
+     the href and would un-highlight the Money hub on /budget or the Hours
+     Tracker on /hours-calendar. */
+  function matchAttr(n) {
+    const list = n.hub ? moneyMatch : n.alt ? [resolve(n.href), ...n.alt.map(a => '/' + a)].join(',') : '';
+    return list ? ` data-match="${list}"` : '';
+  }
+
+  /* Nav prefs — same shape/validation as SettingsStore.getNavPrefs, read
+     directly because nav.js renders before store.js is guaranteed loaded. */
+  function navPrefs() {
+    const p = { focus: null, slot: 'money' };
+    try {
+      const raw = JSON.parse(localStorage.getItem('pf_nav') || '{}');
+      if (['money', 'hours', 'both'].includes(raw.focus)) p.focus = raw.focus;
+      if (['money', 'shifts', 'crypto', 'insights'].includes(raw.slot)) p.slot = raw.slot;
+    } catch (_) {}
+    return p;
+  }
+
+  /* ---- sidebar ----
+     Desktop lists the money pages as their own entries; the mobile drawer
+     keeps the single Money hub (pill tabs switch between them there).
+     Both are rendered — CSS picks one per breakpoint. */
   function renderSidebar() {
     const el = document.getElementById('sidebar');
     if (!el) return;
-    el.innerHTML = `
-      <div class="sidebar-header">
-        <a href="${resolve('index.html')}" class="logo"><span class="logo-text">Flow</span></a>
-      </div>
-      <nav class="sidebar-nav">
-        ${NAV_ITEMS.filter(n => n.sidebar).map(n => `
-          <a href="${resolve(n.href)}" class="nav-item${n.accent ? ' nav-item--accent' : ''}${(n.hub ? onMoneyPage : isActive(n)) ? ' active' : ''}">
+    const link = (n, cls, active) => `
+          <a href="${resolve(n.href)}" class="nav-item${cls}${active ? ' active' : ''}"${matchAttr(n)}>
             <span class="nav-icon">${I(ICONS[n.icon], 18)}</span>
             <span class="nav-label">${n.label}</span>
-          </a>`).join('')}
+          </a>`;
+    el.innerHTML = `
+      <div class="sidebar-header">
+        <a href="${resolve('dashboard.html')}" class="logo"><span class="logo-text">Flow</span></a>
+      </div>
+      <nav class="sidebar-nav">
+        ${NAV_ITEMS.filter(n => n.sidebar).map(n => n.hub
+          ? link(n, ' nav-item--hub', onMoneyPage) + moneyItems.map(m => link(m, ' nav-item--money', isActive(m))).join('')
+          : link(n, n.accent ? ' nav-item--accent' : '', isActive(n))
+        ).join('')}
       </nav>`;
   }
 
@@ -120,7 +148,7 @@
     const themeIsLight = document.documentElement.dataset.theme === 'light';
     el.innerHTML = `
       <button class="menu-btn" id="menuBtn" aria-label="Open menu">${I(ICONS.menu, 20)}</button>
-      <a class="topbar-logo" href="${resolve('index.html')}">Flow</a>
+      <a class="topbar-logo" href="${resolve('dashboard.html')}">Flow</a>
       <div class="topbar-title"${titleId}>${title}</div>
       <div class="topbar-actions">
         <a href="${resolve(insights.href)}" class="topbar-icon-btn${isActive(insights) ? ' topbar-icon-btn--active' : ''}" aria-label="Insights" title="Insights">${I(ICONS.insights, 17)}</a>
@@ -142,28 +170,33 @@
     });
   }
 
-  /* ---- bottom nav: Dashboard · Transactions · [+] · Money · More ---- */
+  /* ---- bottom nav: Dashboard · Transactions · [+] · <slot> · More ----
+     <slot> is the user's pinned section (Money by default; Settings picks it).
+     With focus 'hours' the + logs hours instead of adding a transaction. */
+  const SHORT_LABEL = { shifts: 'Hours' };
   function renderBottomNav() {
     const el = document.getElementById('bottomNav');
     if (!el) return;
     const item = (n, label) => `
-      <a href="${resolve(n.href)}" class="bottom-nav__item${isActive(n) ? ' active' : ''}">
+      <a href="${resolve(n.href)}" class="bottom-nav__item${(n.hub ? onMoneyPage : isActive(n)) ? ' active' : ''}"${matchAttr(n)}>
         <span class="bottom-nav__icon">${I(ICONS[n.icon], 20)}</span>
         <span class="bottom-nav__label">${label || n.label}</span>
       </a>`;
-    const dash = NAV_ITEMS.find(n => n.id === 'dashboard');
-    const txs  = NAV_ITEMS.find(n => n.id === 'transactions');
-    const add  = NAV_ITEMS.find(n => n.id === 'add');
+    const { focus, slot } = navPrefs();
+    const dash   = NAV_ITEMS.find(n => n.id === 'dashboard');
+    const txs    = NAV_ITEMS.find(n => n.id === 'transactions');
+    const add    = NAV_ITEMS.find(n => n.id === 'add');
+    const pinned = NAV_ITEMS.find(n => n.id === slot);
+    const plus   = focus === 'hours'
+      ? { href: resolve('pages/shifts.html') + '#log', label: 'Log hours' }
+      : { href: resolve(add.href), label: 'Add transaction' };
     el.innerHTML = `
       ${item(dash)}
       ${item(txs)}
-      <a href="${resolve(add.href)}" class="bottom-nav__item bottom-nav__item--add" aria-label="Add transaction">
+      <a href="${plus.href}" class="bottom-nav__item bottom-nav__item--add" aria-label="${plus.label}">
         <span class="bottom-nav__icon">${I(ICONS.add, 22)}</span>
       </a>
-      <a href="${resolve('pages/spending.html')}" class="bottom-nav__item${onMoneyPage ? ' active' : ''}" data-match="${moneyMatch}">
-        <span class="bottom-nav__icon">${I(ICONS.money, 20)}</span>
-        <span class="bottom-nav__label">Money</span>
-      </a>
+      ${item(pinned, SHORT_LABEL[slot])}
       <button type="button" class="bottom-nav__item" id="moreNavBtn" aria-haspopup="dialog" aria-expanded="false">
         <span class="bottom-nav__icon">${I(ICONS.more, 20)}</span>
         <span class="bottom-nav__label">More</span>
@@ -185,8 +218,17 @@
   }
 
   /* ---- "More" bottom sheet ---- */
+  /* everything in the sheet except whatever is already pinned to the bar */
+  function sheetGridHtml() {
+    const { slot } = navPrefs();
+    return NAV_ITEMS.filter(n => n.sheet && n.id !== slot).map(n => `
+          <a href="${resolve(n.href)}" class="more-sheet__item${(n.hub ? onMoneyPage : isActive(n)) ? ' active' : ''}">
+            <span class="more-sheet__icon">${I(ICONS[n.icon], 20)}</span>
+            <span>${n.label}</span>
+          </a>`).join('');
+  }
+
   function renderMoreSheet() {
-    const sheetItems = NAV_ITEMS.filter(n => n.sheet);
     const backdrop = document.createElement('div');
     backdrop.className = 'more-backdrop';
     backdrop.id = 'moreBackdrop';
@@ -197,22 +239,48 @@
     sheet.setAttribute('aria-label', 'More sections');
     sheet.innerHTML = `
       <div class="more-sheet__handle"></div>
-      <div class="more-sheet__grid">
-        ${sheetItems.map(n => `
-          <a href="${resolve(n.href)}" class="more-sheet__item${(n.hub ? onMoneyPage : isActive(n)) ? ' active' : ''}">
-            <span class="more-sheet__icon">${I(ICONS[n.icon], 20)}</span>
-            <span>${n.label}</span>
-          </a>`).join('')}
-      </div>`;
+      <div class="more-sheet__grid">${sheetGridHtml()}</div>`;
     document.body.appendChild(backdrop);
     document.body.appendChild(sheet);
 
-    const btn = document.getElementById('moreNavBtn');
-    const open  = () => { sheet.classList.add('open'); backdrop.classList.add('open'); btn?.setAttribute('aria-expanded', 'true'); };
-    const close = () => { sheet.classList.remove('open'); backdrop.classList.remove('open'); btn?.setAttribute('aria-expanded', 'false'); };
-    btn?.addEventListener('click', () => sheet.classList.contains('open') ? close() : open());
+    /* the More button is looked up per click — refresh() re-renders the bar */
+    const expand = on => document.getElementById('moreNavBtn')?.setAttribute('aria-expanded', String(on));
+    const open  = () => { sheet.classList.add('open'); backdrop.classList.add('open'); expand(true); };
+    const close = () => { sheet.classList.remove('open'); backdrop.classList.remove('open'); expand(false); };
+    document.addEventListener('click', e => {
+      if (e.target.closest('#moreNavBtn')) sheet.classList.contains('open') ? close() : open();
+    });
     backdrop.addEventListener('click', close);
     document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+  }
+
+  /* Re-render the pref-driven chrome after the user changes their nav prefs
+     (Settings, or the dashboard focus question) — no reload needed. */
+  window.PFNav = {
+    refresh() {
+      renderBottomNav();
+      const grid = document.querySelector('#moreSheet .more-sheet__grid');
+      if (grid) grid.innerHTML = sheetGridHtml();
+    },
+  };
+
+  /* ---- topbar Log in / Sign up — only while nobody is logged in ----
+     Shown straight away when there's no stored session (no flash on first
+     paint), then confirmed against the real session. */
+  function setTopbarAuth(guest) {
+    const bar = document.getElementById('topbar');
+    if (!bar) return;
+    let el = document.getElementById('topbarAuth');
+    if (!guest) { el?.remove(); return; }
+    if (el) return;
+    el = document.createElement('div');
+    el.className = 'topbar-auth';
+    el.id = 'topbarAuth';
+    el.innerHTML = `
+      <span class="topbar-auth__sep" aria-hidden="true"></span>
+      <a class="topbar-auth__login" href="/login">Log in</a>
+      <a class="topbar-auth__signup" href="/login?mode=signup">Sign up</a>`;
+    bar.querySelector('.topbar-actions')?.appendChild(el);
   }
 
   renderSidebar();
@@ -220,6 +288,10 @@
   renderBottomNav();
   renderMoneyTabs();
   renderMoreSheet();
+  if (typeof SupaAuth !== 'undefined' && window.top === window.self) {
+    setTopbarAuth(!SupaAuth.hasStoredSession());
+    SupaAuth.isGuest().then(setTopbarAuth);
+  }
 
   /* Load the site-wide Add-Transaction popup once. Skipped inside the embed
      iframe (which is itself the add form) so it never nests. */

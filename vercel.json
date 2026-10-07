@@ -3,6 +3,9 @@
   "outputDirectory": ".",
   "framework": null,
   "cleanUrls": true,
+  "redirects": [
+    { "source": "/welcome", "destination": "/", "permanent": true }
+  ],
   "rewrites": [
     { "source": "/transactions", "destination": "/pages/accounts" },
     { "source": "/hours-tracker", "destination": "/pages/shifts" },

@@ -138,7 +138,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   await SettingsStore.hydrateLocalDefaults();   /* pull synced job/account defaults */
 
   const emailEl = document.getElementById('userEmail');
-  if (emailEl) emailEl.textContent = user.email;
+  if (emailEl) emailEl.textContent = user.isGuest ? 'Not logged in' : user.email;
+  if (user.isGuest) {
+    const status = document.getElementById('userStatus');
+    if (status) status.textContent = 'Your data is saved on this device';
+    const label = document.getElementById('logoutLabel');
+    if (label) label.textContent = 'Log in';
+    document.getElementById('logoutBtn')?.classList.remove('settings-row--signout');
+  }
 
   /* Load counts */
   try {
@@ -188,6 +195,33 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
   });
+
+  /* Navigation prefs — main use + the bottom-bar shortcut. Picking a main use
+     also moves the shortcut to match (hours → Hours Tracker), which the user
+     can still override in the second select. */
+  const focusSel = document.getElementById('navFocusSelect');
+  const slotSel  = document.getElementById('navSlotSelect');
+  if (focusSel && slotSel) {
+    const nav = SettingsStore.getNavPrefs();
+    focusSel.value = nav.focus || 'both';
+    slotSel.value  = nav.slot;
+    const save = async (patch, msg) => {
+      try {
+        const next = await SettingsStore.setNavPrefs(patch);
+        focusSel.value = next.focus || 'both';
+        slotSel.value  = next.slot;
+        window.PFNav?.refresh();
+        showToast(msg, 'success');
+      } catch (err) {
+        showToast(err.message || 'Failed to save', 'error');
+      }
+    };
+    focusSel.addEventListener('change', () => {
+      const focus = focusSel.value;
+      save({ focus, slot: focus === 'hours' ? 'shifts' : 'money' }, 'Main use updated');
+    });
+    slotSel.addEventListener('change', () => save({ slot: slotSel.value }, 'Bottom bar shortcut updated'));
+  }
 
   /* Default account + Job defaults (local convenience) */
   try {
@@ -317,6 +351,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderIconPicker(document.getElementById('newCatIconGrid'), document.getElementById('newCatIcon'));
 
   document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+    if (user.isGuest) { window.location.href = '/login'; return; }
     await SupaAuth.signOut();
   });
 

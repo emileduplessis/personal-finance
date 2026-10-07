@@ -50,15 +50,6 @@ async function initDashboard() {
     SubscriptionStore.getAll().catch(() => []),
   ]);
 
-  /* First-run card: only for a truly empty account, until dismissed.
-     Disappears on its own the moment any account or transaction exists. */
-  const firstRun = document.getElementById('firstRunCard');
-  if (firstRun) {
-    const showFirstRun = !accounts.length && !allTx.length &&
-                         !localStorage.getItem('pf_dismiss_firstrun');
-    firstRun.hidden = !showFirstRun;
-  }
-
   const now = new Date();
   const thisMonthPrefix = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-`;
   const monthTx = allTx.filter(t => t.date.startsWith(thisMonthPrefix));
@@ -805,7 +796,7 @@ async function renderRecentTransactions(txs) {
     item.style.cursor = 'pointer';
     item.addEventListener('click', () => {
       if (window.openAddTransaction) window.openAddTransaction(item.dataset.id);
-      else window.location.href = `/add-transaction?id=${item.dataset.id}&from=${encodeURIComponent('/')}`;
+      else window.location.href = `/add-transaction?id=${item.dataset.id}&from=${encodeURIComponent('/dashboard')}`;
     });
   });
 }
@@ -857,12 +848,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.hideAppLoader?.();   /* data rendered (or errored) — fade the boot screen out */
   }
 
-  /* First-run card dismiss — remembered on this device */
-  document.getElementById('firstRunDismiss')?.addEventListener('click', () => {
-    try { localStorage.setItem('pf_dismiss_firstrun', '1'); } catch (_) {}
-    const card = document.getElementById('firstRunCard');
-    if (card) card.hidden = true;
-  });
+  /* First-visit guided tour (scripts/components/tour.js) — once per browser */
+  window.PFTour?.maybeStart();
+
+  /* Focus question — asked once; the answer sets the mobile bottom bar.
+     Read after hydrateLocalDefaults so an answer from another device counts. */
+  const focusAsk = document.getElementById('focusAsk');
+  if (focusAsk && !SettingsStore.getNavPrefs().focus) {
+    focusAsk.hidden = false;
+    focusAsk.querySelectorAll('[data-focus]').forEach(btn => btn.addEventListener('click', async () => {
+      const focus = btn.dataset.focus;
+      focusAsk.hidden = true;
+      try {
+        await SettingsStore.setNavPrefs({ focus, slot: focus === 'hours' ? 'shifts' : 'money' });
+      } catch (_) {}   /* still saved on this device */
+      window.PFNav?.refresh();
+      showToast(focus === 'hours' ? 'Hours Tracker pinned — + now logs hours' : 'Saved — change it any time in Settings', 'success');
+    }));
+  }
 
   /* Quick-log hours widget — refresh the dashboard after a shift is logged. */
   QuickLog?.init({ onLogged: () => initDashboard() }).catch(console.error);

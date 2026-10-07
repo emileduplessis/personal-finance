@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
   <meta name="theme-color" content="#000000" />
   <link rel="manifest" href="/manifest.json" />
   <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg" />
@@ -311,6 +312,11 @@
         <span id="toggleText">Don't have an account?</span>
         <button class="toggle-link" id="toggleBtn">Create one</button>
       </div>
+
+      <div class="msg msg--info" id="guestNote" style="margin-top:16px;"></div>
+      <div class="toggle-row" style="margin-top:10px;">
+        <a class="toggle-link" href="/dashboard" id="guestLink" style="text-decoration:none;">Continue without an account →</a>
+      </div>
     </div>
 
     <!-- Forgot-password: request a reset link -->
@@ -361,6 +367,7 @@
         We sent a confirmation link to<br/>
         <strong id="confirmedEmail" style="color:#f8fafc;"></strong><br/><br/>
         Click the link in the email, then come back to sign in.
+        <span id="confirmGuestNote" style="display:none;"><br/><br/>Everything you saved here as a guest stays on this device and moves into your account when you sign in on it.</span>
       </div>
       <div class="field-hint field-hint--warn" id="resendMsg" style="text-align:center;"></div>
       <div class="divider"></div>
@@ -370,7 +377,7 @@
     </div>
 
     <div style="margin-top:18px; text-align:center; font-size:.75rem; color:#5c5c66;">
-      <a href="/welcome" style="color:#8a8a94; text-decoration:none;">What is Flow?</a>
+      <a href="/" style="color:#8a8a94; text-decoration:none;">What is Flow?</a>
       <span style="margin:0 8px; opacity:.5;">·</span>
       <a href="/privacy" style="color:#8a8a94; text-decoration:none;">Privacy</a>
       <span style="margin:0 8px; opacity:.5;">·</span>
@@ -391,7 +398,7 @@
     (async () => {
       if (isRecovery) return;
       const { data: { session } } = await sb.auth.getSession();
-      if (session) window.location.replace('/');
+      if (session) window.location.replace('/dashboard');
     })();
 
     let isSignUp = false;
@@ -466,6 +473,19 @@
       }
     });
 
+    /* /login?mode=signup (from the guest banner) opens on Create account */
+    if (new URLSearchParams(window.location.search).get('mode') === 'signup') {
+      document.getElementById('toggleBtn').click();
+    }
+
+    /* Guest data on this device: say it will be kept */
+    if (GuestDB.hasData()) {
+      const note = document.getElementById('guestNote');
+      note.textContent = "The data you saved on this device will be added to your account when you sign in or create one.";
+      note.classList.add('show');
+      document.getElementById('guestLink').textContent = '← Back to the app';
+    }
+
     document.getElementById('backToLogin').addEventListener('click', () => {
       successView.classList.remove('show');
       formView.style.display = '';
@@ -486,16 +506,20 @@
       setLoading(true);
       try {
         if (isSignUp) {
-          const { error } = await sb.auth.signUp({ email, password });
+          const { data, error } = await sb.auth.signUp({ email, password });
           if (error) throw error;
+          /* email confirmation off → already signed in; the app moves any
+             guest data into the account on load */
+          if (data && data.session) { window.location.replace('/dashboard'); return; }
           document.getElementById('confirmedEmail').textContent = email;
+          document.getElementById('confirmGuestNote').style.display = GuestDB.hasData() ? '' : 'none';
           formView.style.display = 'none';
           successView.classList.add('show');
         } else {
           const { error } = await sb.auth.signInWithPassword({ email, password });
           if (error) throw error;
           showInfo('Signing in…');
-          window.location.replace('/');
+          window.location.replace('/dashboard');
         }
       } catch (err) {
         const msg = err.message.includes('Invalid login')
@@ -619,7 +643,7 @@
         if (error) throw error;
         history.replaceState(null, '', window.location.pathname);   // drop the recovery hash
         btn.innerHTML = '<span>Password updated ✓</span>';
-        setTimeout(() => window.location.replace('/'), 900);
+        setTimeout(() => window.location.replace('/dashboard'), 900);
       } catch (err) {
         errEl.textContent = err.message || 'Could not update the password. The link may have expired — request a new one.';
         errEl.classList.add('show');

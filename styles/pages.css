@@ -159,7 +159,8 @@
   .budget-amount-display { font-size: 0.8125rem; }
 
   .budget-summary-strip { grid-template-columns: 1fr 1fr; }
-  .budget-summary-strip .budget-summary-card:last-child { grid-column: 1 / -1; }
+  /* odd count (Budget's 3) → the last card fills the row; even (Subscriptions' 4) → 2×2 */
+  .budget-summary-strip .budget-summary-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
   .budget-summary-card { padding: 12px 14px; }
   .budget-summary-card__value { font-size: 1.25rem; }
 

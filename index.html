@@ -4,435 +4,165 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#000000" />
-  <link rel="manifest" href="/manifest.json" />
   <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg" />
-  <link rel="apple-touch-icon" href="/icons/icon-180.png" />
-  <title>Flow — Dashboard</title>
+  <title>Flow Net Worth — precise personal finance tracker</title>
+  <meta name="description" content="A sharp, fast personal finance tracker. Accounts, budgets, cash-flow forecasts, work-hours tracking, and read-only crypto balances — your data stays yours." />
+  <link rel="canonical" href="https://flownetworth.com/" />
+
+  <!-- Returning visitors (signed in, guest data, or been in the app before) skip
+       the pitch and go straight to the dashboard. Auth callbacks that land on "/"
+       (OAuth, email confirmation) are forwarded with their code/token intact.
+       A same-origin referrer means they clicked here on purpose — stay. -->
+  <script>
+    (function () {
+      try {
+        var cb = /[?&#](code|access_token|error_description)=/.test(location.search + location.hash);
+        var internal = document.referrer && document.referrer.indexOf(location.origin + '/') === 0;
+        var returning = false;
+        for (var i = 0; i < localStorage.length; i++) {
+          var k = localStorage.key(i) || '';
+          if (k.indexOf('pf_') === 0 || /^sb-.+-auth-token$/.test(k)) { returning = true; break; }
+        }
+        if (cb || (returning && !internal)) location.replace('/dashboard' + location.search + location.hash);
+      } catch (_) {}
+    })();
+  </script>
+
+  <!-- Social / OG -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Flow Net Worth" />
+  <meta property="og:url" content="https://flownetworth.com/" />
+  <meta property="og:title" content="Flow Net Worth — precise personal finance" />
+  <meta property="og:description" content="Know your financial state in seconds. Log a transaction without friction. No ads, no data selling — export or delete everything, anytime." />
+  <meta property="og:image" content="https://flownetworth.com/icons/icon-512.png" />
+  <meta name="twitter:card" content="summary" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles/main.css" />
-  <link rel="stylesheet" href="styles/layout.css" />
-  <link rel="stylesheet" href="styles/components.css" />
-  <link rel="stylesheet" href="styles/pages.css" />
-  <link rel="stylesheet" href="styles/dashboard.css" />
+  <style>
+    .lp { max-width: 860px; margin: 0 auto; padding: 0 20px 90px; }
+    .lp-nav { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
+    .lp-mark { font-family: var(--font-display); font-weight: 700; font-size: 1.125rem; letter-spacing: .04em; }
+    .lp-nav a.lp-signin {
+      color: var(--color-text); text-decoration: none; font-size: .8125rem;
+      border: 1px solid var(--color-border); padding: 8px 18px; font-family: var(--font-display);
+    }
+    .lp-nav a.lp-signin:hover { border-color: var(--color-text); }
+
+    .lp-hero { padding: 72px 0 56px; border-bottom: 1px solid var(--color-border); }
+    .lp-kicker { font-family: var(--font-display); font-size: .6875rem; letter-spacing: .18em;
+                 text-transform: uppercase; color: var(--color-text-light); margin-bottom: 18px; }
+    .lp-hero h1 { font-size: clamp(2rem, 6vw, 3.25rem); line-height: 1.08; margin: 0 0 18px; letter-spacing: -.02em; }
+    .lp-hero p { font-size: 1rem; line-height: 1.65; color: var(--color-text-muted); max-width: 56ch; margin: 0 0 30px; }
+    .lp-cta { display: inline-block; background: var(--color-primary); color: var(--color-primary-contrast, #000); text-decoration: none;
+              font-weight: 600; font-size: .9375rem; padding: 13px 30px; font-family: var(--font-display); }
+    .lp-cta:hover { background: var(--color-primary-dark); }
+    .lp-cta-sub { display: block; margin-top: 12px; font-size: .75rem; color: var(--color-text-light); font-family: var(--font-display); }
+
+    .lp-features { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--color-border);
+                   border: 1px solid var(--color-border); margin: 56px 0; }
+    .lp-feature { background: var(--color-bg); padding: 26px 24px; }
+    .lp-feature h3 { font-size: .9375rem; margin: 0 0 8px; }
+    .lp-feature p { font-size: .8125rem; line-height: 1.6; color: var(--color-text-muted); margin: 0; }
+    .lp-feature .n { font-family: var(--font-display); font-size: .6875rem; color: var(--color-text-light);
+                     display: block; margin-bottom: 14px; letter-spacing: .1em; }
+
+    .lp-trust { border: 1px solid var(--color-border); padding: 26px 24px; margin-bottom: 56px; }
+    .lp-trust h2 { font-size: 1.0625rem; margin: 0 0 12px; }
+    .lp-trust ul { margin: 0; padding-left: 20px; }
+    .lp-trust li { font-size: .8125rem; line-height: 1.7; color: var(--color-text-muted); }
+    .lp-trust strong { color: var(--color-text); }
+
+    .lp-foot { display: flex; align-items: center; gap: 16px; font-size: .75rem;
+               color: var(--color-text-light); font-family: var(--font-display); }
+    .lp-foot a { color: var(--color-text-muted); text-decoration: none; }
+    .lp-foot a:hover { color: var(--color-text); }
+
+    @media (max-width: 620px) {
+      .lp-features { grid-template-columns: 1fr; }
+      .lp-hero { padding: 48px 0 40px; }
+    }
+  </style>
 </head>
-<body data-title="Dashboard">
+<body>
+  <div class="lp">
+    <nav class="lp-nav">
+      <span class="lp-mark">Flow Net Worth</span>
+      <a class="lp-signin" href="/login">Sign in</a>
+    </nav>
 
-  <!-- Minimalist boot screen: paints with the first frame, fades out once the
-       dashboard's data is ready (hideAppLoader, called from dashboard.js). -->
-  <div id="app-loader" role="status" aria-label="Loading">
-    <div class="app-loader__card">
-      <div class="app-loader__mark">Flow</div>
-      <div class="app-loader__bar"></div>
-    </div>
-  </div>
-  <script>
-    window.hideAppLoader = function () {
-      var el = document.getElementById('app-loader');
-      if (el) el.classList.add('is-hidden');
-    };
-    /* safety net — never trap the user on the loader if a script hangs/errors */
-    window.addEventListener('load', function () { setTimeout(window.hideAppLoader, 4000); });
-  </script>
+    <header class="lp-hero">
+      <div class="lp-kicker">Personal finance · precise / minimal / fast</div>
+      <h1>Know your financial state in seconds.</h1>
+      <p>Flow Net Worth is a personal finance tracker with the temperament of a pro tool: no gradients,
+      no mascots, no motivational quotes. Log a transaction in seconds, see exactly where the
+      month went, and let the numbers speak.</p>
+      <a class="lp-cta" href="/dashboard">Try it now — no account needed →</a>
+      <span class="lp-cta-sub">free · no card · data stays on your device until you <a href="/login?mode=signup" style="color:inherit;">create an account</a></span>
+    </header>
 
-  <aside class="sidebar" id="sidebar"></aside>
-
-  <div class="overlay" id="overlay"></div>
-
-  <div class="main-wrapper">
-    <header class="topbar" id="topbar"></header>
-
-    <main class="main-content">
-
-      <!-- FIRST RUN: shown only when the account has zero data (dashboard.js) -->
-      <section class="term first-run" id="firstRunCard" hidden aria-label="Getting started">
-        <div class="first-run__head">
-          <div>
-            <div class="term-label">Getting started</div>
-            <h2 class="first-run__title">Welcome to Flow</h2>
-            <p class="first-run__sub">Three steps and the dashboard comes alive. This card disappears once you have data.</p>
-          </div>
-          <button type="button" class="btn btn--ghost btn--sm" id="firstRunDismiss">Skip for now</button>
-        </div>
-        <ol class="first-run__steps">
-          <li>
-            <a href="/transactions" class="first-run__step">
-              <span class="first-run__num font-display">01</span>
-              <span class="first-run__step-body">
-                <strong>Add an account</strong>
-                <span>Chequing, cash, savings — with its current balance.</span>
-              </span>
-              <span class="first-run__arrow">→</span>
-            </a>
-          </li>
-          <li>
-            <a href="/add-transaction" class="first-run__step">
-              <span class="first-run__num font-display">02</span>
-              <span class="first-run__step-body">
-                <strong>Log a transaction</strong>
-                <span>Any recent income or expense — it takes seconds.</span>
-              </span>
-              <span class="first-run__arrow">→</span>
-            </a>
-          </li>
-          <li>
-            <a href="/settings" class="first-run__step">
-              <span class="first-run__num font-display">03</span>
-              <span class="first-run__step-body">
-                <strong>Pick your currency</strong>
-                <span>Defaults to CAD — change it in Settings if you need to.</span>
-              </span>
-              <span class="first-run__arrow">→</span>
-            </a>
-          </li>
-        </ol>
-      </section>
-
-      <!-- STAT BAR (terminal): horizontal hairline cells -->
-      <div class="term dash-statbar">
-        <div class="statbar__cell statbar__cell--balance">
-          <div class="term-label">Current balance <span id="heroMonthLabel"></span></div>
-          <div class="statbar__balance-row">
-            <div class="rail-balance font-display" id="totalBalance"><span class="skeleton skeleton-num skeleton-num--lg"></span></div>
-            <span class="flow-pill flow-pill--flat" id="balanceChangePill" hidden>—</span>
-          </div>
-        </div>
-        <div class="statbar__cell statbar__cell--nw" id="statbarNetWorth" hidden>
-          <div class="term-label">Net worth · cash + crypto</div>
-          <div class="rail-mini__value" id="statNetWorth">—</div>
-        </div>
-        <div class="statbar__cell statbar__cell--crypto" id="statbarCrypto" hidden>
-          <div class="term-label">Crypto</div>
-          <div class="rail-mini__value" id="statCryptoTotal">—</div>
-        </div>
-        <div class="statbar__cell" title="Net change over the shorter window">
-          <div class="term-label" id="shortChangeLabel">90 days</div>
-          <div class="rail-mini__value" id="ninetyDayChange"><span class="skeleton skeleton-num"></span></div>
-        </div>
-        <div class="statbar__cell" title="Net change over the longer window">
-          <div class="term-label" id="longChangeLabel">1 year</div>
-          <div class="rail-mini__value" id="yearChange"><span class="skeleton skeleton-num"></span></div>
-        </div>
-        <a href="/add-transaction" class="statbar__add">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-          Add transaction
-        </a>
+    <div class="lp-features">
+      <div class="lp-feature">
+        <span class="n">01</span>
+        <h3>Accounts &amp; transactions</h3>
+        <p>Income, expenses, and transfers across all your accounts, with search, filters,
+        tags, and CSV export. The add form suggests a category from your own history.</p>
       </div>
+      <div class="lp-feature">
+        <span class="n">02</span>
+        <h3>Budgets that get checked</h3>
+        <p>Per-category monthly limits with progress bars, over-budget flags, and suggested
+        amounts computed from your last three months — not wishful thinking.</p>
+      </div>
+      <div class="lp-feature">
+        <span class="n">03</span>
+        <h3>Forecast &amp; insights</h3>
+        <p>A 30-day cash-flow projection with a low-balance warning, plus automatic insights:
+        category spikes, savings-rate shifts, and recurring charges you never noticed.</p>
+      </div>
+      <div class="lp-feature">
+        <span class="n">04</span>
+        <h3>Hours &amp; irregular pay</h3>
+        <p>Built for hourly and cash work: log just the hours, reconcile on payday against
+        what you were actually handed, and the difference books itself as a bonus.</p>
+      </div>
+      <div class="lp-feature">
+        <span class="n">05</span>
+        <h3>Crypto, read-only</h3>
+        <p>Watch BTC and SOL balances by pasting a public address. Flow never asks for keys
+        or seed phrases and can never move funds — it folds balances into your net worth.</p>
+      </div>
+      <div class="lp-feature">
+        <span class="n">06</span>
+        <h3>Everywhere you are</h3>
+        <p>Installable as an app on phone and desktop, synced across devices, with a
+        keyboard-fast interface on the desktop and a thumb-first layout on mobile.</p>
+      </div>
+    </div>
 
-      <!-- BODY: a configurable grid of panels. Order / grid / span / hidden are
-           driven by scripts/pages/dashboard-layout.js from the synced ui_prefs
-           config; each panel is tagged with data-panel. -->
-      <section class="dash-body" id="dashGrid">
+    <section class="lp-trust">
+      <h2>Your data is the product you keep — not the one we sell</h2>
+      <ul>
+        <li><strong>No ads, no trackers, no selling data.</strong> There's nothing to monetize you with.</li>
+        <li><strong>Isolated per account.</strong> Row-level security means your rows are yours alone.</li>
+        <li><strong>Leave anytime.</strong> One-click CSV export and permanent delete live in Settings.</li>
+        <li>The fine print, in plain language: <a href="/privacy" style="color:var(--color-text);">Privacy</a> · <a href="/terms" style="color:var(--color-text);">Terms</a>.</li>
+      </ul>
+    </section>
 
-        <div class="dash-col">
-
-          <!-- Ships loading tiles, not "No accounts yet" — renderAccounts()
-               replaces the whole container once the accounts arrive. -->
-          <div class="term-cells dash-tiles dash-panel" data-panel="accounts" id="accountTiles">
-            <div class="acct-tile" aria-hidden="true">
-              <div class="acct-tile__row1"><div class="acct-tile__top"><span class="skeleton skeleton-avatar skeleton-avatar--sm"></span><div class="acct-tile__id" style="flex:1"><div class="skeleton skeleton-text" style="width:68%"></div><div class="skeleton skeleton-text" style="width:38%;margin-bottom:0"></div></div></div></div>
-              <div class="acct-tile__row2"><div class="skeleton skeleton-text" style="width:52%;height:20px;margin-bottom:0"></div></div>
-            </div>
-            <div class="acct-tile" aria-hidden="true">
-              <div class="acct-tile__row1"><div class="acct-tile__top"><span class="skeleton skeleton-avatar skeleton-avatar--sm"></span><div class="acct-tile__id" style="flex:1"><div class="skeleton skeleton-text" style="width:54%"></div><div class="skeleton skeleton-text" style="width:44%;margin-bottom:0"></div></div></div></div>
-              <div class="acct-tile__row2"><div class="skeleton skeleton-text" style="width:44%;height:20px;margin-bottom:0"></div></div>
-            </div>
-          </div>
-
-          <!-- Crypto holdings — counts toward net worth, not the cash balance.
-               Hidden until at least one wallet exists. -->
-          <section class="dash-crypto dash-panel" data-panel="crypto" id="cryptoSection" hidden>
-            <div class="dash-crypto__head">
-              <span class="term__title">Crypto</span>
-              <div class="dash-crypto__head-right">
-                <span class="font-display dash-crypto__total" id="cryptoSectionTotal">—</span>
-                <button type="button" class="btn btn--ghost btn--sm crypto-range-btn" id="cryptoRangeBtn" title="Change chart timeframe (24H · 1W · 1M · 1Y · 5Y)">24H</button>
-                <a href="/crypto" class="link--sm">Manage</a>
-              </div>
-            </div>
-            <div class="crypto-loadbar" id="cryptoLoadbar" hidden><span></span></div>
-            <div class="term-cells dash-tiles" id="cryptoTiles"></div>
-          </section>
-
-          <div class="term-cells dash-duo dash-panel" data-panel="moneyDuo">
-            <div class="cell">
-              <div class="cell-head">
-                <span class="term__title">Allocation</span>
-                <a href="/transactions" class="link--sm">Manage</a>
-              </div>
-              <div class="cell-body" id="allocationList">
-                <div class="alloc-row" aria-hidden="true"><span class="skeleton skeleton-avatar skeleton-avatar--sm skeleton-avatar--round" style="width:26px;height:26px"></span><span class="skeleton skeleton-text" style="width:32px;margin-bottom:0"></span><span class="skeleton skeleton-text" style="flex:1;margin-bottom:0"></span><span class="skeleton skeleton-text" style="width:56px;margin-bottom:0"></span></div>
-                <div class="alloc-row" aria-hidden="true"><span class="skeleton skeleton-avatar skeleton-avatar--sm skeleton-avatar--round" style="width:26px;height:26px"></span><span class="skeleton skeleton-text" style="width:32px;margin-bottom:0"></span><span class="skeleton skeleton-text" style="flex:1;margin-bottom:0"></span><span class="skeleton skeleton-text" style="width:56px;margin-bottom:0"></span></div>
-                <div class="alloc-row" aria-hidden="true"><span class="skeleton skeleton-avatar skeleton-avatar--sm skeleton-avatar--round" style="width:26px;height:26px"></span><span class="skeleton skeleton-text" style="width:32px;margin-bottom:0"></span><span class="skeleton skeleton-text" style="flex:1;margin-bottom:0"></span><span class="skeleton skeleton-text" style="width:56px;margin-bottom:0"></span></div>
-              </div>
-            </div>
-            <div class="cell">
-              <div class="cell-head">
-                <span class="term__title">This month</span>
-                <a href="/cash-flow" class="link--sm">Details</a>
-              </div>
-              <div class="cell-body">
-                <div class="month-rows">
-                  <div class="month-row">
-                    <div>
-                      <div class="month-row__label">Income</div>
-                      <div class="month-row__sub" id="monthIncomeSub"><span class="skeleton skeleton-num skeleton-num--sm"></span></div>
-                    </div>
-                    <div class="month-row__value month-row__value--income" id="monthIncome"><span class="skeleton skeleton-num"></span></div>
-                  </div>
-                  <div class="month-row">
-                    <div>
-                      <div class="month-row__label">Expenses</div>
-                      <div class="month-row__sub" id="monthExpenseSub"><span class="skeleton skeleton-num skeleton-num--sm"></span></div>
-                    </div>
-                    <div class="month-row__value month-row__value--expense" id="monthExpense"><span class="skeleton skeleton-num"></span></div>
-                  </div>
-                  <div class="month-row">
-                    <div>
-                      <div class="month-row__label">Net</div>
-                      <div class="month-row__sub">income − expenses</div>
-                    </div>
-                    <div class="month-row__value" id="monthNet"><span class="skeleton skeleton-num"></span></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Net-worth savings goal — progress toward a target (cash + crypto).
-               Set/cleared inline; target stored per-device. -->
-          <div class="term nw-goal dash-panel" data-panel="nwGoal" id="nwGoalCard">
-            <div class="term__head">
-              <span class="term__title">Net-worth goal</span>
-              <button type="button" class="btn btn--ghost btn--sm" id="nwGoalEditBtn">Set goal</button>
-            </div>
-            <div class="term__body">
-              <div class="nw-goal__display" id="nwGoalDisplay">
-                <div class="nw-goal__ring" id="nwGoalRing"></div>
-                <div class="nw-goal__info">
-                  <div class="nw-goal__pct font-display" id="nwGoalPct">—</div>
-                  <div class="nw-goal__detail" id="nwGoalDetail">No goal set yet</div>
-                  <div class="nw-goal__pace" id="nwGoalPace"></div>
-                </div>
-              </div>
-              <form class="nw-goal__edit" id="nwGoalEdit" hidden>
-                <div class="nw-goal__input-row">
-                  <span class="ql-prefix">$</span>
-                  <input type="number" id="nwGoalTarget" class="form-control" min="0" step="100" placeholder="Target net worth — e.g. 25000" aria-label="Target net worth" />
-                </div>
-                <div class="nw-goal__actions">
-                  <button type="button" class="btn btn--ghost btn--sm" id="nwGoalClear">Clear</button>
-                  <button type="submit" class="btn btn--primary btn--sm">Save goal</button>
-                </div>
-              </form>
-            </div>
-          </div>
-
-          <div class="term dash-panel" data-panel="balanceChart">
-            <div class="term__head">
-              <span class="term__title">Balance &amp; forecast</span>
-              <div class="balance-head-controls">
-                <div class="seg-toggle balance-mode" id="balanceModeToggle" role="group" aria-label="Chart mode" hidden>
-                  <button type="button" class="seg-btn active" data-mode="cash">Cash</button>
-                  <button type="button" class="seg-btn" data-mode="networth">Net worth</button>
-                </div>
-                <select class="select--sm" id="balanceChartRange">
-                  <option value="all" selected>All time</option>
-                  <option value="365">1 Year</option>
-                  <option value="180">6 Months</option>
-                  <option value="90">3 Months</option>
-                  <option value="30">1 Month</option>
-                  <option value="7">1 Week</option>
-                </select>
-              </div>
-            </div>
-            <div class="term__body">
-              <div class="forecast-head" id="forecastHead" hidden>
-                <div class="forecast-stat">
-                  <div class="forecast-stat__label">Projected · next 30 days</div>
-                  <div class="forecast-stat__value font-display" id="forecastEnd">—</div>
-                  <div class="forecast-stat__sub" id="forecastNet">—</div>
-                </div>
-                <div class="forecast-warning" id="forecastWarning" hidden></div>
-              </div>
-              <div class="chart-container chart-container--hero" id="balanceChart">
-                <canvas id="balanceCanvas" role="img" aria-label="Balance over time with 30-day forecast"></canvas>
-                <div class="chart-skeleton" id="balanceChartSkeleton">
-                  <div class="chart-skeleton__bar" style="height:45%"></div>
-                  <div class="chart-skeleton__bar" style="height:70%"></div>
-                  <div class="chart-skeleton__bar" style="height:55%"></div>
-                  <div class="chart-skeleton__bar" style="height:85%"></div>
-                  <div class="chart-skeleton__bar" style="height:60%"></div>
-                  <div class="chart-skeleton__bar" style="height:75%"></div>
-                </div>
-                <div class="chart-empty" id="balanceChartEmpty" hidden>
-                  <div class="chart-empty__inner">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="opacity:.3;margin-bottom:8px"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                    <p style="margin-bottom:4px">No data yet</p>
-                    <a href="/add-transaction" style="font-size:0.75rem;color:var(--color-text)">Add a transaction to get started →</a>
-                  </div>
-                </div>
-              </div>
-              <div class="balance-mode-note" id="balanceModeNote" hidden>Net worth = cash + crypto · current holdings valued at historical prices (estimate)</div>
-              <div class="forecast-basis" id="forecastBasis"></div>
-            </div>
-          </div>
-
-        </div><!-- /.dash-col -->
-
-        <div class="dash-col">
-
-          <!-- Quick-log hours — fast shift logging without leaving the dashboard -->
-          <div class="term dash-quicklog dash-panel" data-panel="quickLog" id="quickLog">
-            <div class="term__head">
-              <span class="term__title">Log hours</span>
-              <div class="ql-head-actions">
-                <!-- Straight to the calendar view of these hours. Extensionless
-                     URL — cleanUrls would redirect a .html link. -->
-                <a href="/hours-calendar" class="ql-cal-link" aria-label="Hours calendar" title="See your hours on a calendar">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                </a>
-                <a href="/hours-tracker" class="link--sm">Open tracker →</a>
-              </div>
-            </div>
-            <div class="term__body">
-              <div class="ql-days" id="qlDays"></div>
-              <form class="quicklog__form" id="quicklogForm">
-                <div class="ql-input-row" id="qlHoursRow">
-                  <input type="number" id="qlHours" class="form-control" min="0" step="0.25" placeholder="Hours worked — e.g. 8" aria-label="Hours worked" />
-                </div>
-                <div class="ql-input-row" id="qlTimesRow" hidden>
-                  <input type="time" id="qlStart" class="form-control" aria-label="Start time" />
-                  <span class="ql-sep">→</span>
-                  <input type="time" id="qlEnd" class="form-control" aria-label="End time" />
-                </div>
-                <div class="ql-input-row" id="qlPayRow" hidden>
-                  <span class="ql-prefix">$</span>
-                  <input type="number" id="qlPay" class="form-control" min="0" step="0.01" placeholder="Amount paid — e.g. 120" aria-label="Amount paid" />
-                </div>
-                <div class="ql-actions">
-                  <div class="seg-toggle ql-mode" id="qlMode">
-                    <button type="button" class="seg-btn active" data-mode="hours">Hours</button>
-                    <button type="button" class="seg-btn" data-mode="times">Times</button>
-                    <button type="button" class="seg-btn" data-mode="pay">Pay</button>
-                  </div>
-                  <button type="submit" class="btn btn--primary btn--sm" id="qlSubmit">Log hours</button>
-                </div>
-              </form>
-              <div class="quicklog__rate" id="qlRateHint"></div>
-              <div class="quicklog__stat" id="quicklogStat"></div>
-            </div>
-          </div>
-
-          <!-- Over-budget watch — expense categories past their monthly limit.
-               Hidden unless at least one category is over this month. -->
-          <div class="term dash-bills dash-panel" data-panel="budgetWatch" id="budgetWatch" hidden>
-            <div class="term__head">
-              <span class="term__title">Over budget</span>
-              <a href="/budget" class="link--sm">Budget</a>
-            </div>
-            <div class="term__body term__body--flush">
-              <div class="bills-list" id="budgetWatchList"></div>
-              <div class="bills-foot" id="budgetWatchFoot"></div>
-            </div>
-          </div>
-
-          <!-- Upcoming bills — next recurring charges from subscriptions, with
-               normalized monthly/annual cost. Hidden until a subscription exists. -->
-          <div class="term dash-bills dash-panel" data-panel="upcomingBills" id="upcomingBills" hidden>
-            <div class="term__head">
-              <span class="term__title">Upcoming bills</span>
-              <a href="/subscriptions" class="link--sm">Manage</a>
-            </div>
-            <div class="term__body term__body--flush">
-              <div class="bills-list" id="billsList"></div>
-              <div class="bills-foot" id="billsFoot"></div>
-            </div>
-          </div>
-
-          <div class="term dash-feed dash-panel" data-panel="transactions">
-            <div class="term__head">
-              <span class="term__title">Transactions</span>
-              <a href="/transactions" class="link--sm">View all</a>
-            </div>
-            <div class="term__body term__body--flush">
-              <div class="transaction-list" id="recentTransactions">
-                <div class="tx-item" aria-hidden="true"><div class="skeleton skeleton-avatar"></div><div class="tx-info"><div class="skeleton skeleton-text" style="width:55%"></div><div class="skeleton skeleton-text" style="width:35%;margin-bottom:0"></div></div><div class="skeleton skeleton-text" style="width:60px;margin-bottom:0"></div></div>
-                <div class="tx-item" aria-hidden="true"><div class="skeleton skeleton-avatar"></div><div class="tx-info"><div class="skeleton skeleton-text" style="width:42%"></div><div class="skeleton skeleton-text" style="width:28%;margin-bottom:0"></div></div><div class="skeleton skeleton-text" style="width:52px;margin-bottom:0"></div></div>
-                <div class="tx-item" aria-hidden="true"><div class="skeleton skeleton-avatar"></div><div class="tx-info"><div class="skeleton skeleton-text" style="width:62%"></div><div class="skeleton skeleton-text" style="width:31%;margin-bottom:0"></div></div><div class="skeleton skeleton-text" style="width:66px;margin-bottom:0"></div></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Overview is not part of the base (Classic) template, so it starts
-               unplaced — data-slot="none" hides it without removing it. It stays
-               a real panel: the Focus and Compact designs place it, and it can be
-               picked into any Classic slot via Customize. -->
-          <div class="term dash-panel" data-panel="overview" data-slot="none">
-            <div class="term__head term__head--stack">
-              <div class="term__head-row">
-                <span class="term__title">Overview</span>
-                <div class="month-nav">
-                  <button class="btn btn--ghost btn--sm" id="monthNavPrev" aria-label="Previous period">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-                  </button>
-                  <span class="month-nav__label" id="monthNavLabel"></span>
-                  <button class="btn btn--ghost btn--sm" id="monthNavNext" aria-label="Next period">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                  </button>
-                </div>
-              </div>
-              <div class="seg-toggle seg-toggle--full" id="ovRangeToggle" role="tablist" aria-label="Overview range">
-                <button type="button" class="seg-btn" data-range="week"  role="tab">Week</button>
-                <button type="button" class="seg-btn" data-range="month" role="tab">Month</button>
-                <button type="button" class="seg-btn" data-range="year"  role="tab">Year</button>
-                <button type="button" class="seg-btn" data-range="all"   role="tab">All</button>
-              </div>
-            </div>
-            <div class="term__body">
-              <div class="chart-container chart-container--sm" id="monthlyChart">
-                <canvas id="monthlyCanvas" role="img" aria-label="Weekly income and expenses bar chart"></canvas>
-                <div class="chart-skeleton" id="monthlyChartSkeleton">
-                  <div class="chart-skeleton__bar" style="height:80%"></div>
-                  <div class="chart-skeleton__bar" style="height:40%"></div>
-                  <div class="chart-skeleton__bar" style="height:65%"></div>
-                  <div class="chart-skeleton__bar" style="height:50%"></div>
-                </div>
-                <div class="chart-empty" id="monthlyChartEmpty" hidden>
-                  <div class="chart-empty__inner">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="opacity:.3;margin-bottom:6px"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-                    <p>No transactions this period</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div><!-- /.dash-col -->
-
-      </section>
-
-    </main>
+    <footer class="lp-foot">
+      <span>Flow</span><span>·</span>
+      <a href="/privacy">Privacy</a>
+      <a href="/terms">Terms</a>
+      <a href="mailto:support@flownetworth.com">Contact</a>
+    </footer>
   </div>
 
-  <nav class="bottom-nav" id="bottomNav" aria-label="Main navigation"></nav>
-
-  <script src="scripts/components/error-overlay.js"></script>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="scripts/data/supabase.js"></script>
-  <script src="scripts/data/store.js"></script>
-  <script src="scripts/components/icons.js"></script>
-  <script src="scripts/engine/shifts.js"></script>
-  <script src="scripts/components/quick-log.js"></script>
-  <script src="scripts/data/crypto.js"></script>
-  <script src="scripts/engine/summary.js"></script>
-  <script src="scripts/engine/insights.js"></script>
-  <script src="scripts/components/charts.js"></script>
-  <script src="scripts/components/nav.js"></script>
-  <script src="scripts/components/ui.js"></script>
-  <script src="scripts/pages/dashboard.js"></script>
-  <script src="scripts/pages/dashboard-layout.js"></script>
+  <!-- Vercel Web Analytics + Speed Insights (framework-agnostic script tags) -->
+  <script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments);};window.si=window.si||function(){(window.siq=window.siq||[]).push(arguments);};</script>
+  <script defer src="/_vercel/insights/script.js"></script>
+  <script defer src="/_vercel/speed-insights/script.js"></script>
 </body>
 </html>

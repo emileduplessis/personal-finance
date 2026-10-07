@@ -80,7 +80,9 @@
      click→navigate handler on the same links. The href stays "/add-transaction"
      so it still works as a plain link if this script ever fails to load. */
   document.addEventListener('click', e => {
-    const trigger = e.target.closest('[data-add-tx], a[href="/add-transaction"], .bottom-nav__item--add');
+    /* the bottom-bar + only when it adds a transaction — for hours-focused
+       users it links to /hours-tracker#log instead (nav.js) */
+    const trigger = e.target.closest('[data-add-tx], a[href="/add-transaction"], .bottom-nav__item--add[href="/add-transaction"]');
     if (!trigger) return;
     if (e.ctrlKey || e.metaKey || e.shiftKey) return;   /* let "open in new tab" work */
     e.preventDefault();

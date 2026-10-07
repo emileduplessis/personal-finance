@@ -1258,6 +1258,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     clearFieldLoading();
   }
 
+  /* /hours-tracker#log — the bottom-bar + when the user's main use is hours */
+  const focusQuickLog = () => {
+    if (location.hash !== '#log') return;
+    document.getElementById('quickPanel')?.scrollIntoView({ block: 'center' });
+    document.getElementById('qlHours')?.focus({ preventScroll: true });
+    history.replaceState(null, '', location.pathname);   /* so a second tap fires hashchange again */
+    document.body.classList.remove('page-exit');           /* ui.js fades out before a same-page hop */
+  };
+  focusQuickLog();
+  window.addEventListener('hashchange', focusQuickLog);
+
   /* quick log + mark-as-paid */
   document.getElementById('quickLogForm')?.addEventListener('submit', quickLog);
   document.getElementById('markPaidBtn')?.addEventListener('click', openPaidModal);

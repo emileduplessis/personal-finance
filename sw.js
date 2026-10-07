@@ -10,14 +10,14 @@
    Bump CACHE_VERSION when shipping changes to force a refresh.
    ============================================================ */
 
-const CACHE_VERSION = 'pf-v51';
+const CACHE_VERSION = 'pf-v54';
 
 /* Clean URLs (vercel.json cleanUrls:true / serve.json): pages are served
-   without the ".html" suffix, and "/" serves the dashboard. Precache the
+   without the ".html" suffix; "/dashboard" is the app, "/" the landing page. Precache the
    clean paths so install fetches a direct 200 (a ".html" path would 301 to
    the clean URL and fail to cache). */
 const PRECACHE = [
-  '/',
+  '/dashboard',
   '/login',
   '/manifest.json',
   '/transactions',
@@ -110,7 +110,7 @@ self.addEventListener('fetch', event => {
           return res;
         })
         .catch(() =>
-          caches.match(req).then(hit => hit || caches.match('/'))
+          caches.match(req).then(hit => hit || caches.match('/dashboard'))
         )
     );
     return;

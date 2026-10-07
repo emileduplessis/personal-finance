@@ -621,3 +621,44 @@ textarea[data-loading]::placeholder { color: transparent; }
     animation: none; background-color: var(--color-border);
   }
 }
+
+/* ============================================================
+   First-visit tour (scripts/components/tour.js) — a white frame
+   on one control + a compact popup beside it. No dimming.
+   ============================================================ */
+.tour-frame {
+  position: fixed; z-index: 9000; pointer-events: none;
+  outline: 1px solid var(--color-text); outline-offset: 0;
+}
+.tour-pop {
+  position: fixed; z-index: 9001;
+  width: min(300px, calc(100vw - 32px));
+  padding: 14px 14px 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--mono-outline-strong);
+  box-shadow: var(--shadow-md);
+  color: var(--color-text);
+}
+.tour-pop__kicker {
+  font-family: var(--font-display); font-size: 0.6875rem;
+  letter-spacing: 0.08em; color: var(--color-text-muted);
+}
+.tour-pop__title { font-size: 0.9375rem; font-weight: 600; margin: 8px 0 4px; }
+.tour-pop__body { font-size: 0.8125rem; line-height: 1.5; color: var(--color-text-muted); margin: 0; }
+.tour-pop__row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; }
+.tour-pop__links { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: var(--color-text-light); }
+.tour-pop__link {
+  background: none; border: 0; padding: 4px 0; cursor: pointer;
+  font: inherit; color: var(--color-text-muted);
+}
+.tour-pop__link:hover { color: var(--color-text); }
+.tour-pop__next {
+  border: 0; cursor: pointer; padding: 7px 12px;
+  font-size: 0.75rem; font-weight: 600;
+  background: var(--color-primary); color: var(--color-primary-contrast);
+}
+.tour-pop__next:hover { background: var(--color-primary-hover); }
+.tour-pop__next:focus-visible, .tour-pop__link:focus-visible { outline: 1px solid var(--color-text); outline-offset: 2px; }
+.tour-pop__progress { display: flex; gap: 4px; margin-top: 12px; }
+.tour-pop__progress span { flex: 1; height: 2px; background: var(--color-border); }
+.tour-pop__progress span.is-on { background: var(--color-text); }

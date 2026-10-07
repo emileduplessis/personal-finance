@@ -1065,31 +1065,19 @@ body.dash-dragging { user-select: none; }
 }
 .bills-foot__sep { opacity: 0.5; }
 
-/* ── First-run card (empty account, dashboard) ──────────────── */
-.first-run { margin-bottom: 20px; padding: 20px; }
-.first-run__head {
-  display: flex; align-items: flex-start; justify-content: space-between;
-  gap: 16px; margin-bottom: 16px;
+/* Focus question — one-time "money, hours or both?" */
+.focus-ask {
+  margin-bottom: 20px; padding: 20px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
 }
-.first-run__title { font-size: 1.25rem; font-weight: 700; margin: 4px 0 6px; }
-.first-run__sub { font-size: 0.8125rem; color: var(--color-text-muted); margin: 0; max-width: 52ch; }
-.first-run__steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; background: var(--color-border); }
-.first-run__step {
-  display: flex; align-items: center; gap: 14px;
-  padding: 14px 16px; background: var(--color-surface);
-  color: var(--color-text); text-decoration: none;
-  transition: background 120ms ease;
-}
-.first-run__step:hover { background: var(--color-primary-light); }
-.first-run__num { font-size: 0.75rem; color: var(--color-text-light); letter-spacing: 0.08em; }
-.first-run__step-body { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
-.first-run__step-body strong { font-size: 0.875rem; font-weight: 600; }
-.first-run__step-body span { font-size: 0.75rem; color: var(--color-text-muted); }
-.first-run__arrow { color: var(--color-text-light); font-family: var(--font-display); }
-.first-run__step:hover .first-run__arrow { color: var(--color-primary); }
+.focus-ask[hidden] { display: none; }
+.focus-ask__title { font-size: 1.0625rem; font-weight: 700; margin: 4px 0 6px; }
+.focus-ask__sub { font-size: 0.8125rem; color: var(--color-text-muted); margin: 0; }
+.focus-ask__choices { display: flex; gap: 8px; flex-wrap: wrap; }
 @media (max-width: 480px) {
-  .first-run { padding: 16px 14px; }
-  .first-run__head { flex-direction: column; gap: 10px; }
+  .focus-ask { padding: 16px 14px; }
+  .focus-ask__choices { width: 100%; }
+  .focus-ask__choices .btn { flex: 1; }
 }
 
 /* Donut counterpart to .chart-skeleton — a pulsing ring behind the canvas.

@@ -197,6 +197,35 @@ body.page-exit .main-wrapper {
   .theme-toggle__icon { transition: opacity .15s ease; }
 }
 
+/* Log in / Sign up — only rendered while nobody is logged in */
+.topbar-auth { display: flex; align-items: center; gap: 8px; }
+.topbar-auth__sep { width: 1px; height: 20px; background: var(--color-border); margin: 0 4px; }
+.topbar-auth__login,
+.topbar-auth__signup {
+  display: inline-flex; align-items: center; height: 32px; padding: 0 14px;
+  font-size: 0.8125rem; font-weight: 600; white-space: nowrap; text-decoration: none;
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
+}
+.topbar-auth__login { padding: 0 6px; color: var(--color-text-muted); }
+.topbar-auth__login:hover { color: var(--color-text); text-decoration: none; }
+.topbar-auth__signup { background: var(--color-primary); color: var(--color-primary-contrast); }
+.topbar-auth__signup:hover { background: var(--color-primary-hover); text-decoration: none; }
+
+/* phones: a single outlined "Log in" */
+@media (max-width: 768px) {
+  .topbar-auth__sep,
+  .topbar-auth__signup { display: none; }
+  .topbar-auth__login {
+    padding: 0 10px; color: var(--color-text);
+    border: 1px solid var(--mono-outline);
+  }
+  /* make room: tighter icon spacing, and a long page title truncates */
+  .topbar-actions:has(.topbar-auth) { gap: 2px; }
+  .topbar-actions:has(.topbar-auth) .topbar-auth { margin-left: 4px; }
+  .topbar:has(.topbar-auth) .topbar-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .topbar-auth__login:hover { border-color: var(--mono-outline-strong); }
+}
+
 /* ---- Desktop topbar: logo (mobile fallback) ---- */
 .topbar-logo {
   display: none;
@@ -366,6 +395,14 @@ body.page-exit .main-wrapper {
     min-height: 44px;
   }
   select.form-control, input.form-control { min-height: 44px; }
+}
+
+/* ---- Money: split sidebar entries on desktop, one hub on mobile ---- */
+@media (min-width: 769px) {
+  .nav-item--hub, .money-tabs { display: none !important; }
+}
+@media (max-width: 768px) {
+  .nav-item--money { display: none !important; }
 }
 
 /* ---- Money hub pill tabs ---- */

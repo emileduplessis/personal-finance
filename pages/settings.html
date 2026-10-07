@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
   <meta name="theme-color" content="#000000" />
   <link rel="manifest" href="/manifest.json" />
   <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg" />
@@ -56,7 +57,7 @@
               </div>
               <div class="settings-row__info">
                 <div class="settings-row__title" id="userEmail"><span class="skeleton skeleton-num skeleton-num--lg"></span></div>
-                <div class="settings-row__sub">Signed in</div>
+                <div class="settings-row__sub" id="userStatus">Signed in</div>
               </div>
             </div>
             <div class="settings-divider"></div>
@@ -64,7 +65,7 @@
               <span class="settings-row__icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
               </span>
-              <span class="settings-row__title">Sign out</span>
+              <span class="settings-row__title" id="logoutLabel">Sign out</span>
             </button>
           </div>
         </section>
@@ -162,6 +163,40 @@
                 <span class="settings-switch__track" aria-hidden="true"></span>
               </label>
             </div>
+
+            <!-- Navigation prefs (SettingsStore.getNavPrefs) — drive the mobile
+                 bottom bar; the dashboard asks for "Main use" once. -->
+            <div class="settings-divider"></div>
+            <div class="settings-row">
+              <span class="settings-row__icon settings-row__icon--muted">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+              </span>
+              <div class="settings-row__info">
+                <div class="settings-row__title">Main use</div>
+                <div class="settings-row__sub">Hours makes the + button on mobile log hours</div>
+              </div>
+              <select id="navFocusSelect" class="settings-select">
+                <option value="money">Tracking money</option>
+                <option value="hours">Tracking hours</option>
+                <option value="both">Both</option>
+              </select>
+            </div>
+            <div class="settings-divider"></div>
+            <div class="settings-row">
+              <span class="settings-row__icon settings-row__icon--muted">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M5 17h14"/></svg>
+              </span>
+              <div class="settings-row__info">
+                <div class="settings-row__title">Bottom bar shortcut</div>
+                <div class="settings-row__sub">The section pinned next to + on mobile</div>
+              </div>
+              <select id="navSlotSelect" class="settings-select">
+                <option value="money">Money</option>
+                <option value="shifts">Hours Tracker</option>
+                <option value="crypto">Crypto</option>
+                <option value="insights">Insights</option>
+              </select>
+            </div>
           </div>
         </section>
 
@@ -237,17 +272,6 @@
                 <div class="settings-row__sub">Import a CSV from your bank — auto-detects columns, guesses categories &amp; skips duplicates</div>
               </div>
             </a>
-            <div class="settings-divider"></div>
-            <a href="recurring.html" class="settings-row settings-row--btn">
-              <span class="settings-row__icon settings-row__icon--muted">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-              </span>
-              <div class="settings-row__info">
-                <div class="settings-row__title">Recurring transactions</div>
-                <div class="settings-row__sub">Manage scheduled repeating transactions</div>
-              </div>
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--color-text-muted);flex-shrink:0;"><polyline points="9 18 15 12 9 6"/></svg>
-            </a>
           </div>
         </section>
 
@@ -292,6 +316,13 @@
         <section class="settings-section">
           <div class="settings-section__label">About</div>
           <div class="settings-group">
+            <a href="/dashboard?tour=1" class="settings-row settings-row--btn" style="text-decoration:none;">
+              <span class="settings-row__icon settings-row__icon--muted">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+              </span>
+              <span class="settings-row__title">Replay the tour</span>
+            </a>
+            <div class="settings-divider"></div>
             <a href="/privacy" class="settings-row settings-row--btn" style="text-decoration:none;">
               <span class="settings-row__icon settings-row__icon--muted">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
