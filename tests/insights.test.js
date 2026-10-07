@@ -247,6 +247,16 @@ test('suggestCategory', async (t) => {
     tx('Payroll deposit', 'salary', 'income', '2026-05-03'),
   ];
 
+  await t.test('with no history, the words in the note suggest a category', () => {
+    const cats = [{ id: 'cat-groceries', name: 'Groceries', type: 'expense' }, { id: 'cat-food', name: 'Restaurants', type: 'expense' },
+                  { id: 'cat-salary', name: 'Salary', type: 'income' }];
+    assert.deepEqual(InsightsEngine.suggestCategory('Groceries at Metro', [], { type: 'expense', categories: cats }),
+      { categoryId: 'cat-groceries', count: 0, confidence: 'keyword' });
+    assert.equal(InsightsEngine.suggestCategory('coffee', [], { type: 'expense', categories: cats }).categoryId, 'cat-food');
+    assert.equal(InsightsEngine.suggestCategory('payroll', [], { type: 'expense', categories: cats }), null, 'income keyword not offered for an expense');
+    assert.equal(InsightsEngine.suggestCategory('zzz', [], { type: 'expense', categories: cats }), null);
+  });
+
   await t.test('accents do not split a merchant', () => {
     const h = [tx('Café Myriade', 'coffee'), tx('Cafe Myriade', 'coffee')];
     const r = InsightsEngine.suggestCategory('café myriade', h, { type: 'expense' });

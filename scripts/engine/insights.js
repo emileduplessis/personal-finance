@@ -304,8 +304,29 @@ const InsightsEngine = {
     const target = norm(note);
     if (!target) return null;
 
+    /* No history yet (or nothing similar in it): fall back to the words in
+       the note itself — a category's own name ("Groceries at Metro") or a
+       common merchant/keyword. A brand-new user otherwise never saw one. */
+    const fromWords = () => {
+      const words = new Set(target.split(' '));
+      const singular = w => w.replace(/s$/, '');
+      const cats = (opts.categories || []).filter(c => !type || c.type === type || c.type === 'both');
+      for (const c of cats) {
+        const nameWords = norm(c.name).split(' ').filter(w => w.length >= 3);
+        if (nameWords.length && nameWords.every(w => words.has(w) || words.has(singular(w)) || [...words].some(x => singular(x) === singular(w)))) {
+          return { categoryId: c.id, count: 0, confidence: 'keyword' };
+        }
+      }
+      for (const [catId, keys] of Object.entries(this.KEYWORDS)) {
+        /* only categories the caller offered (that's what enforces type) */
+        if (!cats.some(c => c.id === catId)) continue;
+        if (keys.some(k => words.has(k))) return { categoryId: catId, count: 0, confidence: 'keyword' };
+      }
+      return null;
+    };
+
     const pool = transactions.filter(t => t.categoryId && t.note && (!type || t.type === type));
-    if (!pool.length) return null;
+    if (!pool.length) return fromWords();
 
     const pickBest = (rows) => {
       const count = {}, latest = {};
@@ -322,10 +343,23 @@ const InsightsEngine = {
     if (exact.length) return { ...pickBest(exact), confidence: 'exact' };
 
     const tokens = new Set(target.split(' ').filter(w => w.length >= 3));
-    if (!tokens.size) return null;
+    if (!tokens.size) return fromWords();
     const similar = pool.filter(t => norm(t.note).split(' ').some(w => w.length >= 3 && tokens.has(w)));
-    if (!similar.length) return null;
+    if (!similar.length) return fromWords();
     return { ...pickBest(similar), confidence: 'similar' };
+  },
+
+  /* common words → built-in category, for suggestCategory's no-history fallback */
+  KEYWORDS: {
+    'cat-groceries': ['grocery', 'groceries', 'supermarket', 'costco', 'walmart', 'loblaws', 'provigo', 'iga', 'sobeys', 'safeway'],
+    'cat-food':      ['restaurant', 'coffee', 'cafe', 'lunch', 'dinner', 'breakfast', 'brunch', 'pizza', 'sushi', 'burger', 'takeout', 'starbucks', 'tim', 'mcdonalds'],
+    'cat-transport': ['uber', 'lyft', 'taxi', 'gas', 'fuel', 'parking', 'bus', 'train', 'transit', 'stm', 'ttc', 'presto', 'opus'],
+    'cat-subs':      ['netflix', 'spotify', 'disney', 'prime', 'icloud', 'subscription', 'youtube'],
+    'cat-rent':      ['rent', 'landlord'],
+    'cat-bills':     ['hydro', 'electricity', 'internet', 'phone', 'mobile', 'water', 'bill', 'bills'],
+    'cat-health':    ['pharmacy', 'doctor', 'dentist', 'physio', 'clinic'],
+    'cat-fitness':   ['gym', 'yoga'],
+    'cat-salary':    ['salary', 'payroll', 'paycheque', 'paycheck', 'wages'],
   },
 
   /* Upcoming recurring bills + their normalized cost. Pure: no DOM, no store.

@@ -16,6 +16,22 @@ const isDebtType = type => type === 'credit';
 const balanceToField = (type, bal) => (isDebtType(type) ? -bal : bal);
 const fieldToBalance = (type, val) => (isDebtType(type) ? -val : val) || 0;
 
+/* colour swatches → the hidden #accColor value. A colour not in the palette
+   (set before swatches existed) is kept and shown as an extra swatch. */
+function renderColorSwatches() {
+  const wrap = document.getElementById('accColorSwatches');
+  const input = document.getElementById('accColor');
+  if (!wrap || !input) return;
+  const current = (input.value || ACCOUNT_COLORS[0]).toLowerCase();
+  const palette = ACCOUNT_COLORS.includes(current) ? ACCOUNT_COLORS : [...ACCOUNT_COLORS, current];
+  wrap.innerHTML = palette.map(c => `<button type="button" class="color-swatch${c === current ? ' is-on' : ''}"
+      role="radio" aria-checked="${c === current}" aria-label="Color ${c}" data-color="${c}" style="--sw:${c}"></button>`).join('');
+  wrap.querySelectorAll('.color-swatch').forEach(b => b.addEventListener('click', () => {
+    input.value = b.dataset.color;
+    renderColorSwatches();
+  }));
+}
+
 function syncBalanceField() {
   const debt  = isDebtType(document.getElementById('accType')?.value);
   const label = document.getElementById('accBalanceLabel');
@@ -216,6 +232,7 @@ async function openAccountModal(id) {
     if (title) title.textContent = 'New Account';
   }
   syncBalanceField();
+  renderColorSwatches();
   modal.classList.add('open');
 }
 
@@ -313,6 +330,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     else                  { await AccountStore.add(data);                      showToast(firstRun ? 'Account created — now log your first transaction' : 'Account created', 'success'); }
     document.getElementById('accountModal')?.classList.remove('open');
     await initAccounts();
+    /* the activity list's filters/empty state know about accounts too */
+    if (typeof populateFilters === 'function') {
+      await populateFilters();
+      if (typeof syncControlsFromFilters === 'function') syncControlsFromFilters();
+      if (typeof refresh === 'function') refresh();
+    }
     if (firstRun) window.openAddTransaction?.();
   });
 

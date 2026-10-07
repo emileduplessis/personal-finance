@@ -74,6 +74,24 @@ const Charts = {
     return `${sign}${sym}${Math.round(abs)}`;
   },
 
+  /* Axis tick labels: compact ("$1.8k") unless that would print the same
+     label twice — a narrow range ($1,778 → $1,840) read "$1.8k" on every
+     line. Then fall back to whole units ("$1,794"), or cents for tiny ranges. */
+  _fmtTicks(values) {
+    const compact = values.map(v => this._fmt(v));
+    if (new Set(compact).size === compact.length) return compact;
+    const step = values.length > 1 ? Math.abs(values[1] - values[0]) : 1;
+    const currency = localStorage.getItem('pf_currency') || 'CAD';
+    const digits = step < 1 ? 2 : 0;
+    return values.map(v => {
+      try {
+        const txt = new Intl.NumberFormat(this._locale(), { style: 'currency', currency,
+          minimumFractionDigits: digits, maximumFractionDigits: digits }).format(Math.abs(v));
+        return (Math.round(v * 100) < 0 ? '−' : '') + txt;
+      } catch { return this._fmt(v); }
+    });
+  },
+
   _fmtFull(val) {
     const currency = localStorage.getItem('pf_currency') || 'CAD';
     try { return new Intl.NumberFormat(this._locale(), { style: 'currency', currency }).format(val); }
@@ -121,8 +139,10 @@ const Charts = {
 
     /* Grid + Y labels */
     const gridCount = 4;
+    const tickVals = Array.from({ length: gridCount + 1 }, (_, g) => lo + (g / gridCount) * range);
+    const tickLabels = this._fmtTicks(tickVals);
     for (let g = 0; g <= gridCount; g++) {
-      const v = lo + (g / gridCount) * range;
+      const v = tickVals[g];
       const y = toY(v);
       ctx.strokeStyle = this._gridColor();
       ctx.lineWidth = 1;
@@ -130,7 +150,7 @@ const Charts = {
       ctx.fillStyle = this._textColor();
       ctx.font = '11px "Inter", sans-serif';
       ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
-      ctx.fillText(this._fmt(v), pad.left - 8, y);
+      ctx.fillText(tickLabels[g], pad.left - 8, y);
     }
 
     /* X labels — evenly spaced; always include the last, but if it lands too
@@ -408,15 +428,15 @@ const Charts = {
     const barW      = Math.max(4, (barGroupW - gap * 3) / 2);
 
     /* Grid */
+    const barTicks = this._fmtTicks([0, 1, 2, 3, 4].map(g => maxVal * (1 - g / 4)));
     for (let g = 0; g <= 4; g++) {
-      const v = maxVal * (1 - g / 4);
       const y = pad.top + (g / 4) * ch;
       ctx.strokeStyle = this._gridColor(); ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + cw, y); ctx.stroke();
       ctx.fillStyle = this._textColor();
       ctx.font = '11px "Inter", sans-serif';
       ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
-      ctx.fillText(this._fmt(v), pad.left - 8, y);
+      ctx.fillText(barTicks[g], pad.left - 8, y);
     }
 
     /* Store hit areas relative to w so hover detection stays consistent */

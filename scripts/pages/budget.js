@@ -156,16 +156,23 @@ async function renderBudgetPage() {
   }
 
   if (dormant.length) {
-    const rows = dormant.map(c => categoryRowHTML(c, 0, 0, recs[c.id])).join('');
+    const rowsOf = list => list.map(c => categoryRowHTML(c, 0, 0, recs[c.id])).join('');
+    const fold = (list, label) => `<details class="budget-dormant">
+        <summary class="budget-section-label">${label} · ${list.length} categor${list.length === 1 ? 'y' : 'ies'}</summary>
+        ${rowsOf(list)}
+      </details>`;
     if (budgeted.length || unbudgeted.length) {
       /* folded away once something is active, so 15+ identical "no budget"
          rows don't bury the categories that matter */
-      html += `<details class="budget-dormant">
-        <summary class="budget-section-label">No activity · ${dormant.length} categor${dormant.length === 1 ? 'y' : 'ies'}</summary>
-        ${rows}
-      </details>`;
+      html += fold(dormant, 'No activity');
     } else {
-      html += rows;
+      /* brand-new: offer the usual big ones, keep the rest one tap away
+         (18 identical rows ran ~1,000px on a phone) */
+      const STARTERS = ['cat-rent', 'cat-groceries', 'cat-food', 'cat-transport', 'cat-bills', 'cat-shopping'];
+      const first = dormant.filter(c => STARTERS.includes(c.id));
+      const rest  = dormant.filter(c => !STARTERS.includes(c.id));
+      html += rowsOf(first.length ? first : dormant);
+      if (first.length && rest.length) html += fold(rest, 'More categories');
     }
   }
 

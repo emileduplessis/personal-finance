@@ -192,8 +192,13 @@ async function renderTransactions() {
         <div style="font-weight:600;color:var(--color-text);margin-bottom:6px;">${filtered ? 'No matches' : 'No transactions yet'}</div>
         <div style="font-size:.8125rem;">${filtered
           ? 'Try clearing or widening your filters.'
-          : '<a href="/add-transaction" style="color:var(--color-text)">Add your first transaction →</a>'}</div>
+          : Object.keys(_accMap).length
+          ? '<a href="/add-transaction" style="color:var(--color-text)">Add your first transaction →</a>'
+          /* no account yet: that's the step that comes first */
+          : 'Start with an account. <button type="button" data-new-account style="background:none;border:0;padding:0;font:inherit;cursor:pointer;color:var(--color-text);text-decoration:underline;">Add an account →</button>'}</div>
       </div>`;
+    el.querySelector('[data-new-account]')?.addEventListener('click', () =>
+      (typeof openAccountModal === 'function' ? openAccountModal(null) : (location.href = '/transactions?new=account')));
     renderLoadMore(0);
     return;
   }

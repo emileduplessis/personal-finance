@@ -121,13 +121,14 @@ async function updateCategorySuggestion() {
   if (selectedType === 'transfer' || selectedCategory || !note.trim()) {
     el.hidden = true; el.innerHTML = ''; return;
   }
-  const s = InsightsEngine.suggestCategory(note, _allTx, { type: selectedType });
+  const cats = await CategoryStore.getAll();
+  const s = InsightsEngine.suggestCategory(note, _allTx, { type: selectedType, categories: cats });
   if (!s) { el.hidden = true; el.innerHTML = ''; return; }
   const cat = await CategoryStore.getById(s.categoryId);
   if (!cat) { el.hidden = true; el.innerHTML = ''; return; }
   el.hidden = false;
   el.innerHTML = `
-    <span class="cat-suggestion__label">From your history</span>
+    <span class="cat-suggestion__label">${s.confidence === 'keyword' ? 'Suggested' : 'From your history'}</span>
     <button type="button" class="cat-suggestion__chip" data-cat="${s.categoryId}">
       <span class="cat-icon">${categoryIconHTML(cat, 15)}</span>${escapeHTML(cat.name)}
     </button>`;

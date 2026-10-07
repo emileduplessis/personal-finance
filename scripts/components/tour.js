@@ -28,7 +28,7 @@
     {
       id: 'add', label: 'Add',
       sel: ['.statbar__add', '.bottom-nav__item--add'],
-      title: 'Then log anything in seconds',
+      title: 'Log anything in seconds',
       body: el => /log hours/i.test(el.getAttribute('aria-label') || '')
         ? 'Tap + to log the hours you worked. Transactions are one tap away in Transactions.'
         : 'Add an expense, income or transfer. It’s always one tap away.',
@@ -156,7 +156,10 @@
 
   function start() {
     if (frame) return;
-    steps = STEPS.filter(s => findTarget(s));
+    steps = STEPS.filter(s => findTarget(s))
+      /* the Get started card already says "add an account first" — don't
+         spend a tour step repeating it */
+      .filter(s => !(s.id === 'accounts' && document.querySelector('#accountTiles .get-started')));
     if (!steps.length) return;
 
     shade = document.createElement('div');

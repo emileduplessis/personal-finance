@@ -203,8 +203,12 @@
             <div class="form-hint" id="accCurrencyHint"></div>
           </div>
           <div class="form-group">
-            <label class="form-label" for="accColor">Color</label>
-            <input type="color" id="accColor" class="form-control" style="height:42px;padding:4px 8px;cursor:pointer;" value="#6366f1" />
+            <span class="form-label" id="accColorLabel">Color</span>
+            <!-- swatches instead of a native colour input, which rendered as a
+                 blank white bar that didn't read as a colour choice -->
+            <div class="color-swatches" id="accColorSwatches" role="radiogroup" aria-labelledby="accColorLabel"></div>
+            <input type="hidden" id="accColor" value="#e8e8ec" />
+            <div class="form-hint">Marks this account's avatar on the dashboard.</div>
           </div>
         </div>
         <div class="modal-footer">

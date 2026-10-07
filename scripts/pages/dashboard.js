@@ -115,13 +115,22 @@ async function initDashboard() {
   const longNet  = allTx.length ? netOver(longW.days)  : 0;
 
   setText('shortChangeLabel', shortW.label);
-  setText('longChangeLabel',  longW.label);
   setText('ninetyDayChange', formatSigned(shortNet));
-  setText('yearChange',      formatSigned(longNet));
   const ycEl  = document.getElementById('yearChange');
   const ndcEl = document.getElementById('ninetyDayChange');
-  if (ycEl)  ycEl.style.color  = signColor(longNet);
   if (ndcEl) ndcEl.style.color = signColor(shortNet);
+  /* A brand-new account has all its history inside the short window, so the
+     long cell repeated the same figure. Show where you started instead. */
+  if (allTx.length && Math.abs(shortNet - longNet) < 0.005) {
+    const started = accounts.reduce((s, a) => s + (Number(a.initialBalance) || 0), 0);
+    setText('longChangeLabel', 'Started with');
+    setText('yearChange', formatBalance(started));
+    if (ycEl) ycEl.style.color = '';
+  } else {
+    setText('longChangeLabel', longW.label);
+    setText('yearChange', formatSigned(longNet));
+    if (ycEl) ycEl.style.color = signColor(longNet);
+  }
 
   /* Balance / net-worth chart — drawn by renderBalanceChart, which can be
      re-run on its own when the Cash/Net-worth toggle or range changes (or once
@@ -688,7 +697,12 @@ function accountHistory(allTx, accountId, currentBal, days = 30) {
 /* Responsive sparkline — stretches to its container (preserveAspectRatio
    none) with a non-scaling stroke so the line stays crisp at any size. */
 function sparklineSVG(values, w = 120, h = 48) {
-  const min = Math.min(...values), max = Math.max(...values);
+  let min = Math.min(...values), max = Math.max(...values);
+  /* Give the line a vertical scale of at least 20% of the balance, so a
+     −3% day reads as a dip instead of a cliff (auto-fitting min→max made any
+     change, however small, span the whole tile). */
+  const floor = Math.max(...values.map(v => Math.abs(v))) * 0.2;
+  if (max - min < floor) { const pad = (floor - (max - min)) / 2; min -= pad; max += pad; }
   const range = max - min || 1;
   const pts = values.map((v, i) =>
     `${((i / (values.length - 1)) * w).toFixed(1)},${(h - 2 - ((v - min) / range) * (h - 4)).toFixed(1)}`
