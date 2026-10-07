@@ -9,8 +9,7 @@ unchecked item. `[user]` = needs an action only the account owner can do.
 - [x] **Lock down `public.rls_auto_enable()`** — DONE 2026-07-13: revoke ran in
       prod; verified anon + authenticated RPC calls now return 42501 "permission
       denied for function rls_auto_enable" (was executable before).
-- [ ] **Enforce email confirmation** — Supabase → Auth → confirm-email ON, so
-      signups can't impersonate an address.
+- [x] **Enforce email confirmation** — confirmed ON in Supabase (2026-10-07).
 - [ ] **Paid tier + backups** — free tier pauses on inactivity and has no PITR;
       upgrade + enable backups before real users depend on their data.
 - Nice-to-have next: raise min password length; add a CSP header (needs testing
@@ -27,16 +26,15 @@ unchecked item. `[user]` = needs an action only the account owner can do.
       `rls_enabled=true`, each with one `own …` policy — accounts, crypto_wallets,
       jobs, recurring_rules, shift_payouts, shifts, subscriptions, transactions,
       user_settings. Clean pass (failure/non-uid scans empty)
-- [ ] `[user]` Security Advisor: `public.rls_auto_enable()` is a SECURITY DEFINER
-      fn callable by anon/authenticated via RPC — revoke EXECUTE (see chat / the
-      inspect+fix SQL); not in repo, so it's an untracked DB object
+- [x] `[user]` Security Advisor: `public.rls_auto_enable()` EXECUTE revoked from
+      anon/authenticated (2026-07-13, see blockers above)
 - [x] Auth lifecycle complete in `login.html`: signup confirmation, resend,
       forgot password, recovery view (verified 2026-07-11)
 - [x] CoinGecko proxy (`api/crypto.js`) has in-memory + CDN cache → shared
       upstream calls, survives 429s with stale fallback
 - [x] No secrets committed (grep audit 2026-07-11; anon key is public by design)
-- [ ] `[user]` Supabase: confirm email-confirmation is ON, plan paid tier
-      before real users (free tier pauses after inactivity), enable backups
+- [x] `[user]` Supabase email confirmation ON (paid tier + backups tracked
+      in the blockers above)
 - Note: BTC/SOL balance lookups are client-side per-address (Blockstream /
   publicnode) — per-user, uncacheable server-side, acceptable at launch scale.
 
@@ -73,7 +71,7 @@ unchecked item. `[user]` = needs an action only the account owner can do.
       localhost excluded). Debug overlay flipped to OPT-IN (`pf_debug=1`)
       so public users never see dev toasts
 - [x] Feedback link in Settings (About section, done in Phase 3)
-- [ ] `[user]` Enable Vercel Analytics on the project
+- [x] `[user]` Vercel Analytics enabled on the project
 
 ## Phase 5 — Public face
 
@@ -82,5 +80,6 @@ unchecked item. `[user]` = needs an action only the account owner can do.
 - [x] OG/social meta + meta description on the landing page
 - [x] PRODUCT.md Users section rewritten for a public audience (no hardcoded
       personal defaults rule added)
-- [ ] `[user]` Optional: screenshots on the landing page, custom domain,
-      swap `/` to the landing for logged-out visitors
+- [x] Custom domain: flownetworth.com
+- [ ] Optional: screenshots on the landing page, swap `/` to the landing
+      for logged-out visitors
