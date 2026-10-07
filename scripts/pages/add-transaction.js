@@ -237,7 +237,7 @@ async function saveCurrentAsTemplate() {
     amount:      parseFloat(document.getElementById('txAmount').value) || 0,
     note:        document.getElementById('txNote').value.trim(),
     accountId:   document.getElementById('txAccount').value || null,
-    toAccountId: document.getElementById('txToAccount')?.value || null,
+    toAccountId: selectedType === 'transfer' ? (document.getElementById('txToAccount')?.value || null) : null,
     categoryId:  selectedCategory || null,
     tags:        [..._txTags],
   });
@@ -394,7 +394,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         date:        document.getElementById('txDate').value,
         note:        document.getElementById('txNote').value.trim(),
         accountId:   document.getElementById('txAccount').value,
-        toAccountId: document.getElementById('txToAccount')?.value || null,
+        /* only a transfer has a destination — the hidden select still holds a value otherwise */
+        toAccountId: selectedType === 'transfer' ? (document.getElementById('txToAccount')?.value || null) : null,
         categoryId:  selectedCategory,
         type:        selectedType,
         tags:        [..._txTags],

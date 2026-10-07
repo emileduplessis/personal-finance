@@ -141,7 +141,7 @@ function renderList(subs) {
     listEl.innerHTML = active.length
       ? active.sort((a,b) => a.nextDue.localeCompare(b.nextDue)).map(s => subRowHTML(s, false)).join('')
       : `<div style="padding:40px 24px;text-align:center;color:var(--color-text-muted);">
-           <div style="font-size:1.75rem;margin-bottom:12px;">📦</div>
+           <div style="margin-bottom:12px;opacity:.5;" aria-hidden="true">${typeof lucideSVG === 'function' ? lucideSVG('package', 28) : ''}</div>
            <div style="font-size:.9375rem;font-weight:600;color:var(--color-text);margin-bottom:6px;">No subscriptions yet</div>
            <div style="font-size:.8125rem;">Click <strong>Add subscription</strong> to track your first service.</div>
          </div>`;
@@ -210,7 +210,7 @@ async function loadFormOptions() {
   if (catSel) {
     const expense = _categories.filter(c => c.type === 'expense' || c.type === 'both');
     catSel.innerHTML = '<option value="">— none —</option>' +
-      expense.map(c => `<option value="${c.id}">${c.icon} ${escapeHTML(c.name)}</option>`).join('');
+      expense.map(c => `<option value="${c.id}">${escapeHTML(c.name)}</option>`).join('');
   }
 
   const colorRow = document.getElementById('colorRow');
@@ -531,7 +531,7 @@ function renderPatternInsights(subs, allTx) {
         const diff = last - first;
         const pct  = Math.round(Math.abs(diff) / first * 100);
         insights.push({
-          icon: diff > 0 ? '📈' : '📉',
+          icon: diff > 0 ? '▲' : '▼',
           color: diff > 0 ? 'var(--color-expense)' : 'var(--color-income)',
           text: `<strong>${escapeHTML(sub.name)}</strong> ${diff > 0 ? 'increased' : 'decreased'} by ${formatCurrency(Math.abs(diff))} (${pct}%) since ${formatDateShort(related[0].date)}.`,
         });
@@ -545,7 +545,7 @@ function renderPatternInsights(subs, allTx) {
     const expected = Math.max(1, sub.frequency === 'yearly' ? Math.floor(months/12) : sub.frequency === 'weekly' ? months*4 : months);
     if (related.length < expected * 0.6 && expected > 2) {
       insights.push({
-        icon: '⚠️',
+        icon: '!',
         color: '#d4a64a',
         text: `<strong>${escapeHTML(sub.name)}</strong> was logged ${related.length} time${related.length!==1?'s':''} but expected ~${expected} over ${months} months. Check if it's still active.`,
       });
@@ -567,7 +567,7 @@ function renderPatternInsights(subs, allTx) {
     const diff = thisTotal - lastTotal;
     if (Math.abs(diff) > 1) {
       insights.push({
-        icon: diff > 0 ? '💸' : '✅',
+        icon: diff > 0 ? '▲' : '▼',
         color: diff > 0 ? 'var(--color-expense)' : 'var(--color-income)',
         text: `Total subscription spend is <strong>${formatCurrency(Math.abs(diff))} ${diff > 0 ? 'higher' : 'lower'}</strong> than last month.`,
       });
@@ -581,7 +581,7 @@ function renderPatternInsights(subs, allTx) {
 
   patternEl.innerHTML = insights.map(ins => `
     <div class="subs-insight-row">
-      <span class="subs-insight-row__icon">${ins.icon}</span>
+      <span class="subs-insight-row__icon" style="color:${ins.color}" aria-hidden="true">${ins.icon}</span>
       <span style="font-size:.8125rem;color:var(--color-text-muted);line-height:1.5;">${ins.text}</span>
     </div>`).join('');
 }

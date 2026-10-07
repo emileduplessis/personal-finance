@@ -195,11 +195,13 @@ function renderUnpaid() {
     amt.textContent = formatCurrency(0);
     sub.textContent = "All caught up — nothing waiting to be paid.";
     btn.disabled = true;
+    btn.hidden = true;             /* nothing to settle — don't offer the action */
     panel.classList.add('hours-unpaid--clear');
   } else {
     amt.textContent = '~' + formatCurrency(u.estimated);
     sub.textContent = `${fmtHours(u.hours)} · ${u.count} day${u.count === 1 ? '' : 's'} unpaid · est. at ${formatCurrency(jobRate())}/h`;
     btn.disabled = false;
+    btn.hidden = false;
     panel.classList.remove('hours-unpaid--clear');
   }
 }

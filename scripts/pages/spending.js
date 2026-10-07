@@ -55,11 +55,16 @@ async function renderCategoryPanel(kind, rangeTx, from, to, ids) {
     /* Clear the donut so last period's slices don't show behind the empty state */
     clearCanvas(ids.canvas);
     catEmpty?.removeAttribute('hidden');
-    if (breakdownEl) breakdownEl.innerHTML = `<div class="empty-state">No ${isIncome ? 'income' : 'expenses'} this period.</div>`;
+    /* the donut's own empty message says it — a second copy in the list column
+       read as a stutter, so the list folds away and the donut spans the panel */
+    if (breakdownEl) { breakdownEl.innerHTML = ''; breakdownEl.hidden = true; }
+    breakdownEl?.closest('.cat-overview__body')?.classList.add('cat-overview__body--empty');
     return;
   }
 
   catEmpty?.setAttribute('hidden', '');
+  if (breakdownEl) breakdownEl.hidden = false;
+  breakdownEl?.closest('.cat-overview__body')?.classList.remove('cat-overview__body--empty');
   const catObjects = await Promise.all(byCategory.map(b => CategoryStore.getById(b.categoryId)));
   const slices = byCategory.map((b, i) => ({
     label: escapeHTML(catObjects[i]?.name) || 'Other',

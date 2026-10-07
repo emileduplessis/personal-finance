@@ -109,12 +109,12 @@ async function populateFilters() {
   const catSel = document.getElementById('filterCategory');
   const accSel = document.getElementById('filterAccount');
   if (catSel) catSel.innerHTML = `<option value="">All categories</option>` +
-    cats.map(c => `<option value="${c.id}">${c.icon} ${escapeHTML(c.name)}</option>`).join('');
+    cats.map(c => `<option value="${c.id}">${escapeHTML(c.name)}</option>`).join('');
   if (accSel) accSel.innerHTML = `<option value="">All accounts</option>` +
     accounts.map(a => `<option value="${a.id}">${escapeHTML(a.name)}</option>`).join('');
   const bulkCat = document.getElementById('bulkCategory');
   if (bulkCat) bulkCat.innerHTML = `<option value="">Recategorize…</option>` +
-    cats.map(c => `<option value="${c.id}">${c.icon || ''} ${escapeHTML(c.name)}</option>`).join('');
+    cats.map(c => `<option value="${c.id}">${escapeHTML(c.name)}</option>`).join('');
   /* the two filter selects ship data-loading so they shimmer instead of
      sitting there empty while the categories/accounts are in flight */
   clearFieldLoading(catSel);

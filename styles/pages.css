@@ -896,17 +896,19 @@
   .acc-row__actions      { opacity: 1; }
 
   /* Filter rows: horizontal scroll strip on mobile */
+  /* two-up grid instead of a hidden-scrollbar strip — the strip cut the
+     third filter off mid-word ("All t…") with nothing hinting it scrolled */
   .tx-toolbar__row--filters {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
   }
-  .tx-toolbar__row--filters::-webkit-scrollbar { display: none; }
   .tx-toolbar__row--filters .select--sm,
-  .tx-toolbar__row--filters input[type="date"],
-  .tx-toolbar__row--filters .btn { flex-shrink: 0; }
+  .tx-toolbar__row--filters .btn { width: 100%; min-width: 0; justify-content: center; }
+  .tx-toolbar__row--filters .tx-custom-dates { grid-column: 1 / -1; display: flex; gap: 8px; align-items: center; }
+  .tx-toolbar__row--filters .tx-custom-dates[hidden] { display: none; }
+  .tx-toolbar__row--filters .tx-custom-dates input[type="date"] { flex: 1; min-width: 0; }
+  .tx-toolbar__row--filters #clearFilters { grid-column: 1 / -1; }
   .tx-toolbar__spacer { display: none; }
   .search-input { min-width: 160px; }
 
@@ -1129,7 +1131,7 @@
   border-bottom: 1px solid var(--color-border-light);
 }
 .subs-insight-row:last-child { border-bottom: none; }
-.subs-insight-row__icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+.subs-insight-row__icon { font-family: var(--font-display); font-size: .8125rem; font-weight: 700; width: 14px; text-align: center; flex-shrink: 0; margin-top: 1px; }
 
 /* Responsive */
 @media (max-width: 900px) {

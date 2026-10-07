@@ -355,7 +355,9 @@ const Charts = {
       ctx.fillStyle = this._textStrong();
       ctx.font = 'bold 16px "Inter", sans-serif';
       ctx.textBaseline = 'top';
-      ctx.fillText(this._fmt(total), cx, cy + 5);
+      /* exact under 1k (the list beside it shows cents — "$15" next to
+         "$14.75" looked like a different number); compact above that */
+      ctx.fillText(Math.abs(total) < 1000 ? this._fmtFull(total) : this._fmt(total), cx, cy + 5);
     }
 
     if (!_redraw) {
@@ -489,16 +491,19 @@ const Charts = {
       }
     });
 
-    /* Legend */
-    ctx.textBaseline = 'bottom'; ctx.font = '11px "Inter", sans-serif';
-    ctx.fillStyle = 'rgba(0,209,143,0.75)';
-    ctx.fillRect(w - 110, h - 10 - 8, 8, 8);
-    ctx.fillStyle = this._textColor(); ctx.textAlign = 'left';
-    ctx.fillText('Income', w - 99, h - 10);
-    ctx.fillStyle = 'rgba(255,92,122,0.75)';
-    ctx.fillRect(w - 52, h - 10 - 8, 8, 8);
-    ctx.fillStyle = this._textColor();
-    ctx.fillText('Exp', w - 41, h - 10);
+    /* Legend — laid out right-to-left from measured widths so no label is
+       clipped at the canvas edge */
+    ctx.textBaseline = 'bottom'; ctx.font = '11px "Inter", sans-serif'; ctx.textAlign = 'left';
+    let lx = w - 4;
+    [['Expenses', 'rgba(255,92,122,0.75)'], ['Income', 'rgba(0,209,143,0.75)']].forEach(([label, color]) => {
+      lx -= ctx.measureText(label).width;
+      ctx.fillStyle = this._textColor();
+      ctx.fillText(label, lx, h - 10);
+      lx -= 11;
+      ctx.fillStyle = color;
+      ctx.fillRect(lx, h - 10 - 8, 8, 8);
+      lx -= 12;
+    });
 
     if (!_redraw) {
       const canvas = s._canvas;

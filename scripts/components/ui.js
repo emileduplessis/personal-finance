@@ -216,8 +216,13 @@ window.addEventListener('load', () => {
 /* --- Number count-up animation --- */
 function animateValue(el, endValue, formatter, duration = 550) {
   if (!el) return;
+  /* First paint: show the number as-is. Counting up from $0 on every page
+     load made a settled balance look like it was still loading; the
+     animation is for *changes* (a refresh after you add something). */
+  const first = el.dataset.animFrom === undefined;
   const startValue = parseFloat(el.dataset.animFrom || '0');
   el.dataset.animFrom = String(endValue);
+  if (first) { el.textContent = formatter(endValue); return; }
   /* rAF doesn't fire in background tabs — set the final value directly */
   const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (document.hidden || reduced || Math.abs(endValue - startValue) < 0.01) { el.textContent = formatter(endValue); return; }

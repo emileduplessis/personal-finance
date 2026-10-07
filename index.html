@@ -161,7 +161,7 @@
 
     .lp-trust { border: 1px solid var(--color-border); padding: 26px 24px; margin-bottom: 56px; }
     .lp-trust h2 { font-size: 1.0625rem; margin: 0 0 12px; }
-    .lp-trust ul { margin: 0; padding-left: 20px; }
+    .lp-trust ul { margin: 0; padding: 0; list-style: none; }
     .lp-trust li { font-size: .8125rem; line-height: 1.7; color: var(--color-text-muted); }
     .lp-trust strong { color: var(--color-text); }
 
@@ -186,13 +186,52 @@
     .lp-faq details[open] summary::after { content: '−'; }
     .lp-faq details p { font-size: .8125rem; line-height: 1.65; color: var(--color-text-muted); margin: 0 0 16px; max-width: 64ch; }
 
+    /* product preview */
+    .lp-preview { margin: 48px 0 0; border: 1px solid var(--color-border); background: var(--color-surface); }
+    .lp-preview__bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px;
+                       border-bottom: 1px solid var(--color-border); font-size: .8125rem; font-weight: 600; }
+    .lp-preview__tag { font-family: var(--font-display); font-size: .625rem; font-weight: 600; letter-spacing: .14em;
+                       text-transform: uppercase; color: var(--color-text-light); }
+    .lp-preview__grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 1px; background: var(--color-border); }
+    .lp-pv { background: var(--color-surface); padding: 18px 18px 20px; min-width: 0; }
+    .lp-pv__label { font-family: var(--font-display); font-size: .625rem; font-weight: 600; letter-spacing: .14em;
+                    text-transform: uppercase; color: var(--color-text-muted); margin-bottom: 12px; }
+    .lp-pv__label--gap { margin-top: 20px; }
+    .lp-pv__big { font-family: var(--font-display); font-size: clamp(1.75rem, 3vw, 2.25rem); font-weight: 600; letter-spacing: -.02em; }
+    .lp-pv__delta { font-family: var(--font-display); font-size: .75rem; margin-top: 6px; }
+    .lp-pv__chart { display: block; width: 100%; height: 110px; margin: 18px 0 10px; color: var(--color-text); }
+    .lp-pv__note { font-size: .75rem; color: var(--color-text-muted); }
+    .lp-pv__note strong { color: var(--color-text); font-family: var(--font-display); font-weight: 600; }
+    .lp-pv__row { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; font-size: .8125rem;
+                  border-bottom: 1px solid var(--color-border); }
+    .lp-pv__row span:last-child { font-family: var(--font-display); }
+    .lp-pv__row--sm { border: 0; font-size: .75rem; color: var(--color-text-muted); padding-top: 8px; }
+    .lp-pv__bar { height: 6px; background: var(--color-surface-2); }
+    .lp-pv__bar span { display: block; height: 100%; background: var(--color-income); }
+    .lp-pv__tx { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 9px 0;
+                 border-bottom: 1px solid var(--color-border); font-size: .8125rem; }
+    .lp-pv__tx span:first-child { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .lp-pv__tx small { font-size: .6875rem; color: var(--color-text-light); }
+    .lp-pv__tx span:last-child { font-family: var(--font-display); white-space: nowrap; }
+    .lp-up { color: var(--color-income); }
+    .lp-down { color: var(--color-expense); }
+
+    /* closing call to action */
+    .lp-end { border: 1px solid var(--color-border); padding: 40px 24px; margin-bottom: 48px; text-align: center; }
+    .lp-end h2 { font-size: clamp(1.5rem, 3vw, 2rem); margin: 0 0 10px; letter-spacing: -.02em; }
+    .lp-end p { font-size: .9375rem; color: var(--color-text-muted); margin: 0 auto 24px; max-width: 52ch; line-height: 1.6; }
+
     @media (max-width: 960px) {
+      .lp-preview__grid { grid-template-columns: 1fr 1fr; }
+      .lp-pv--balance { grid-column: 1 / -1; }
       .lp-faq { grid-template-columns: 1fr; }
       .lp-hero { grid-template-columns: 1fr; }
       .lp-features { grid-template-columns: repeat(2, 1fr); }
       .lp-trust { grid-template-columns: 1fr; }
     }
     @media (max-width: 620px) {
+      .lp-preview { margin-top: 32px; }
+      .lp-preview__grid { grid-template-columns: 1fr; }
       .lp-features { grid-template-columns: 1fr; }
       .lp-hero { padding: 48px 0 40px; }
       .lp-cta { display: block; text-align: center; padding: 14px 16px; }
@@ -208,19 +247,57 @@
 
     <header class="lp-hero">
       <div>
-        <div class="lp-kicker"><span class="lp-free">FREE</span>Personal finance · precise / minimal / fast</div>
+        <div class="lp-kicker"><span class="lp-free">FREE</span>Personal finance tracker</div>
         <h1>Know your financial state in seconds.</h1>
       </div>
       <div class="lp-hero__pitch">
-        <p>Flow Net Worth is a free personal finance tracker with the temperament of a pro tool: no gradients,
-        no mascots, no motivational quotes. Log a transaction in seconds, see exactly where the
-        month went, and let the numbers speak.</p>
+        <p>Flow Net Worth is a free personal finance tracker built like a pro tool. Log a transaction
+        in seconds, see exactly where the month went, and know where next month is heading —
+        every account, budget and bill in one quiet screen.</p>
         <a class="lp-cta" href="/dashboard">Try it free — no account needed →</a>
         <span class="lp-cta-sub">free · no card · data stays on your device until you <a href="/login?mode=signup" style="color:inherit;">create an account</a></span>
       </div>
     </header>
 
     <main>
+    <!-- Product preview: a static, sample-data rendering of the dashboard in the
+         app's own visual language, so a visitor sees what they're getting
+         before they click. Decorative — the real numbers live in the app. -->
+    <figure class="lp-preview" aria-label="Preview of the Flow Net Worth dashboard with sample data">
+      <div class="lp-preview__bar"><span>Dashboard</span><span class="lp-preview__tag">Sample data</span></div>
+      <div class="lp-preview__grid">
+        <div class="lp-pv lp-pv--balance">
+          <div class="lp-pv__label">Current balance</div>
+          <div class="lp-pv__big">$4,812.40</div>
+          <div class="lp-pv__delta lp-up">▲ +$326.15 this month</div>
+          <svg class="lp-pv__chart" viewBox="0 0 320 110" preserveAspectRatio="none" aria-hidden="true">
+            <polyline fill="none" stroke="currentColor" stroke-width="2" vector-effect="non-scaling-stroke"
+              points="0,78 22,74 44,80 66,66 88,70 110,58 132,62 154,50 176,56 198,44 220,48"/>
+            <polyline fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="5 5" opacity=".45" vector-effect="non-scaling-stroke"
+              points="220,48 250,42 280,38 320,30"/>
+            <line x1="220" y1="0" x2="220" y2="110" stroke="currentColor" opacity=".15" vector-effect="non-scaling-stroke"/>
+          </svg>
+          <div class="lp-pv__note">Projected next 30 days · <strong>$5,140.00</strong></div>
+        </div>
+        <div class="lp-pv">
+          <div class="lp-pv__label">This month</div>
+          <div class="lp-pv__row"><span>Income</span><span class="lp-up">$3,240.00</span></div>
+          <div class="lp-pv__row"><span>Expenses</span><span class="lp-down">$2,913.85</span></div>
+          <div class="lp-pv__row"><span>Net</span><span class="lp-up">+$326.15</span></div>
+          <div class="lp-pv__label lp-pv__label--gap">Budget · Groceries</div>
+          <div class="lp-pv__bar"><span style="width:72%"></span></div>
+          <div class="lp-pv__row lp-pv__row--sm"><span>$432.10 of $600.00</span><span>72%</span></div>
+        </div>
+        <div class="lp-pv">
+          <div class="lp-pv__label">Transactions</div>
+          <div class="lp-pv__tx"><span>Groceries<small>Today · Main Bank</small></span><span class="lp-down">−$84.12</span></div>
+          <div class="lp-pv__tx"><span>Paycheque<small>Yesterday · Main Bank</small></span><span class="lp-up">+$1,620.00</span></div>
+          <div class="lp-pv__tx"><span>Rent<small>Oct 1 · Main Bank</small></span><span class="lp-down">−$1,250.00</span></div>
+          <div class="lp-pv__tx"><span>Coffee<small>Oct 1 · Visa</small></span><span class="lp-down">−$4.75</span></div>
+        </div>
+      </div>
+    </figure>
+
     <h2 class="sr-only">Features</h2>
     <div class="lp-features">
       <div class="lp-feature">
@@ -307,10 +384,16 @@
         </details>
       </div>
     </section>
+
+    <section class="lp-end">
+      <h2>Start in seconds.</h2>
+      <p>No account, no card, nothing to install. Add your first account and transaction now — sign up later to sync it.</p>
+      <a class="lp-cta" href="/dashboard">Try it free — no account needed →</a>
+    </section>
     </main>
 
     <footer class="lp-foot">
-      <span>Flow</span><span>·</span>
+      <span>Flow Net Worth</span><span>·</span>
       <a href="/privacy">Privacy</a>
       <a href="/terms">Terms</a>
       <a href="mailto:support@flownetworth.com">Contact</a>

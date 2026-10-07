@@ -831,6 +831,8 @@ body.dash-dragging { user-select: none; }
 }
 .cat-overview__donut { height: 230px; }
 .cat-overview__list { width: 100%; }
+.cat-overview__body.cat-overview__body--empty,
+.cf-cats .cat-overview__body.cat-overview__body--empty { grid-template-columns: 1fr; }
 @media (max-width: 700px) {
   .cat-overview__body { grid-template-columns: 1fr; gap: 16px; }
 }
