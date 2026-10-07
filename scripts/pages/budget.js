@@ -126,19 +126,19 @@ async function renderBudgetPage() {
   }
 
   if (budgeted.length) {
-    html += budgeted.map(c => categoryRowHTML(c, spending[c.id] || 0, budgets[c.id], recs[c.id])).join('');
+    html += budgeted.map(c => categoryRowHTML(c, spending[c.id] || 0, budgets[c.id])).join('');
   }
 
   if (unbudgeted.length) {
     html += `<div class="budget-section-label">Unbudgeted spending</div>`;
-    html += unbudgeted.map(c => categoryRowHTML(c, spending[c.id], 0, recs[c.id])).join('');
+    html += unbudgeted.map(c => categoryRowHTML(c, spending[c.id], 0)).join('');
   }
 
   if (dormant.length) {
     if (budgeted.length || unbudgeted.length) {
       html += `<div class="budget-section-label">No activity</div>`;
     }
-    html += dormant.map(c => categoryRowHTML(c, 0, 0, recs[c.id])).join('');
+    html += dormant.map(c => categoryRowHTML(c, 0, 0)).join('');
   }
 
   listEl.innerHTML = html;
@@ -146,16 +146,6 @@ async function renderBudgetPage() {
   /* Inline edit wiring */
   listEl.querySelectorAll('.budget-amount-display').forEach(el => {
     el.addEventListener('click', () => startEdit(el));
-  });
-
-  /* Per-row "apply suggested budget" chips */
-  listEl.querySelectorAll('.budget-suggest-chip').forEach(el => {
-    el.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      await BudgetStore.set(currentMonth, el.dataset.cat, parseFloat(el.dataset.amount));
-      await renderBudgetPage();
-      showToast('Budget set from suggestion', 'success');
-    });
   });
 
   /* Bulk "Suggest budgets from your last 3 months" banner */
@@ -197,18 +187,15 @@ async function renderBudgetPage() {
   }
 }
 
-function categoryRowHTML(cat, spent, budget, rec) {
+function categoryRowHTML(cat, spent, budget) {
   const pct      = budget > 0 ? (spent / budget) * 100 : 0;
   const over     = budget > 0 && spent > budget;
   const barPct   = Math.min(pct, 100);
   const barColor = pct >= 100 ? 'var(--color-expense)' : pct >= 75 ? 'var(--color-transfer)' : 'var(--color-income)';
 
-  const suggestChip = (!(budget > 0) && rec > 0)
-    ? `<button type="button" class="budget-suggest-chip" data-cat="${cat.id}" data-amount="${rec}" title="Apply suggested budget from your last 3 months">~${formatCurrency(rec)}</button>`
-    : '';
   const budgetDisplay = budget > 0
     ? `<button type="button" class="budget-amount-display" data-cat="${cat.id}" data-value="${budget}" title="Edit limit">${formatCurrency(budget)}</button>`
-    : `<button type="button" class="budget-amount-display budget-set-btn" data-cat="${cat.id}" data-value="0" aria-label="Set a monthly limit for ${escapeHTML(cat.name)}">+ Set limit</button>${suggestChip}`;
+    : `<button type="button" class="budget-amount-display budget-set-btn" data-cat="${cat.id}" data-value="0" aria-label="Set a monthly limit for ${escapeHTML(cat.name)}">+ Set limit</button>`;
 
   return `
     <div class="budget-row" data-cat="${cat.id}">
