@@ -155,8 +155,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     ]);
     const txEl  = document.getElementById('txCount');
     const accEl = document.getElementById('accCount');
-    if (txEl)  txEl.textContent  = `${txs.length} transaction${txs.length !== 1 ? 's' : ''}`;
-    if (accEl) accEl.textContent = `${accs.length} account${accs.length !== 1 ? 's' : ''}`;
+    /* the number gets its own span: desktop shows it as a big mono figure */
+    if (txEl)  txEl.innerHTML  = `<span class="settings-num">${txs.length}</span> transaction${txs.length !== 1 ? 's' : ''}`;
+    if (accEl) accEl.innerHTML = `<span class="settings-num">${accs.length}</span> account${accs.length !== 1 ? 's' : ''}`;
   } catch (_) {
     /* counts ship shimmer placeholders (settings.html) — don't leave them running */
     ['txCount', 'accCount'].forEach(id => {

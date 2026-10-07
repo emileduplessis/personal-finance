@@ -109,7 +109,7 @@
     try {
       const raw = JSON.parse(localStorage.getItem('pf_nav') || '{}');
       if (['money', 'hours', 'both'].includes(raw.focus)) p.focus = raw.focus;
-      if (['money', 'shifts', 'crypto', 'insights'].includes(raw.slot)) p.slot = raw.slot;
+      if (['money', 'shifts', 'crypto'].includes(raw.slot)) p.slot = raw.slot;
     } catch (_) {}
     return p;
   }

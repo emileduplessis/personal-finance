@@ -45,10 +45,13 @@
     <header class="topbar" id="topbar"></header>
 
     <main class="main-content">
+      <!-- Phones: one stacked list. Desktop (>=1100px): every section becomes a
+           cell in one hairline grid, the dashboard's terminal language; the
+           placement lives in pages.css. -->
       <div class="settings-page">
 
         <!-- Profile -->
-        <section class="settings-section">
+        <section class="settings-section settings-section--account">
           <div class="settings-section__label">Account</div>
           <div class="settings-group">
             <div class="settings-row settings-row--profile">
@@ -71,7 +74,7 @@
         </section>
 
         <!-- Overview -->
-        <section class="settings-section">
+        <section class="settings-section settings-section--overview">
           <div class="settings-section__label">Overview</div>
           <div class="settings-group">
             <div class="settings-row">
@@ -97,8 +100,8 @@
         </section>
 
         <!-- Preferences -->
-        <section class="settings-section">
-          <div class="settings-section__label">Preferences</div>
+        <section class="settings-section settings-section--display">
+          <div class="settings-section__label">Display</div>
           <div class="settings-group">
             <div class="settings-row">
               <span class="settings-row__icon settings-row__icon--muted">
@@ -133,9 +136,14 @@
               <select id="defaultAccountSelect" class="settings-select" data-loading></select>
             </div>
 
+          </div>
+        </section>
+
+        <section class="settings-section settings-section--goals">
+          <div class="settings-section__label">Goals</div>
+          <div class="settings-group">
             <!-- Goal switches. Turning one off only hides its panel; the saved
                  target stays, so switching it back on restores it. -->
-            <div class="settings-divider"></div>
             <div class="settings-row">
               <span class="settings-row__icon settings-row__icon--muted">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
@@ -164,9 +172,14 @@
               </label>
             </div>
 
+          </div>
+        </section>
+
+        <section class="settings-section settings-section--nav">
+          <div class="settings-section__label">Navigation</div>
+          <div class="settings-group">
             <!-- Navigation prefs (SettingsStore.getNavPrefs) — drive the mobile
                  bottom bar; the dashboard asks for "Main use" once. -->
-            <div class="settings-divider"></div>
             <div class="settings-row">
               <span class="settings-row__icon settings-row__icon--muted">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
@@ -194,14 +207,13 @@
                 <option value="money">Money</option>
                 <option value="shifts">Hours Tracker</option>
                 <option value="crypto">Crypto</option>
-                <option value="insights">Insights</option>
               </select>
             </div>
           </div>
         </section>
 
         <!-- Job defaults (used by the dashboard quick-log) -->
-        <section class="settings-section">
+        <section class="settings-section settings-section--jobs">
           <div class="settings-section__label">Job defaults</div>
           <div class="settings-group">
             <div class="settings-row">
@@ -240,7 +252,7 @@
         </section>
 
         <!-- Import / Export -->
-        <section class="settings-section">
+        <section class="settings-section settings-section--data">
           <div class="settings-section__label">Data</div>
           <div class="settings-group">
             <button type="button" id="exportCsvBtn" class="settings-row settings-row--btn">
@@ -276,7 +288,7 @@
         </section>
 
         <!-- Custom Categories -->
-        <section class="settings-section">
+        <section class="settings-section settings-section--cats">
           <div class="settings-section__label">Custom Categories</div>
           <div class="settings-group" id="customCatsGroup">
             <div id="customCatsList"></div>
@@ -297,7 +309,7 @@
         </section>
 
         <!-- Danger -->
-        <section class="settings-section">
+        <section class="settings-section settings-section--danger">
           <div class="settings-section__label settings-section__label--danger">Danger Zone</div>
           <div class="settings-group settings-group--danger">
             <button type="button" id="deleteDataBtn" class="settings-row settings-row--btn settings-row--delete">
@@ -313,7 +325,7 @@
         </section>
 
         <!-- About / legal -->
-        <section class="settings-section">
+        <section class="settings-section settings-section--about">
           <div class="settings-section__label">About</div>
           <div class="settings-group">
             <a href="/dashboard?tour=1" class="settings-row settings-row--btn" style="text-decoration:none;">

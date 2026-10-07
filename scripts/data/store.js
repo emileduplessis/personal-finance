@@ -539,7 +539,7 @@ const SettingsStore = {
      Synced in ui_prefs.nav and mirrored to localStorage because nav.js renders
      synchronously on every page, before any await. */
   NAV_KEY: 'pf_nav',
-  NAV_SLOTS: ['money', 'shifts', 'crypto', 'insights'],
+  NAV_SLOTS: ['money', 'shifts', 'crypto'],   /* 'insights' was dropped with the Insights page; a saved one falls back to money */
   NAV_FOCI:  ['money', 'hours', 'both'],
 
   getNavPrefs() {
