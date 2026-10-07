@@ -146,10 +146,10 @@ async function renderStats() {
   const net    = totals.income - totals.expense;
   setText('statIncome',  formatCurrency(totals.income));
   setText('statExpense', formatCurrency(totals.expense));
-  setText('statNet',     (net >= 0 ? '+' : '−') + formatCurrency(Math.abs(net)));
+  setText('statNet',     formatSigned(net));
   setText('statCount',   String(txs.length));
   const netEl = document.getElementById('statNet');
-  if (netEl) netEl.style.color = net >= 0 ? 'var(--color-income)' : 'var(--color-expense)';
+  if (netEl) netEl.style.color = signColor(net);
 
   const anyFilter = currentFilters.search || currentFilters.categoryId || currentFilters.accountId ||
                     currentFilters.type || currentFilters.from || currentFilters.to;

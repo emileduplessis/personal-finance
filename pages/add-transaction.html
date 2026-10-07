@@ -50,6 +50,15 @@
       box-shadow: 0 -1px 0 var(--color-border);
     }
     html.embed .main-content { padding-bottom: 0; }
+    .no-account-tip {
+      display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+      margin-bottom: 16px; padding: 14px 16px; margin-right: 40px;
+      border: 1px solid var(--color-border); background: var(--color-surface-2);
+      font-size: .875rem; color: var(--color-text-muted);
+    }
+    .no-account-tip strong { color: var(--color-text); font-size: .9375rem; }
+    .no-account-tip .btn { margin-top: 4px; }
+    html:not(.embed) .no-account-tip { margin-right: 0; }
   </style>
 </head>
 <body data-title="Add Transaction" data-title-id="formTitle">
@@ -81,6 +90,14 @@
 
     <main class="main-content">
       <div class="form-page">
+        <!-- No accounts yet: say so up front (it used to sit below the form,
+             out of sight in the popup). target=_top leaves the popup. -->
+        <div class="no-account-tip" id="noAccountTip" style="display:none;">
+          <strong>Add an account first</strong>
+          <span>Every transaction belongs to an account — your bank, cash or a card.</span>
+          <a class="btn btn--primary btn--sm" href="/transactions?new=account" target="_top">Add account</a>
+        </div>
+
         <div class="card form-card">
 
           <form id="txForm" novalidate>
@@ -173,13 +190,6 @@
           </form>
         </div>
 
-        <!-- Quick tip if no accounts -->
-        <div class="card" id="noAccountTip" style="display:none;margin-top:12px;">
-          <p style="color:var(--color-text-muted);font-size:.875rem;">
-            You don't have any accounts yet.
-            <a href="/transactions">Create an account</a> before adding transactions.
-          </p>
-        </div>
       </div>
     </main>
   </div>

@@ -469,7 +469,7 @@ function renderQuickMeta() {
   const rate = jobRate();
   el.textContent = rate > 0
     ? `at ${formatCurrency(rate)}/h · added unlogged — tap a shift to log it`
-    : 'set an hourly rate on your job to estimate pay';
+    : 'Set an hourly rate on your job to see what you’ve earned.';
 }
 
 async function quickLog(e) {
@@ -854,7 +854,7 @@ function renderList() {
   if (!_shifts.length) {
     el.innerHTML = `<div class="empty-state" style="padding:36px 24px;text-align:center;">
         <div style="font-weight:600;color:var(--color-text);margin-bottom:6px;">No hours logged yet</div>
-        <div style="font-size:.8125rem;">Tap <strong>+ Log shift</strong> — or a preset above — to add your first one.</div>
+        <div style="font-size:.8125rem;">Add a job, then type your hours in <strong>Quick log</strong> — or use <strong>More options</strong> for start/end times and tips.</div>
       </div>`;
     return;
   }

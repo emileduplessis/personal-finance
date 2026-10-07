@@ -56,7 +56,9 @@ async function populateAccountSelects() {
   if (sel && !editId && defId && accounts.some(a => a.id === defId)) sel.value = defId;
 
   const tip = document.getElementById('noAccountTip');
-  if (tip) tip.style.display = accounts.length ? 'none' : 'block';
+  if (tip) tip.style.display = accounts.length ? 'none' : 'flex';
+  const submit = document.getElementById('submitBtn');
+  if (submit && !accounts.length) submit.disabled = true;
   /* both selects ship data-loading, so the "No accounts — create one first"
      placeholder can't flash before we actually know there are none */
   ['txAccount', 'txToAccount'].forEach(clearFieldLoading);

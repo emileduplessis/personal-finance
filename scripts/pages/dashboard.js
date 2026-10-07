@@ -66,7 +66,7 @@ async function initDashboard() {
   animateValue(document.getElementById('totalBalance'), totalBalance, formatBalance, 1400);
   animateValue(document.getElementById('monthIncome'),  monthTotals.income,  formatCurrency);
   animateValue(document.getElementById('monthExpense'), monthTotals.expense, formatCurrency);
-  animateValue(document.getElementById('monthNet'), Math.abs(net), v => (net >= 0 ? '+' : '-') + formatCurrency(v));
+  animateValue(document.getElementById('monthNet'), net, formatSigned);
   _dashboardReady = true;
   const incomeCount  = monthTx.filter(t => t.type === 'income').length;
   const expenseCount = monthTx.filter(t => t.type === 'expense').length;
@@ -74,7 +74,7 @@ async function initDashboard() {
   setText('monthExpenseSub', expenseCount === 1 ? '1 transaction' : `${expenseCount} transactions`);
 
   const netEl = document.getElementById('monthNet');
-  if (netEl) netEl.style.color = net >= 0 ? 'var(--color-income)' : 'var(--color-expense)';
+  if (netEl) netEl.style.color = signColor(net);
 
   /* Change pill next to the balance (wallet staple) */
   const pill = document.getElementById('balanceChangePill');
@@ -120,8 +120,8 @@ async function initDashboard() {
   setText('yearChange',      formatSigned(longNet));
   const ycEl  = document.getElementById('yearChange');
   const ndcEl = document.getElementById('ninetyDayChange');
-  if (ycEl)  ycEl.style.color  = longNet  >= 0 ? 'var(--color-income)' : 'var(--color-expense)';
-  if (ndcEl) ndcEl.style.color = shortNet >= 0 ? 'var(--color-income)' : 'var(--color-expense)';
+  if (ycEl)  ycEl.style.color  = signColor(longNet);
+  if (ndcEl) ndcEl.style.color = signColor(shortNet);
 
   /* Balance / net-worth chart — drawn by renderBalanceChart, which can be
      re-run on its own when the Cash/Net-worth toggle or range changes (or once
@@ -200,6 +200,18 @@ async function renderBalanceChart() {
 
   if (!allTx.length) {
     empty?.removeAttribute('hidden');
+    /* step-aware copy: an account comes first, then the history starts */
+    const msg = document.getElementById('balanceChartEmptyMsg');
+    const link = document.getElementById('balanceChartEmptyLink');
+    if (msg && link) {
+      if (accounts.length) {
+        msg.textContent = 'Your balance history starts with your first transaction.';
+        link.textContent = 'Add a transaction →'; link.href = '/add-transaction';
+      } else {
+        msg.textContent = 'No balance history yet.';
+        link.textContent = 'Add an account to get started →'; link.href = '/transactions?new=account';
+      }
+    }
     renderForecast(allTx, accounts, subs);   /* hides the forecast header */
     if (note) note.hidden = true;
     return;
@@ -707,8 +719,30 @@ function renderAccounts(accounts, balanceMap, allTx) {
   const el = document.getElementById('accountTiles');
   if (!el) return;
 
+  /* First run: spell out the two steps, in order — every number on the
+     dashboard builds from an account, so that comes first. */
   if (!accounts.length) {
-    el.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">No accounts yet. <a href="/transactions">Add one →</a></div>`;
+    el.innerHTML = `
+      <div class="get-started" style="grid-column:1/-1;">
+        <div class="term-label">Get started</div>
+        <ol class="get-started__steps">
+          <li class="get-started__step is-current">
+            <span class="get-started__num" aria-hidden="true">1</span>
+            <div class="get-started__text">
+              <strong>Add an account</strong>
+              <span>Your bank, cash or credit card, with today’s balance. Every number here builds from it.</span>
+            </div>
+            <a class="btn btn--primary btn--sm" href="/transactions?new=account">Add account</a>
+          </li>
+          <li class="get-started__step">
+            <span class="get-started__num" aria-hidden="true">2</span>
+            <div class="get-started__text">
+              <strong>Log your first transaction</strong>
+              <span>An expense, income or transfer — it takes a few seconds.</span>
+            </div>
+          </li>
+        </ol>
+      </div>`;
     return;
   }
 
@@ -932,8 +966,22 @@ function txItemHTML(t, cat) {
 
 function setText(id, text) { const el = document.getElementById(id); if (el) el.textContent = text; }
 
+/* The Log hours panel is for people who track hours: shown when Main use is
+   "hours" or "both", or once any shift exists — not pushed on everyone. */
+async function applyQuickLogVisibility() {
+  const panel = document.getElementById('quickLog');
+  if (!panel) return;
+  const focus = SettingsStore.getNavPrefs().focus;
+  let show = focus === 'hours' || focus === 'both';
+  if (!show && typeof ShiftStore !== 'undefined') {
+    try { show = (await ShiftStore.getAll()).length > 0; } catch (_) {}
+  }
+  panel.hidden = !show;
+}
+
 /* Show the focus-question popup; `then` runs once it's answered or skipped.
-   Skip saves the current default (both, Money pinned) so it isn't asked again. */
+   Skip saves the plain-finance default (money) so it isn't asked again; the
+   Log hours panel still appears once a shift is logged. */
 function openFocusAsk(then) {
   const overlay = document.getElementById('focusAsk');
   if (!overlay) { then?.(); return; }
@@ -952,14 +1000,15 @@ function openFocusAsk(then) {
       await SettingsStore.setNavPrefs({ focus, slot: focus === 'hours' ? 'shifts' : 'money' });
     } catch (_) {}   /* still saved on this device */
     window.PFNav?.refresh();
+    await applyQuickLogVisibility();
     if (!skipped) showToast(focus === 'hours' ? 'Hours Tracker pinned — + now logs hours' : 'Saved — change it any time in Settings', 'success');
     then?.();
   }
-  function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); close('both', true); } }
+  function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); close('money', true); } }
 
   overlay.querySelectorAll('[data-focus]').forEach(btn =>
     btn.addEventListener('click', () => close(btn.dataset.focus, false)));
-  overlay.querySelector('[data-focus-skip]')?.addEventListener('click', () => close('both', true));
+  overlay.querySelector('[data-focus-skip]')?.addEventListener('click', () => close('money', true));
   document.addEventListener('keydown', onKey, true);
 }
 
@@ -994,12 +1043,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.hideAppLoader?.();   /* data rendered (or errored) — fade the boot screen out */
   }
 
-  /* Focus question — a popup on an account's first login (never for guests),
+  /* Focus question — a popup on the first visit (guests too — it decides
+     whether the Log hours panel shows),
      until answered; the answer sets the mobile bottom bar. Read after
      hydrateLocalDefaults so an answer from another device counts. The
      first-visit tour (scripts/components/tour.js) waits until it's closed. */
+  await applyQuickLogVisibility();
   const startTour = () => window.PFTour?.maybeStart();
-  if (!user.isGuest && !SettingsStore.getNavPrefs().focus) openFocusAsk(startTour);
+  if (!SettingsStore.getNavPrefs().focus) openFocusAsk(startTour);
   else startTour();
 
   initAccountReorder();

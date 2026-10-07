@@ -287,6 +287,7 @@
               placeholder="••••••••" autocomplete="current-password" required />
             <button type="button" class="pw-toggle" id="pwToggle" aria-label="Show password"></button>
           </div>
+          <div class="field-hint field-hint--warn" id="pwRule">At least 6 characters.</div>
           <div class="field-hint field-hint--warn" id="capsHint">Caps Lock is on</div>
         </div>
         <div class="forgot-row" id="forgotRow">
@@ -453,7 +454,21 @@
       document.getElementById('password').autocomplete  = isSignUp ? 'new-password' : 'current-password';
       document.getElementById('formTitle').textContent  = isSignUp ? 'Create account' : 'Welcome back';
       document.getElementById('formSub').textContent    = isSignUp ? 'Start tracking your finances today' : 'Sign in to your account to continue';
+      /* a reset link makes no sense before the account exists; the length
+         rule does — say it up front instead of after a failed attempt */
+      document.getElementById('forgotRow').style.display = isSignUp ? 'none' : '';
+      document.getElementById('pwRule').classList.toggle('show', isSignUp);
     });
+
+    /* Turn transport failures into something a person can act on —
+       "Failed to fetch" means nothing to anyone outside a dev console. */
+    function friendlyError(err, fallback) {
+      const m = (err && err.message) || '';
+      if (/failed to fetch|networkerror|load failed|network request failed/i.test(m) || (typeof navigator !== 'undefined' && navigator.onLine === false)) {
+        return "Can't reach Flow right now. Check your internet connection and try again.";
+      }
+      return m || fallback;
+    }
 
     /* ---- Continue with Google (Supabase OAuth) ----
        On success the browser is redirected to Google, then back to the
@@ -475,7 +490,7 @@
       } catch (err) {
         showError(/not enabled|Unsupported provider|provider is not/i.test(err.message || '')
           ? 'Google sign-in is not switched on yet.'
-          : (err.message || 'Could not start Google sign-in.'));
+          : friendlyError(err, 'Could not start Google sign-in.'));
         gbtn.disabled = false;
         gbtn.innerHTML = original;
       }
@@ -534,7 +549,7 @@
           ? 'Incorrect email or password.'
           : err.message.includes('already registered')
           ? 'An account with this email already exists. Sign in instead.'
-          : err.message || 'Something went wrong. Please try again.';
+          : friendlyError(err, 'Something went wrong. Please try again.');
         showError(msg);
       } finally {
         setLoading(false);
@@ -624,7 +639,7 @@
         infoEl.innerHTML = `If an account exists for <strong style="color:#f8fafc;">${escapeHTML(email)}</strong>, a password-reset link is on its way. Check your inbox.`;
         infoEl.classList.add('show');
       } catch (err) {
-        errEl.textContent = err.message || 'Could not send the reset link. Please try again.';
+        errEl.textContent = friendlyError(err, 'Could not send the reset link. Please try again.');
         errEl.classList.add('show');
       } finally {
         btnLoading(btn, false, 'Send reset link', 'Sending…');
@@ -653,7 +668,7 @@
         btn.innerHTML = '<span>Password updated ✓</span>';
         setTimeout(() => window.location.replace('/dashboard'), 900);
       } catch (err) {
-        errEl.textContent = err.message || 'Could not update the password. The link may have expired — request a new one.';
+        errEl.textContent = friendlyError(err, 'Could not update the password. The link may have expired — request a new one.');
         errEl.classList.add('show');
         btnLoading(btn, false, 'Update password', 'Updating…');
       }

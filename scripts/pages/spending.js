@@ -135,7 +135,7 @@ async function renderSpending() {
   setText('spendIncome', formatCurrency(totals.income));
   setText('spendNet',    formatSigned(net));
   const netEl = document.getElementById('spendNet');
-  if (netEl) netEl.style.color = net >= 0 ? 'var(--color-income)' : 'var(--color-expense)';
+  if (netEl) netEl.style.color = signColor(net);
 
   await renderCategoryPanel(shown, rangeTx, from, to,
     { canvas: 'categoryCanvas', empty: 'categoryChartEmpty', list: 'spendingBreakdown' });

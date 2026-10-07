@@ -151,12 +151,12 @@
       <a class="topbar-logo" href="${resolve('dashboard.html')}">Flow</a>
       <div class="topbar-title"${titleId}>${title}</div>
       <div class="topbar-actions">
-        <button type="button" class="topbar-icon-btn" data-insights-btn aria-label="Insights" title="Insights" aria-haspopup="dialog" aria-expanded="false">${I(ICONS.insights, 17)}</button>
-        <button type="button" class="topbar-icon-btn theme-toggle" id="themeToggle" data-theme-btn="${themeIsLight ? 'light' : 'dark'}" aria-label="${themeIsLight ? 'Switch to dark theme' : 'Switch to light theme'}" title="${themeIsLight ? 'Switch to dark theme' : 'Switch to light theme'}">
+        <button type="button" class="topbar-icon-btn" data-insights-btn aria-label="Insights" aria-haspopup="dialog" aria-expanded="false">${I(ICONS.insights, 17)}</button>
+        <button type="button" class="topbar-icon-btn theme-toggle" id="themeToggle" data-theme-btn="${themeIsLight ? 'light' : 'dark'}" aria-label="${themeIsLight ? 'Switch to dark theme' : 'Switch to light theme'}">
           <span class="theme-toggle__icon theme-toggle__icon--moon">${I(ICONS.moon, 17)}</span>
           <span class="theme-toggle__icon theme-toggle__icon--sun">${I(ICONS.sun, 17)}</span>
         </button>
-        <a href="${resolve('pages/settings.html')}" class="topbar-icon-btn${CURRENT === 'settings' ? ' topbar-icon-btn--active' : ''}" aria-label="Settings" title="Settings">${I(ICONS.settings, 17)}</a>
+        <a href="${resolve('pages/settings.html')}" class="topbar-icon-btn${CURRENT === 'settings' ? ' topbar-icon-btn--active' : ''}" aria-label="Settings">${I(ICONS.settings, 17)}</a>
       </div>`;
     document.getElementById('themeToggle')?.addEventListener('click', (e) => {
       if (typeof PFTheme === 'undefined') return;
@@ -166,7 +166,6 @@
       btn.dataset.themeBtn = light ? 'light' : 'dark';   /* drives the moon⇄sun swap */
       const label = light ? 'Switch to dark theme' : 'Switch to light theme';
       btn.setAttribute('aria-label', label);
-      btn.setAttribute('title', label);
     });
   }
 

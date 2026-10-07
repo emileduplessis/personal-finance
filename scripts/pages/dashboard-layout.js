@@ -40,7 +40,9 @@
     { id: 'accounts',      label: 'Accounts' },
     { id: 'overview',      label: 'Overview' },
     { id: 'moneyDuo',      label: 'Allocation & month' },
-    { id: 'quickLog',      label: 'Log hours' },
+    /* conditional: only shown to people who track hours (Main use = hours or
+       both) or who already logged some — see applyQuickLogVisibility */
+    { id: 'quickLog',      label: 'Log hours',          conditional: true },
     /* conditional because it can be switched off in Settings → Goals, which
        hides the panel exactly the way an empty data-driven panel hides: a
        locked slot then auto-fills and the picker stops offering it. */
@@ -550,7 +552,6 @@
     btn.type = 'button';
     btn.id = 'dashCustomizeBtn';
     btn.className = 'topbar-icon-btn';
-    btn.title = 'Customize dashboard';
     btn.setAttribute('aria-label', 'Customize dashboard');
     btn.innerHTML = ICON_LAYOUT;
     btn.addEventListener('click', () => setEditing(!editing));

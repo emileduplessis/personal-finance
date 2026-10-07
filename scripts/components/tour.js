@@ -20,42 +20,37 @@
      signed-in user — are skipped. */
   const STEPS = [
     {
+      id: 'accounts', label: 'Start here',
+      sel: ['#accountTiles'],
+      title: 'Start with an account',
+      body: 'Add your bank, cash or credit card with today’s balance. Every number on the dashboard builds from your accounts.',
+    },
+    {
       id: 'add', label: 'Add',
       sel: ['.statbar__add', '.bottom-nav__item--add'],
-      title: 'Log anything in seconds',
+      title: 'Then log anything in seconds',
       body: el => /log hours/i.test(el.getAttribute('aria-label') || '')
         ? 'Tap + to log the hours you worked. Transactions are one tap away in Transactions.'
         : 'Add an expense, income or transfer. It’s always one tap away.',
     },
     {
-      id: 'accounts', label: 'Accounts',
-      sel: ['#accountTiles'],
-      title: 'Start with your accounts',
-      body: 'Add chequing, cash or savings with today’s balance. Every number on the dashboard builds from them.',
-    },
-    {
+      /* only when the Log hours panel is on the dashboard (people who track hours) */
       id: 'hours', label: 'Hours',
       sel: ['#quickLog'],
       title: 'Track the hours you work',
       body: 'Log a shift here and see what you’ve earned before payday.',
     },
     {
-      id: 'layout', label: 'Layout',
-      sel: ['#dashCustomizeBtn'],
-      title: 'Make it yours',
-      body: 'Rearrange, resize or hide any panel on this dashboard.',
-    },
-    {
       id: 'insights', label: 'Insights',
       sel: ['#topbar [data-insights-btn]'],
       title: 'Where did the month go?',
-      body: 'Tap the lightbulb for patterns and alerts from your spending, updated as you log.',
+      body: 'The lightbulb shows patterns and alerts from your spending once you’ve logged a few weeks.',
     },
     {
       id: 'settings', label: 'Settings',
       sel: ['#topbar a[aria-label="Settings"]'],
       title: 'Currency and defaults',
-      body: 'Amounts show in CAD until you change it. Default account and jobs live here too.',
+      body: el => `Amounts show in ${localStorage.getItem('pf_currency') || 'CAD'} until you change it here. Your default account lives here too.`,
     },
     {
       id: 'signup', label: 'Sign up',

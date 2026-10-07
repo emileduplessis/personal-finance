@@ -24,6 +24,13 @@ function syncBalanceField() {
   if (hint)  hint.textContent  = debt
     ? 'What you owe on this card today. It counts against your balance; purchases add to it, payments (transfers in) reduce it.'
     : 'Balance as of today — transactions adjust it from here.';
+  /* the currency was never chosen by the user — say which one is in use */
+  const cur = document.getElementById('accCurrencyHint');
+  if (cur) {
+    let code = 'CAD';
+    try { code = localStorage.getItem('pf_currency') || 'CAD'; } catch (_) {}
+    cur.innerHTML = `Amounts are in <strong>${escapeHTML(code)}</strong>. <a href="/settings">Change currency</a>`;
+  }
 }
 
 async function loadAccountsWithBalances() {
@@ -63,7 +70,7 @@ async function renderAccountsGrid(data) {
   const allCard = accounts.length ? `
       <div class="acc-card acc-card--all" data-filter-acc="" role="button" tabindex="0" title="Show all accounts">
         <div class="acc-card__name">All accounts</div>
-        <div class="acc-card__balance" style="color:${total >= 0 ? 'var(--color-income)' : 'var(--color-expense)'}">${formatBalance(total)}</div>
+        <div class="acc-card__balance" style="color:${signColor(total)}">${formatBalance(total)}</div>
         <div class="acc-card__type">${accounts.length} account${accounts.length === 1 ? '' : 's'}</div>
       </div>` : '';
 
@@ -80,7 +87,7 @@ async function renderAccountsGrid(data) {
           </div>
         </div>
         <div class="acc-card__name" title="${escapeHTML(a.name)}">${escapeHTML(a.name)}</div>
-        <div class="acc-card__balance" style="color:${bal >= 0 ? 'var(--color-income)' : 'var(--color-expense)'}">${formatBalance(bal)}</div>
+        <div class="acc-card__balance" style="color:${signColor(bal)}">${formatBalance(bal)}</div>
         <div class="acc-card__type">${TYPE_LABEL[a.type] || 'Account'}</div>
       </div>`;
   }).join('');
@@ -182,7 +189,7 @@ function updateAccountsSummary(accounts, balanceMap) {
   if (totalEl) {
     const total = accounts.reduce((s, a) => s + (balanceMap[a.id] ?? 0), 0);
     totalEl.textContent = formatBalance(total);
-    totalEl.style.color = total >= 0 ? 'var(--color-income)' : 'var(--color-expense)';
+    totalEl.style.color = signColor(total);
   }
   /* no accounts yet → open so the "New account" card is reachable */
   if (n === 0) setAccountsOpen(true, false);
@@ -271,6 +278,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!user) return;
   setupAccountsToggle();          /* apply saved collapsed/expanded state before data loads */
   wireAccountFilter();
+  /* /transactions?new=account — the dashboard's "Add account" step */
+  if (new URLSearchParams(location.search).get('new') === 'account') {
+    history.replaceState(null, '', location.pathname);
+    openAccountModal(null);
+  }
   try {
     await initAccounts();
   } catch (err) {
@@ -294,10 +306,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       color:          document.getElementById('accColor').value,
     };
     if (!data.name) return;
+    /* first account of a brand-new user → hand them straight to step 2 */
+    const firstRun = !editingAccountId
+      && !(await AccountStore.getAll()).length && !(await TransactionStore.getAll()).length;
     if (editingAccountId) { await AccountStore.update(editingAccountId, data); showToast('Account updated', 'success'); }
-    else                  { await AccountStore.add(data);                      showToast('Account created', 'success'); }
+    else                  { await AccountStore.add(data);                      showToast(firstRun ? 'Account created — now log your first transaction' : 'Account created', 'success'); }
     document.getElementById('accountModal')?.classList.remove('open');
     await initAccounts();
+    if (firstRun) window.openAddTransaction?.();
   });
 
   document.getElementById('closeAccountModal')?.addEventListener('click', () => document.getElementById('accountModal')?.classList.remove('open'));

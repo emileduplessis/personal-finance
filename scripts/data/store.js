@@ -1352,7 +1352,15 @@ function formatBalance(amount) {
   return (amount <= -0.005 ? '−' : '') + formatCurrency(amount);
 }
 function formatSigned(amount) {
-  return (amount <= -0.005 ? '−' : '+') + formatCurrency(amount);
+  if (Math.abs(amount) < 0.005) return formatCurrency(0);   /* nothing happened — no "+$0.00" */
+  return (amount < 0 ? '−' : '+') + formatCurrency(amount);
+}
+/* Text colour for a signed figure: income green, expense red, and plain text
+   for zero (green "$0.00" reads as money in). */
+function signColor(amount) {
+  if (amount >= 0.005)  return 'var(--color-income)';
+  if (amount <= -0.005) return 'var(--color-expense)';
+  return '';
 }
 
 function formatDate(isoDate) {
@@ -1599,5 +1607,5 @@ const CSVService = {
    are exposed (the CSV tokenizer + formatters); the store methods need a live
    Supabase client and aren't unit-testable here. */
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { CSVService, isoLocal, formatCurrency, formatBalance, formatSigned, formatDate, formatDateShort };
+  module.exports = { CSVService, isoLocal, formatCurrency, formatBalance, formatSigned, signColor, formatDate, formatDateShort };
 }

@@ -117,11 +117,13 @@ async function renderBudgetPage() {
 
   let html = '';
 
-  if (!hasBudgets && !hasSpending) {
+  if (!hasBudgets) {
     html += `
       <div class="budget-onboarding-hint">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        Use <strong>+ Set limit</strong> on any category to give it a monthly budget.
+        <span>No budgets yet. Pick the categories you want to watch and use <strong>+ Set limit</strong> to give each a monthly cap —
+        ${hasSpending ? 'the ones you already spend on are listed first.' : 'start with the big ones, like rent and groceries.'}
+        After a few months of history, Flow suggests limits for you.</span>
       </div>`;
   }
 
@@ -135,10 +137,17 @@ async function renderBudgetPage() {
   }
 
   if (dormant.length) {
+    const rows = dormant.map(c => categoryRowHTML(c, 0, 0, recs[c.id])).join('');
     if (budgeted.length || unbudgeted.length) {
-      html += `<div class="budget-section-label">No activity</div>`;
+      /* folded away once something is active, so 15+ identical "no budget"
+         rows don't bury the categories that matter */
+      html += `<details class="budget-dormant">
+        <summary class="budget-section-label">No activity · ${dormant.length} categor${dormant.length === 1 ? 'y' : 'ies'}</summary>
+        ${rows}
+      </details>`;
+    } else {
+      html += rows;
     }
-    html += dormant.map(c => categoryRowHTML(c, 0, 0, recs[c.id])).join('');
   }
 
   listEl.innerHTML = html;

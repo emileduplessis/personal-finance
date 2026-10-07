@@ -227,8 +227,8 @@
                 <div class="chart-empty" id="balanceChartEmpty" hidden>
                   <div class="chart-empty__inner">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="opacity:.3;margin-bottom:8px"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                    <p style="margin-bottom:4px">No data yet</p>
-                    <a href="/add-transaction" style="font-size:0.75rem;color:var(--color-text)">Add a transaction to get started →</a>
+                    <p style="margin-bottom:4px" id="balanceChartEmptyMsg">No data yet</p>
+                    <a href="/add-transaction" id="balanceChartEmptyLink" style="font-size:0.75rem;color:var(--color-text)">Add a transaction to get started →</a>
                   </div>
                 </div>
               </div>
@@ -383,7 +383,7 @@
     <div class="modal focus-ask__modal" role="dialog" aria-modal="true" aria-labelledby="focusAskTitle" aria-describedby="focusAskSub">
       <div class="term-label">Welcome to Flow</div>
       <h2 class="focus-ask__title" id="focusAskTitle">What do you want to keep track of?</h2>
-      <p class="focus-ask__sub" id="focusAskSub">We'll put the right shortcut in your bottom bar. You can change it any time in Settings.</p>
+      <p class="focus-ask__sub" id="focusAskSub">We'll set up your dashboard and shortcuts to match. You can change it any time in Settings.</p>
       <div class="focus-ask__choices">
         <button type="button" class="focus-opt" data-focus="money">
           <span class="focus-opt__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 12h.01M18 12h.01"/></svg></span>

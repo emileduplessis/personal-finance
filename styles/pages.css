@@ -925,14 +925,20 @@
 
 /* Budget onboarding hint (replaces full onboarding screen) */
 .budget-onboarding-hint {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: flex-start; gap: 8px;
   padding: 11px 20px;
   font-size: .8125rem; color: var(--color-text-muted);
   border-bottom: 1px solid var(--color-border);
   background: var(--color-surface-2);
 }
-.budget-onboarding-hint svg { color: var(--color-accent); flex-shrink: 0; }
+.budget-onboarding-hint svg { color: var(--color-accent); flex-shrink: 0; margin-top: 3px; }
 .budget-onboarding-hint strong { color: var(--color-text); }
+.budget-onboarding-hint span { line-height: 1.5; }
+.budget-dormant > summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 6px; padding-bottom: 8px; }
+.budget-dormant > summary::-webkit-details-marker { display: none; }
+.budget-dormant > summary::before { content: '▸'; font-size: .75rem; }
+.budget-dormant[open] > summary::before { content: '▾'; }
+.budget-dormant > summary:hover { color: var(--color-text); }
 
 /* ============================================================
    SUBSCRIPTIONS PAGE

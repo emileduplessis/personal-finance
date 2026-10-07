@@ -50,14 +50,6 @@ function weekDays() {
   return out;
 }
 
-/* start time + decimal hours → end "HH:MM" (wraps past midnight) */
-function addHours(start, h) {
-  const [hh, mm] = start.split(':').map(Number);
-  let total = hh * 60 + mm + Math.round(h * 60);
-  total = ((total % 1440) + 1440) % 1440;
-  return String(Math.floor(total / 60)).padStart(2, '0') + ':' + String(total % 60).padStart(2, '0');
-}
-
 /* Shared save: add the shift as "unlogged" — no income transaction. Flip it
    to income from the Hours Tracker list once you're actually paid. Mirrors the
    Hours Tracker quick-log default. */
@@ -98,12 +90,10 @@ function renderHint() {
   } else if (rate > 0) {
     el.innerHTML = `${name}Paid <strong>${formatCurrency(rate)}/h</strong>${acc ? ` → ${escapeHTML(acc.name)}` : ''}`;
     el.hidden = false;
-  } else if (name) {
-    el.innerHTML = name.replace(/ · $/, '');
-    el.hidden = false;
   } else {
-    el.innerHTML = '';
-    el.hidden = true;
+    /* no rate yet: hours still log, but say why the pay reads $0 */
+    el.innerHTML = `${name}No pay rate yet — <a href="/hours-tracker">set one</a> to see what you’ve earned.`;
+    el.hidden = false;
   }
 }
 
@@ -146,7 +136,8 @@ async function submitForm(e) {
     } else {
       const hours = parseFloat(document.getElementById('qlHours').value) || 0;
       if (hours <= 0) { showToast('Enter the number of hours', 'error'); return; }
-      start = '09:00'; end = addHours(start, hours);
+      start = ''; end = '';     /* hours only — don't invent clock times */
+      base.hours = hours;
     }
     data = { ...base, start, end, payMode: 'hourly', rate: (dj ? dj.rate : job.rate) || 0, fixedPay: 0 };
   }

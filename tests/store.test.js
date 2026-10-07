@@ -15,7 +15,7 @@ const assert = require('node:assert/strict');
 let CURRENCY = 'CAD';
 global.localStorage = { getItem: (k) => (k === 'pf_currency' ? CURRENCY : null) };
 
-const { CSVService, isoLocal, formatCurrency, formatBalance, formatSigned, formatDate, formatDateShort } = require('../scripts/data/store.js');
+const { CSVService, isoLocal, formatCurrency, formatBalance, formatSigned, signColor, formatDate, formatDateShort } = require('../scripts/data/store.js');
 
 /* ---- CSV tokenizer (the RFC-4180-ish parser) ---- */
 test('CSVService._parse', async (t) => {
@@ -233,11 +233,18 @@ test('formatBalance / formatSigned', async (t) => {
   await t.test('formatSigned: always + or −', () => {
     assert.equal(formatSigned(-14.75), '−' + formatCurrency(14.75));
     assert.equal(formatSigned(14.75), '+' + formatCurrency(14.75));
-    assert.equal(formatSigned(0), '+' + formatCurrency(0));
+    assert.equal(formatSigned(0), formatCurrency(0), 'zero carries no sign');
+  });
+
+  await t.test('signColor: neutral at zero', () => {
+    assert.equal(signColor(5), 'var(--color-income)');
+    assert.equal(signColor(-5), 'var(--color-expense)');
+    assert.equal(signColor(0), '');
+    assert.equal(signColor(0.001), '');
   });
 
   await t.test('amounts that round to zero carry no minus', () => {
     assert.equal(formatBalance(-0.001), formatCurrency(0));
-    assert.equal(formatSigned(-0.001), '+' + formatCurrency(0));
+    assert.equal(formatSigned(-0.001), formatCurrency(0));
   });
 });
