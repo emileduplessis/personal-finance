@@ -60,8 +60,8 @@ unchecked item. `[user]` = needs an action only the account owner can do.
       "holds nothing and can never move your funds"
 - [x] Contact: mailto rows in Settings → About (feedback + security) and in
       both legal pages
-- Note: contact address is the personal Gmail — consider a dedicated
-      support address before wide launch
+- [x] Dedicated contact address: support@flownetworth.com (ImprovMX → Gmail
+      forwarding, 2026-10-07)
 
 ## Phase 4 — Ops & reliability
 
