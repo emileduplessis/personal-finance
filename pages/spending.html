@@ -91,6 +91,7 @@
         </div>
       </div>
 
+      <div class="cf-cats">
       <!-- Category breakdown: donut + ranked list in one panel -->
       <section class="card chart-card cat-overview">
         <div class="card-header">
@@ -111,6 +112,25 @@
           </div>
         </div>
       </section>
+      <!-- Desktop only: income gets its own panel beside spending (spending.js
+           renders both when the screen is wide; phones keep the toggle) -->
+      <section class="card chart-card cat-overview cf-desktop-only" id="incomeCard">
+        <div class="card-header">
+          <h2 class="card-title">Income by Category</h2>
+        </div>
+        <div class="cat-overview__body">
+          <div class="chart-container chart-container--donut cat-overview__donut">
+            <canvas id="categoryCanvasIncome" role="img" aria-label="Income by category donut chart"></canvas>
+            <div class="chart-skeleton chart-skeleton--donut" id="incomeCatSkeleton"></div>
+            <div class="chart-empty" id="categoryChartEmptyIncome" hidden><span>No income this period.</span></div>
+          </div>
+          <div id="incomeBreakdown" class="spending-breakdown cat-overview__list">
+            <div class="spending-item" aria-hidden="true"><div class="spending-item__icon"><span class="skeleton skeleton-avatar skeleton-avatar--sm" style="width:18px;height:18px"></span></div><div class="spending-item__info"><div class="skeleton skeleton-text" style="width:58%"></div><div class="spending-item__bar-wrap"><span class="skeleton" style="display:block;height:6px;width:60%"></span></div></div><div class="spending-item__meta"><span class="skeleton skeleton-text" style="width:62px;margin-bottom:0"></span></div></div>
+            <div class="spending-item" aria-hidden="true"><div class="spending-item__icon"><span class="skeleton skeleton-avatar skeleton-avatar--sm" style="width:18px;height:18px"></span></div><div class="spending-item__info"><div class="skeleton skeleton-text" style="width:58%"></div><div class="spending-item__bar-wrap"><span class="skeleton" style="display:block;height:6px;width:60%"></span></div></div><div class="spending-item__meta"><span class="skeleton skeleton-text" style="width:62px;margin-bottom:0"></span></div></div>
+          </div>
+        </div>
+      </section>
+      </div>
 
       <!-- Monthly trend -->
       <section class="card chart-card chart-card--full">

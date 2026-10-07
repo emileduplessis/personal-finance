@@ -1521,3 +1521,59 @@
   .day-chips::-webkit-scrollbar { display: none; }
   .day-chip { flex: 0 0 auto; min-width: 46px; }
 }
+
+/* ── Transactions, desktop: two columns that fit the screen ─────
+   Accounts become a full-height list on the left (click one to filter);
+   stats, filters and the activity list stack on the right. The page itself
+   doesn't scroll — only the account list and the activity list do. */
+@media (min-width: 1100px) {
+  .tx-page {
+    display: grid;
+    grid-template-columns: 264px minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
+    gap: 12px;
+    height: max(560px, calc(100dvh - var(--topbar-height, 56px) - 48px));
+    min-height: 0;
+  }
+  .tx-page > .accounts-panel { grid-column: 1; grid-row: 1 / -1; display: flex; flex-direction: column; min-height: 0; }
+  .tx-page > .tx-statbar,
+  .tx-page > .tx-toolbar   { grid-column: 2; }
+  .tx-page > .tx-listpanel { grid-column: 2; min-height: 0; }
+  .tx-listpanel .tx-list-full { min-height: 0; }
+
+  /* the summary becomes a fixed column header; the drawer is always open */
+  .accounts-summary { cursor: default; padding: 12px 14px; }
+  .accounts-summary:hover { background: none; }
+  .accounts-summary__chevron { display: none; }
+  .accounts-drawer, .accounts-drawer[hidden] {
+    display: flex; flex-direction: column; gap: 0; flex: 1 1 auto; min-height: 0;
+    overflow-x: hidden; overflow-y: auto; padding: 0;
+  }
+  .accounts-drawer::-webkit-scrollbar { width: 4px; height: auto; }
+
+  /* account cards → rows: name + type on the left, balance on the right */
+  .accounts-drawer .acc-card {
+    width: auto; flex: 0 0 auto;
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-rows: auto auto;
+    column-gap: 10px; row-gap: 2px; align-items: center;
+    padding: 11px 14px; border: 0; border-bottom: 1px solid var(--color-border-light);
+    cursor: pointer; transition: background var(--transition);
+  }
+  .accounts-drawer .acc-card:hover { background: var(--color-surface-2); }
+  .accounts-drawer .acc-card:focus-visible { outline: 1px solid var(--color-text); outline-offset: -1px; }
+  .accounts-drawer .acc-card.is-active { background: var(--color-surface-2); box-shadow: inset 2px 0 0 var(--color-text); }
+  .accounts-drawer .acc-card__head { display: contents; }
+  .accounts-drawer .acc-card__avatar { grid-column: 1; grid-row: 1 / span 2; width: 28px; height: 28px; font-size: .8125rem; }
+  .accounts-drawer .acc-card__name { grid-column: 2; grid-row: 1; }
+  .accounts-drawer .acc-card__type { grid-column: 2; grid-row: 2; margin-top: 0; }
+  .accounts-drawer .acc-card__balance { grid-column: 3; grid-row: 1; margin-top: 0; font-size: .875rem; text-align: right; }
+  .accounts-drawer .acc-card__actions { grid-column: 3; grid-row: 2; justify-content: flex-end; }
+  .accounts-drawer .acc-card:focus-within .acc-card__actions { opacity: 1; }
+  /* "All accounts" has no avatar: span the name across */
+  .accounts-drawer .acc-card--all .acc-card__name,
+  .accounts-drawer .acc-card--all .acc-card__type { grid-column: 1 / 3; }
+  .accounts-drawer .acc-card--add {
+    display: flex; flex-direction: row; justify-content: center; gap: 8px;
+    margin: 12px 14px 14px; padding: 9px; border: 1px dashed var(--color-border);
+  }
+}

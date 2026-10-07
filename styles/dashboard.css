@@ -1122,3 +1122,17 @@ body.dash-dragging { user-select: none; }
 .acct-swapmenu__label { padding: 6px 9px 4px; font-family: var(--font-display); font-size: .625rem; letter-spacing: .12em; text-transform: uppercase; color: var(--color-text-light); }
 .acct-tile--dragging { position: relative; z-index: 20; opacity: .92; outline: 1px solid var(--color-text); cursor: grabbing; pointer-events: none; }
 .acct-tile--drop { outline: 1px dashed var(--mono-outline-strong); outline-offset: -1px; background: var(--color-surface-2); }
+
+/* Cash Flow, desktop: Spending and Income side by side (spending.js COMBINED) */
+.cf-desktop-only { display: none; }
+@media (min-width: 1100px) {
+  #modeToggle { display: none; }
+  .cf-cats { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: stretch; }
+  .cf-cats .cf-desktop-only { display: block; }
+  .cf-cats .cat-overview__body { grid-template-columns: 170px minmax(0, 1fr); gap: 18px; }
+  .cf-cats .cat-overview__donut { height: 180px; }
+}
+@media (min-width: 1400px) {
+  .cf-cats .cat-overview__body { grid-template-columns: 210px minmax(0, 1fr); }
+  .cf-cats .cat-overview__donut { height: 210px; }
+}

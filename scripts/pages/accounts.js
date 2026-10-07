@@ -40,11 +40,21 @@ async function renderAccountsGrid(data) {
 
   const { accounts, balanceMap } = data || await loadAccountsWithBalances();
 
+  /* "All accounts" first — on desktop the drawer is the left column and a card
+     click filters the list (see wireAccountFilter) */
+  const total = accounts.reduce((s, a) => s + (balanceMap[a.id] ?? 0), 0);
+  const allCard = accounts.length ? `
+      <div class="acc-card acc-card--all" data-filter-acc="" role="button" tabindex="0" title="Show all accounts">
+        <div class="acc-card__name">All accounts</div>
+        <div class="acc-card__balance" style="color:${total >= 0 ? 'var(--color-income)' : 'var(--color-expense)'}">${formatCurrency(total)}</div>
+        <div class="acc-card__type">${accounts.length} account${accounts.length === 1 ? '' : 's'}</div>
+      </div>` : '';
+
   const cards = accounts.map(a => {
     const bal    = balanceMap[a.id] ?? 0;
     const letter = escapeHTML(a.name.charAt(0).toUpperCase());
     return `
-      <div class="acc-card" data-id="${a.id}">
+      <div class="acc-card" data-id="${a.id}" data-filter-acc="${a.id}" role="button" tabindex="0" title="Show ${escapeHTML(a.name)} only">
         <div class="acc-card__head">
           <div class="acc-card__avatar" style="background:${a.color}22;color:${a.color}">${letter}</div>
           <div class="acc-card__actions">
@@ -58,7 +68,7 @@ async function renderAccountsGrid(data) {
       </div>`;
   }).join('');
 
-  el.innerHTML = cards + `
+  el.innerHTML = allCard + cards + `
     <button class="acc-card acc-card--add" id="addAccountCard">
       <div class="acc-card__add-icon">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
@@ -75,21 +85,65 @@ async function renderAccountsGrid(data) {
   });
 
   updateAccountsSummary(accounts, balanceMap);
+  markActiveAccount();
+}
+
+/* ---- Account cards filter the transaction list ----
+   Clicking a card drives the existing #filterAccount select (transactions.js
+   owns the filtering), and the card matching the current filter is marked. */
+function markActiveAccount() {
+  const cur = document.getElementById('filterAccount')?.value || '';
+  document.querySelectorAll('#accountsGrid [data-filter-acc]').forEach(c => {
+    const on = c.dataset.filterAcc === cur;
+    c.classList.toggle('is-active', on);
+    c.setAttribute('aria-pressed', String(on));
+  });
+}
+
+function wireAccountFilter() {
+  const grid = document.getElementById('accountsGrid');
+  const sel  = document.getElementById('filterAccount');
+  if (!grid || !sel || grid.dataset.filterWired) return;
+  grid.dataset.filterWired = '1';
+  const pick = card => {
+    sel.value = card.dataset.filterAcc;
+    sel.dispatchEvent(new Event('change', { bubbles: true }));
+  };
+  grid.addEventListener('click', e => {
+    if (e.target.closest('[data-action]')) return;          /* edit / delete buttons */
+    const card = e.target.closest('[data-filter-acc]');
+    if (card) pick(card);
+  });
+  grid.addEventListener('keydown', e => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const card = e.target.closest('[data-filter-acc]');
+    if (card && e.target === card) { e.preventDefault(); pick(card); }
+  });
+  sel.addEventListener('change', markActiveAccount);
+  /* a filter restored from the URL / saved view is set without a change event */
+  window.addEventListener('load', () => setTimeout(markActiveAccount, 0));
 }
 
 /* ---- Collapsible accounts summary bar ----
    A one-line "N accounts · $total" header; the cards live in a drawer that
    opens on demand so the transaction history starts right below. */
 const ACCOUNTS_OPEN_KEY = 'pf_accounts_open';
+/* desktop: the accounts are the always-open left column (pages.css) */
+const ACCOUNTS_RAIL = window.matchMedia('(min-width: 1100px)');
+
+function savedAccountsOpen() {
+  try { return localStorage.getItem(ACCOUNTS_OPEN_KEY) === '1'; } catch (_) { return false; }
+}
 
 function setAccountsOpen(open, persist = true) {
   const panel  = document.getElementById('accountsPanel');
   const drawer = document.getElementById('accountsGrid');
   const btn    = document.getElementById('accountsSummary');
   if (!panel || !drawer) return;
-  panel.classList.toggle('is-open', open);
-  drawer.hidden = !open;
-  btn?.setAttribute('aria-expanded', String(open));
+  const shown = open || ACCOUNTS_RAIL.matches;
+  panel.classList.toggle('is-open', shown);
+  drawer.hidden = !shown;
+  btn?.setAttribute('aria-expanded', String(shown));
   if (persist) { try { localStorage.setItem(ACCOUNTS_OPEN_KEY, open ? '1' : '0'); } catch (_) {} }
 }
 
@@ -97,10 +151,10 @@ function setupAccountsToggle() {
   const btn    = document.getElementById('accountsSummary');
   const drawer = document.getElementById('accountsGrid');
   if (!btn || !drawer) return;
-  let open = false;
-  try { open = localStorage.getItem(ACCOUNTS_OPEN_KEY) === '1'; } catch (_) {}
-  setAccountsOpen(open, false);                    /* collapsed by default */
-  btn.addEventListener('click', () => setAccountsOpen(drawer.hidden));
+  setAccountsOpen(savedAccountsOpen(), false);     /* collapsed by default on phones */
+  btn.addEventListener('click', () => { if (!ACCOUNTS_RAIL.matches) setAccountsOpen(drawer.hidden); });
+  /* resizing across the breakpoint: back to the phone's saved state, or open */
+  ACCOUNTS_RAIL.addEventListener('change', () => setAccountsOpen(savedAccountsOpen(), false));
 }
 
 function updateAccountsSummary(accounts, balanceMap) {
@@ -198,6 +252,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const user = await SupaAuth.requireAuth();
   if (!user) return;
   setupAccountsToggle();          /* apply saved collapsed/expanded state before data loads */
+  wireAccountFilter();
   try {
     await initAccounts();
   } catch (err) {
