@@ -286,8 +286,8 @@ body.page-exit .main-wrapper {
   flex-direction: column;
   gap: 12px;
   width: 100%;
-  max-width: 1440px;
-  margin: 0 auto;
+  /* No max-width: on wide/ultrawide displays the content stretches to fill
+     the space beside the sidebar instead of leaving empty gutters. */
 }
 
 /* ---- Bottom nav — HIDDEN on desktop, shown on mobile ---- */
