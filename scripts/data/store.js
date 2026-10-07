@@ -208,6 +208,30 @@ const AccountStore = {
     SettingsStore.setJobSettings({ defaultAccountId: id || '' });   /* sync cross-device */
   },
 
+  /* Custom account order — set by dragging accounts in the dashboard's
+     customize mode. Ids in display order; synced via ui_prefs.accountOrder
+     and mirrored here because renders read it synchronously. Accounts not in
+     the list (new ones) keep their creation order, after the ordered ones. */
+  ORDER_KEY: 'pf_account_order',
+  getOrder() {
+    try { const v = JSON.parse(localStorage.getItem(this.ORDER_KEY) || '[]'); return Array.isArray(v) ? v : []; }
+    catch { return []; }
+  },
+  hasCustomOrder() { return this.getOrder().length > 0; },
+  async setOrder(ids) {
+    try { localStorage.setItem(this.ORDER_KEY, JSON.stringify(ids)); } catch (_) {}
+    await SettingsStore.setUiPref({ accountOrder: ids });
+  },
+  _applyOrder(list) {
+    const order = this.getOrder();
+    if (!order.length) return list;
+    const rank = new Map(order.map((id, i) => [id, i]));
+    return list
+      .map((a, i) => ({ a, i }))
+      .sort((x, y) => (rank.get(x.a.id) ?? order.length + x.i) - (rank.get(y.a.id) ?? order.length + y.i))
+      .map(x => x.a);
+  },
+
   /* last-good cache → a transient error shows stale accounts, not a blank page */
   _cacheKey: 'pf_acct_cache',
   async getAll() {
@@ -216,9 +240,9 @@ const AccountStore = {
       if (error) throw new Error(error.message);
       const mapped = (data || []).map(accountToCamel);
       try { localStorage.setItem(this._cacheKey, JSON.stringify(mapped)); } catch (_) {}
-      return mapped;
+      return this._applyOrder(mapped);
     } catch (err) {
-      try { const c = JSON.parse(localStorage.getItem(this._cacheKey) || 'null'); if (c) return c; } catch (_) {}
+      try { const c = JSON.parse(localStorage.getItem(this._cacheKey) || 'null'); if (c) return this._applyOrder(c); } catch (_) {}
       throw err;
     }
   },
@@ -592,6 +616,7 @@ const SettingsStore = {
           else localStorage.removeItem('pf_nw_goal');
         }
         if (Array.isArray(up.txTemplates)) localStorage.setItem('pf_tx_templates', JSON.stringify(up.txTemplates));
+        if (Array.isArray(up.accountOrder)) localStorage.setItem(AccountStore.ORDER_KEY, JSON.stringify(up.accountOrder));
         if (up.goals && typeof up.goals === 'object') {
           localStorage.setItem(this.GOALS_KEY, JSON.stringify(up.goals));
         }
@@ -615,6 +640,7 @@ const SettingsStore = {
           if (goals && Object.keys(goals).length) seed.goals = goals;
         } catch (_) {}
         if (localStorage.getItem(this.NAV_KEY)) seed.nav = this.getNavPrefs();
+        if (AccountStore.hasCustomOrder()) seed.accountOrder = AccountStore.getOrder();
         try {
           const tpls = JSON.parse(localStorage.getItem('pf_tx_templates') || '[]');
           if (Array.isArray(tpls) && tpls.length) seed.txTemplates = tpls;

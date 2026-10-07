@@ -42,7 +42,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles/main.css" />
   <style>
-    .lp { max-width: 860px; margin: 0 auto; padding: 0 20px 90px; }
+    .lp { max-width: 1280px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 48px) 90px; }
     .lp-nav { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
     .lp-mark { font-family: var(--font-display); font-weight: 700; font-size: 1.125rem; letter-spacing: .04em; }
     .lp-nav a.lp-signin {
@@ -61,7 +61,30 @@
     .lp-cta:hover { background: var(--color-primary-dark); }
     .lp-cta-sub { display: block; margin-top: 12px; font-size: .75rem; color: var(--color-text-light); font-family: var(--font-display); }
 
-    .lp-features { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--color-border);
+    .lp-free { display: inline-block; font-family: var(--font-display); font-size: .6875rem; font-weight: 700;
+               letter-spacing: .14em; color: var(--color-primary-contrast, #000); background: var(--color-primary);
+               padding: 3px 8px; margin-right: 10px; vertical-align: 1px; }
+
+    /* hero: copy left, a live-looking preview right (desktop) */
+    .lp-hero { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: clamp(32px, 5vw, 72px); align-items: center; }
+    .lp-preview { border: 1px solid var(--color-border); background: var(--color-surface); font-family: var(--font-display); }
+    .lp-preview__bar { display: flex; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--color-border);
+                       font-size: .6875rem; letter-spacing: .12em; color: var(--color-text-light); }
+    .lp-preview__hero { padding: 22px 16px 18px; border-bottom: 1px solid var(--color-border); }
+    .lp-preview__label { font-size: .625rem; letter-spacing: .14em; color: var(--color-text-light); text-transform: uppercase; }
+    .lp-preview__big { font-size: clamp(1.75rem, 3vw, 2.25rem); font-weight: 700; margin-top: 6px; letter-spacing: -.01em; }
+    .lp-preview__cells { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid var(--color-border); }
+    .lp-preview__cells > div { padding: 14px 16px; border-right: 1px solid var(--color-border); }
+    .lp-preview__cells > div:last-child { border-right: 0; }
+    .lp-preview__val { font-size: .9375rem; font-weight: 600; margin-top: 6px; }
+    .lp-preview__row { display: flex; justify-content: space-between; align-items: baseline; padding: 11px 16px;
+                       border-bottom: 1px solid var(--color-border); font-family: var(--font-body); font-size: .8125rem; }
+    .lp-preview__row:last-child { border-bottom: 0; }
+    .lp-preview__row small { display: block; font-size: .6875rem; color: var(--color-text-light); margin-top: 2px; }
+    .lp-preview__row b { font-family: var(--font-display); font-weight: 600; }
+    .lp-in { color: var(--color-income); } .lp-out { color: var(--color-expense); }
+
+    .lp-features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--color-border);
                    border: 1px solid var(--color-border); margin: 56px 0; }
     .lp-feature { background: var(--color-bg); padding: 26px 24px; }
     .lp-feature h3 { font-size: .9375rem; margin: 0 0 8px; }
@@ -80,9 +103,18 @@
     .lp-foot a { color: var(--color-text-muted); text-decoration: none; }
     .lp-foot a:hover { color: var(--color-text); }
 
+    .lp-trust { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 12px 48px; align-items: start; }
+    .lp-trust h2 { margin: 0; }
+
+    @media (max-width: 960px) {
+      .lp-hero { grid-template-columns: 1fr; }
+      .lp-features { grid-template-columns: repeat(2, 1fr); }
+      .lp-trust { grid-template-columns: 1fr; }
+    }
     @media (max-width: 620px) {
       .lp-features { grid-template-columns: 1fr; }
       .lp-hero { padding: 48px 0 40px; }
+      .lp-preview__cells > div { padding: 12px 10px; }
     }
   </style>
 </head>
@@ -94,13 +126,32 @@
     </nav>
 
     <header class="lp-hero">
-      <div class="lp-kicker">Personal finance · precise / minimal / fast</div>
-      <h1>Know your financial state in seconds.</h1>
-      <p>Flow Net Worth is a personal finance tracker with the temperament of a pro tool: no gradients,
-      no mascots, no motivational quotes. Log a transaction in seconds, see exactly where the
-      month went, and let the numbers speak.</p>
-      <a class="lp-cta" href="/dashboard">Try it now — no account needed →</a>
-      <span class="lp-cta-sub">free · no card · data stays on your device until you <a href="/login?mode=signup" style="color:inherit;">create an account</a></span>
+      <div>
+        <div class="lp-kicker"><span class="lp-free">FREE</span>Personal finance · precise / minimal / fast</div>
+        <h1>Know your financial state in seconds.</h1>
+        <p>Flow Net Worth is a free personal finance tracker with the temperament of a pro tool: no gradients,
+        no mascots, no motivational quotes. Log a transaction in seconds, see exactly where the
+        month went, and let the numbers speak.</p>
+        <a class="lp-cta" href="/dashboard">Try it free — no account needed →</a>
+        <span class="lp-cta-sub">free · no card · data stays on your device until you <a href="/login?mode=signup" style="color:inherit;">create an account</a></span>
+      </div>
+
+      <!-- illustrative preview — sample numbers, not real data -->
+      <div class="lp-preview" aria-hidden="true">
+        <div class="lp-preview__bar"><span>FLOW_ · DASHBOARD</span><span>OCT 2026</span></div>
+        <div class="lp-preview__hero">
+          <div class="lp-preview__label">Current balance</div>
+          <div class="lp-preview__big">$4,812.40</div>
+        </div>
+        <div class="lp-preview__cells">
+          <div><div class="lp-preview__label">Income</div><div class="lp-preview__val lp-in">+$2,140</div></div>
+          <div><div class="lp-preview__label">Spent</div><div class="lp-preview__val lp-out">−$1,386</div></div>
+          <div><div class="lp-preview__label">Net</div><div class="lp-preview__val lp-in">+$754</div></div>
+        </div>
+        <div class="lp-preview__row"><span>Groceries<small>Today · Chequing</small></span><b class="lp-out">−$64.18</b></div>
+        <div class="lp-preview__row"><span>Paycheque<small>Oct 4 · 22.5 h logged</small></span><b class="lp-in">+$382.50</b></div>
+        <div class="lp-preview__row"><span>Netflix<small>Subscription · due Oct 20</small></span><b class="lp-out">−$16.99</b></div>
+      </div>
     </header>
 
     <div class="lp-features">
@@ -145,6 +196,7 @@
     <section class="lp-trust">
       <h2>Your data is the product you keep — not the one we sell</h2>
       <ul>
+        <li><strong>Free to use.</strong> No card needed — not even to sign up.</li>
         <li><strong>No ads, no trackers, no selling data.</strong> There's nothing to monetize you with.</li>
         <li><strong>Isolated per account.</strong> Row-level security means your rows are yours alone.</li>
         <li><strong>Leave anytime.</strong> One-click CSV export and permanent delete live in Settings.</li>

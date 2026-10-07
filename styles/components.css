@@ -623,12 +623,20 @@ textarea[data-loading]::placeholder { color: transparent; }
 }
 
 /* ============================================================
-   First-visit tour (scripts/components/tour.js) — a white frame
-   on one control + a compact popup beside it. No dimming.
+   First-visit tour (scripts/components/tour.js) — the page blurs
+   and darkens around one framed control + a compact popup.
    ============================================================ */
+/* four strips around the framed control; they also swallow clicks so the
+   page can't be used mid-tour (Skip / Esc leave it) */
+.tour-shade > div {
+  position: fixed; z-index: 8999;
+  background: rgba(0, 0, 0, 0.66);
+  -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+}
+/* covers the control itself: it stays sharp and lit, but isn't clickable */
 .tour-frame {
-  position: fixed; z-index: 9000; pointer-events: none;
-  outline: 1px solid var(--color-text); outline-offset: 0;
+  position: fixed; z-index: 9000;
+  outline: 1px solid #fff; outline-offset: 0;
 }
 .tour-pop {
   position: fixed; z-index: 9001;
@@ -662,3 +670,47 @@ textarea[data-loading]::placeholder { color: transparent; }
 .tour-pop__progress { display: flex; gap: 4px; margin-top: 12px; }
 .tour-pop__progress span { flex: 1; height: 2px; background: var(--color-border); }
 .tour-pop__progress span.is-on { background: var(--color-text); }
+
+/* ============================================================
+   Insights popover (scripts/components/insights-popover.js) —
+   opens under the top-bar lightbulb, over a pinned bottom slot.
+   ============================================================ */
+.insights-pop {
+  position: fixed; z-index: 600;
+  width: min(380px, calc(100vw - 32px));
+  display: flex; flex-direction: column;
+  background: var(--color-surface);
+  border: 1px solid var(--mono-outline-strong);
+  box-shadow: var(--shadow-lg);
+}
+.insights-pop__head { padding: 14px 16px 12px; border-bottom: 1px solid var(--color-border); }
+.insights-pop__title { font-size: 0.9375rem; font-weight: 600; color: var(--color-text); }
+.insights-pop__sub { font-size: 0.75rem; color: var(--color-text-muted); margin-top: 2px; }
+.insights-pop__list { display: flex; flex-direction: column; gap: 8px; padding: 12px; overflow-y: auto; overscroll-behavior: contain; }
+
+.insight-card {
+  display: flex; gap: 12px; padding: 14px 16px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-left-width: 3px;
+}
+.insight-card__icon { flex-shrink: 0; line-height: 0; margin-top: 1px; color: var(--color-text-muted); }
+.insight-card__body { min-width: 0; }
+.insight-card__title { font-size: 0.875rem; font-weight: 600; color: var(--color-text); margin-bottom: 3px; }
+.insight-card__text { font-size: 0.8125rem; color: var(--color-text-muted); line-height: 1.55; }
+.insight-card__text strong { color: var(--color-text); font-weight: 600; }
+.insight-card__text a { color: var(--color-text); white-space: nowrap; }
+.insight-card--up   { border-left-color: var(--color-income); }
+.insight-card--up   .insight-card__icon { color: var(--color-income); }
+.insight-card--down { border-left-color: var(--color-expense); }
+.insight-card--down .insight-card__icon { color: var(--color-expense); }
+.insight-card--info { border-left-color: var(--color-transfer); }
+.insight-card--info .insight-card__icon { color: var(--color-transfer); }
+
+.insight-skeleton { height: 62px; border: 1px solid var(--color-border); border-left: 3px solid var(--color-border); animation: fieldPulse 1.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .insight-skeleton { animation: none; background: var(--color-border); } }
+
+.insights-empty { text-align: center; padding: 22px 12px; color: var(--color-text-muted); }
+.insights-empty__icon { display: block; line-height: 0; opacity: .35; margin-bottom: 10px; }
+.insights-empty__title { font-weight: 600; color: var(--color-text); margin-bottom: 6px; font-size: 0.875rem; }
+.insights-empty__text { font-size: 0.75rem; line-height: 1.6; max-width: 300px; margin: 0 auto; }

@@ -710,19 +710,29 @@ function renderAccounts(accounts, balanceMap, allTx) {
 
   const TYPE_LABEL = { bank: 'Bank', cash: 'Cash', savings: 'Savings', investment: 'Investment', credit: 'Credit', other: 'Other' };
 
-  /* largest balance first */
-  const sorted = [...accounts].sort((a, b) => (balanceMap[b.id] ?? 0) - (balanceMap[a.id] ?? 0));
+  /* the order set in customize mode (AccountStore already applied it), else
+     largest balance first */
+  const sorted = AccountStore.hasCustomOrder()
+    ? accounts
+    : [...accounts].sort((a, b) => (balanceMap[b.id] ?? 0) - (balanceMap[a.id] ?? 0));
 
   el.innerHTML = sorted.map((a) => {
     const bal  = balanceMap[a.id] ?? 0;
     const hist = accountHistory(allTx, a.id, bal, 30);
+    const name = escapeHTML(a.name);
     return `
-      <div class="acct-tile">
+      <div class="acct-tile" data-acct-id="${a.id}">
+        <div class="acct-tile__move">
+          <span class="acct-tile__grip" data-acct-grip title="Drag onto another account to swap" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>
+          </span>
+          <button type="button" class="acct-tile__swap" data-acct-swap aria-haspopup="listbox" aria-label="Swap ${name} with another account">Swap <span aria-hidden="true">▾</span></button>
+        </div>
         <div class="acct-tile__row1">
           <div class="acct-tile__top">
             <span class="acct-tile__avatar">${escapeHTML((a.name || '?').charAt(0).toUpperCase())}</span>
             <div class="acct-tile__id">
-              <div class="acct-tile__name">${escapeHTML(a.name)}</div>
+              <div class="acct-tile__name">${name}</div>
               <div class="acct-tile__type">${TYPE_LABEL[a.type] || a.type}</div>
             </div>
           </div>
@@ -736,6 +746,107 @@ function renderAccounts(accounts, balanceMap, allTx) {
         </div>
       </div>`;
   }).join('');
+}
+
+/* ---- Swap accounts (dashboard customize mode) ------------------------------
+   Same model as the panels: two accounts trade places. Drag one by its grip
+   onto another, or pick one from its "Swap" menu. The controls only show
+   while customizing (body.dash-editing). The swap happens in the DOM, then
+   the resulting id order is saved — synced via AccountStore.setOrder and
+   applied everywhere accounts are listed. */
+function saveAccountOrder(container) {
+  const ids = [...container.querySelectorAll('.acct-tile[data-acct-id]')].map(t => t.dataset.acctId);
+  AccountStore.setOrder(ids).catch(() => {});   /* still applied on this device */
+}
+
+function swapTiles(a, b) {
+  if (!a || !b || a === b) return;
+  const parent = a.parentNode;
+  const after = a.nextSibling === b ? a : a.nextSibling;
+  b.replaceWith(a);
+  parent.insertBefore(b, after);
+}
+
+function closeAcctSwapMenu() { document.getElementById('acctSwapMenu')?.remove(); }
+
+function openAcctSwapMenu(tile, anchor, container) {
+  closeAcctSwapMenu();
+  const others = [...container.querySelectorAll('.acct-tile[data-acct-id]')].filter(t => t !== tile);
+  if (!others.length) return;
+  const menu = document.createElement('div');
+  menu.className = 'dash-slotmenu';
+  menu.id = 'acctSwapMenu';
+  menu.setAttribute('role', 'listbox');
+  menu.setAttribute('aria-label', 'Swap with');
+  menu.innerHTML = `<div class="acct-swapmenu__label">Swap with</div>` + others.map(t =>
+    `<button type="button" class="dash-slotmenu__item" role="option" data-swap-with="${t.dataset.acctId}">${escapeHTML(t.querySelector('.acct-tile__name')?.textContent || '')}</button>`).join('');
+  document.body.appendChild(menu);
+  const r = anchor.getBoundingClientRect();
+  menu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - menu.offsetWidth - 8)) + 'px';
+  menu.style.top  = (r.bottom + window.scrollY) + 'px';
+  menu.querySelector('[data-swap-with]')?.focus();
+  menu.addEventListener('click', ev => {
+    const id = ev.target.closest('[data-swap-with]')?.dataset.swapWith;
+    if (!id) return;
+    swapTiles(tile, container.querySelector(`.acct-tile[data-acct-id="${id}"]`));
+    closeAcctSwapMenu();
+    saveAccountOrder(container);
+    tile.querySelector('[data-acct-swap]')?.focus();
+  });
+  const onKey = ev => { if (ev.key === 'Escape') { closeAcctSwapMenu(); anchor.focus(); document.removeEventListener('keydown', onKey, true); } };
+  document.addEventListener('keydown', onKey, true);
+  setTimeout(() => document.addEventListener('click', ev => {
+    if (!ev.target.closest('#acctSwapMenu')) closeAcctSwapMenu();
+  }, { once: true }), 0);
+}
+
+function initAccountReorder() {
+  const el = document.getElementById('accountTiles');
+  if (!el || el.dataset.reorderWired) return;
+  el.dataset.reorderWired = '1';
+
+  el.addEventListener('click', e => {
+    const btn = e.target.closest('[data-acct-swap]');
+    if (!btn) return;
+    e.stopPropagation();
+    openAcctSwapMenu(btn.closest('.acct-tile'), btn, el);
+  });
+
+  /* drag by the grip: the tile follows the pointer, the account under it is
+     marked, and on drop the two trade places */
+  el.addEventListener('pointerdown', e => {
+    const grip = e.target.closest('[data-acct-grip]');
+    if (!grip || !document.body.classList.contains('dash-editing')) return;
+    e.preventDefault();
+    e.stopPropagation();
+    closeAcctSwapMenu();
+    const tile = grip.closest('.acct-tile');
+    const sx = e.clientX, sy = e.clientY;
+    let target = null;
+    tile.classList.add('acct-tile--dragging');
+    const mark = t => { target?.classList.remove('acct-tile--drop'); target = t; target?.classList.add('acct-tile--drop'); };
+    const move = ev => {
+      tile.style.transform = `translate(${ev.clientX - sx}px, ${ev.clientY - sy}px)`;
+      const over = document.elementFromPoint(ev.clientX, ev.clientY)?.closest('.acct-tile[data-acct-id]');
+      mark(over && over !== tile && el.contains(over) ? over : null);
+    };
+    const up = () => {
+      document.removeEventListener('pointermove', move);
+      document.removeEventListener('pointerup', up);
+      document.removeEventListener('pointercancel', up);
+      tile.classList.remove('acct-tile--dragging');
+      tile.style.transform = '';
+      if (target) {
+        const dest = target;
+        mark(null);
+        swapTiles(tile, dest);
+        saveAccountOrder(el);
+      }
+    };
+    document.addEventListener('pointermove', move);
+    document.addEventListener('pointerup', up);
+    document.addEventListener('pointercancel', up);
+  });
 }
 
 /* Allocation — share of total positive balances, mono ring per account */
@@ -817,6 +928,37 @@ function txItemHTML(t, cat) {
 
 function setText(id, text) { const el = document.getElementById(id); if (el) el.textContent = text; }
 
+/* Show the focus-question popup; `then` runs once it's answered or skipped.
+   Skip saves the current default (both, Money pinned) so it isn't asked again. */
+function openFocusAsk(then) {
+  const overlay = document.getElementById('focusAsk');
+  if (!overlay) { then?.(); return; }
+  overlay.hidden = false;
+  requestAnimationFrame(() => overlay.classList.add('open'));
+  overlay.querySelector('[data-focus]')?.focus();
+
+  let closed = false;
+  async function close(focus, skipped) {
+    if (closed) return;
+    closed = true;
+    document.removeEventListener('keydown', onKey, true);
+    overlay.classList.remove('open');
+    setTimeout(() => { overlay.hidden = true; }, 200);
+    try {
+      await SettingsStore.setNavPrefs({ focus, slot: focus === 'hours' ? 'shifts' : 'money' });
+    } catch (_) {}   /* still saved on this device */
+    window.PFNav?.refresh();
+    if (!skipped) showToast(focus === 'hours' ? 'Hours Tracker pinned — + now logs hours' : 'Saved — change it any time in Settings', 'success');
+    then?.();
+  }
+  function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); close('both', true); } }
+
+  overlay.querySelectorAll('[data-focus]').forEach(btn =>
+    btn.addEventListener('click', () => close(btn.dataset.focus, false)));
+  overlay.querySelector('[data-focus-skip]')?.addEventListener('click', () => close('both', true));
+  document.addEventListener('keydown', onKey, true);
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   let user;
   try {
@@ -848,24 +990,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.hideAppLoader?.();   /* data rendered (or errored) — fade the boot screen out */
   }
 
-  /* First-visit guided tour (scripts/components/tour.js) — once per browser */
-  window.PFTour?.maybeStart();
+  /* Focus question — a popup on an account's first login (never for guests),
+     until answered; the answer sets the mobile bottom bar. Read after
+     hydrateLocalDefaults so an answer from another device counts. The
+     first-visit tour (scripts/components/tour.js) waits until it's closed. */
+  const startTour = () => window.PFTour?.maybeStart();
+  if (!user.isGuest && !SettingsStore.getNavPrefs().focus) openFocusAsk(startTour);
+  else startTour();
 
-  /* Focus question — asked once; the answer sets the mobile bottom bar.
-     Read after hydrateLocalDefaults so an answer from another device counts. */
-  const focusAsk = document.getElementById('focusAsk');
-  if (focusAsk && !SettingsStore.getNavPrefs().focus) {
-    focusAsk.hidden = false;
-    focusAsk.querySelectorAll('[data-focus]').forEach(btn => btn.addEventListener('click', async () => {
-      const focus = btn.dataset.focus;
-      focusAsk.hidden = true;
-      try {
-        await SettingsStore.setNavPrefs({ focus, slot: focus === 'hours' ? 'shifts' : 'money' });
-      } catch (_) {}   /* still saved on this device */
-      window.PFNav?.refresh();
-      showToast(focus === 'hours' ? 'Hours Tracker pinned — + now logs hours' : 'Saved — change it any time in Settings', 'success');
-    }));
-  }
+  initAccountReorder();
 
   /* Quick-log hours widget — refresh the dashboard after a shift is logged. */
   QuickLog?.init({ onLogged: () => initDashboard() }).catch(console.error);

@@ -40,7 +40,9 @@
   const NAV_ITEMS = [
     { id: 'dashboard',     label: 'Dashboard',       icon: 'dashboard',     href: 'dashboard.html',            sidebar: true, bottom: true },
     { id: 'transactions',  label: 'Transactions',    icon: 'transactions',  href: 'pages/accounts.html',       sidebar: true, bottom: true },
-    { id: 'insights',      label: 'Insights',        icon: 'insights',      href: 'pages/insights.html' /* topbar icon only — see renderTopbar */ },
+    /* not a page: the top-bar lightbulb (and a pinned bottom slot) open the
+       Insights popover — scripts/components/insights-popover.js */
+    { id: 'insights',      label: 'Insights',        icon: 'insights',      popover: true },
     /* `alt`: extra page keys that keep this item highlighted — the calendar is a
        second view of the Hours Tracker, not its own section. */
     { id: 'shifts',        label: 'Hours Tracker',   icon: 'shifts',        href: 'pages/shifts.html',         sidebar: true, sheet: true, alt: ['hours-calendar'] },
@@ -68,7 +70,6 @@
     'pages/budget.html':          '/budget',
     'pages/subscriptions.html':   '/subscriptions',
     'pages/crypto.html':          '/crypto',
-    'pages/insights.html':        '/insights',
     'pages/settings.html':        '/settings',
     'pages/import.html':          '/import',
     'pages/privacy.html':         '/privacy',
@@ -143,7 +144,6 @@
     if (!el) return;
     const title   = document.body.dataset.title || document.title.split('—')[0].trim();
     const titleId = document.body.dataset.titleId ? ` id="${document.body.dataset.titleId}"` : '';
-    const insights = NAV_ITEMS.find(n => n.id === 'insights');
     /* light active → show a moon (tap for dark); dark active → show a sun */
     const themeIsLight = document.documentElement.dataset.theme === 'light';
     el.innerHTML = `
@@ -151,7 +151,7 @@
       <a class="topbar-logo" href="${resolve('dashboard.html')}">Flow</a>
       <div class="topbar-title"${titleId}>${title}</div>
       <div class="topbar-actions">
-        <a href="${resolve(insights.href)}" class="topbar-icon-btn${isActive(insights) ? ' topbar-icon-btn--active' : ''}" aria-label="Insights" title="Insights">${I(ICONS.insights, 17)}</a>
+        <button type="button" class="topbar-icon-btn" data-insights-btn aria-label="Insights" title="Insights" aria-haspopup="dialog" aria-expanded="false">${I(ICONS.insights, 17)}</button>
         <button type="button" class="topbar-icon-btn theme-toggle" id="themeToggle" data-theme-btn="${themeIsLight ? 'light' : 'dark'}" aria-label="${themeIsLight ? 'Switch to dark theme' : 'Switch to light theme'}" title="${themeIsLight ? 'Switch to dark theme' : 'Switch to light theme'}">
           <span class="theme-toggle__icon theme-toggle__icon--moon">${I(ICONS.moon, 17)}</span>
           <span class="theme-toggle__icon theme-toggle__icon--sun">${I(ICONS.sun, 17)}</span>
@@ -177,7 +177,11 @@
   function renderBottomNav() {
     const el = document.getElementById('bottomNav');
     if (!el) return;
-    const item = (n, label) => `
+    const item = (n, label) => n.popover ? `
+      <button type="button" class="bottom-nav__item" data-insights-btn aria-haspopup="dialog" aria-expanded="false">
+        <span class="bottom-nav__icon">${I(ICONS[n.icon], 20)}</span>
+        <span class="bottom-nav__label">${label || n.label}</span>
+      </button>` : `
       <a href="${resolve(n.href)}" class="bottom-nav__item${(n.hub ? onMoneyPage : isActive(n)) ? ' active' : ''}"${matchAttr(n)}>
         <span class="bottom-nav__icon">${I(ICONS[n.icon], 20)}</span>
         <span class="bottom-nav__label">${label || n.label}</span>
@@ -218,10 +222,14 @@
   }
 
   /* ---- "More" bottom sheet ---- */
-  /* everything in the sheet except whatever is already pinned to the bar */
+  /* everything in the sheet except whatever is already pinned to the bar.
+     When Money isn't pinned, its pages are listed one by one (like the desktop
+     sidebar) instead of behind the single Money hub. */
   function sheetGridHtml() {
     const { slot } = navPrefs();
-    return NAV_ITEMS.filter(n => n.sheet && n.id !== slot).map(n => `
+    return NAV_ITEMS.filter(n => n.sheet && n.id !== slot)
+      .flatMap(n => n.hub ? moneyItems : [n])
+      .map(n => `
           <a href="${resolve(n.href)}" class="more-sheet__item${(n.hub ? onMoneyPage : isActive(n)) ? ' active' : ''}">
             <span class="more-sheet__icon">${I(ICONS[n.icon], 20)}</span>
             <span>${n.label}</span>
@@ -291,6 +299,27 @@
   if (typeof SupaAuth !== 'undefined' && window.top === window.self) {
     setTopbarAuth(!SupaAuth.hasStoredSession());
     SupaAuth.isGuest().then(setTopbarAuth);
+  }
+
+  /* Insights popover — its script loads on the first click. /insights (the old
+     page) redirects to /dashboard?insights=1, which opens it straight away. */
+  function loadInsights() {
+    if (window.PFInsights) return Promise.resolve();
+    return new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = '/scripts/components/insights-popover.js';
+      s.onload = res; s.onerror = rej;
+      document.body.appendChild(s);
+    });
+  }
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('[data-insights-btn]');
+    if (btn) loadInsights().then(() => window.PFInsights.toggle(btn)).catch(() => {});
+  });
+  if (new URLSearchParams(location.search).get('insights') === '1') {
+    history.replaceState(null, '', location.pathname + location.hash);
+    const btn = document.querySelector('#topbar [data-insights-btn]');
+    if (btn) window.addEventListener('load', () => loadInsights().then(() => window.PFInsights.toggle(btn)));
   }
 
   /* Load the site-wide Add-Transaction popup once. Skipped inside the embed

@@ -99,16 +99,20 @@
 .budget-row__pct { font-size: 0.75rem; font-weight: 600; white-space: nowrap; min-width: 36px; text-align: right; }
 
 .budget-amount-display {
-  color: var(--color-text-muted); font-weight: 500; cursor: pointer;
-  border-bottom: 1px dashed var(--color-accent-dark); padding-bottom: 1px;
+  font: inherit; color: var(--color-text-muted); font-weight: 500; cursor: pointer;
+  background: none; border: 0; border-bottom: 1px dashed var(--color-border); padding: 0 0 1px;
   transition: color var(--transition), border-color var(--transition);
   white-space: nowrap;
 }
 .budget-amount-display:hover { color: var(--color-text); border-color: var(--color-text-muted); }
-.budget-amount-display--empty {
-  font-size: 0.75rem; font-style: italic;
-  color: var(--color-accent); border-color: var(--color-accent-dark); border-style: dashed;
+.budget-amount-display:focus-visible { outline: 1px solid var(--color-text); outline-offset: 2px; }
+/* empty state: a small outlined button, not a dashed italic link */
+.budget-set-btn {
+  font-family: var(--font-display); font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.04em;
+  color: var(--color-text); padding: 4px 10px;
+  border: 1px solid var(--mono-outline);
 }
+.budget-set-btn:hover { border-color: var(--mono-outline-strong); background: var(--color-surface-2); }
 /* Phase 2: per-row suggested-budget chip (apply with one click) */
 .budget-suggest-chip {
   margin-left: 8px; font-size: 0.6875rem; font-weight: 500;
@@ -1040,41 +1044,6 @@
   .subs-page .budget-summary-strip { grid-template-columns: repeat(2, 1fr) !important; }
   .subs-row__amount { display: none; }
 }
-
-/* ── Insights page (Phase 3 intelligence) ───────────────────── */
-.insights-page { max-width: 720px; margin: 0 auto; width: 100%; }
-.insights-head { margin-bottom: 16px; }
-.insights-title { font-size: 1.25rem; font-weight: 700; color: var(--color-text); letter-spacing: -0.01em; }
-.insights-sub { font-size: 0.8125rem; color: var(--color-text-muted); margin-top: 3px; }
-.insights-list { display: flex; flex-direction: column; gap: 8px; }
-
-.insight-card {
-  display: flex; gap: 12px; padding: 14px 16px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-left-width: 3px;
-}
-.insight-card__icon { flex-shrink: 0; line-height: 0; margin-top: 1px; color: var(--color-text-muted); }
-.insight-card__body { min-width: 0; }
-.insight-card__title { font-size: 0.875rem; font-weight: 600; color: var(--color-text); margin-bottom: 3px; }
-.insight-card__text { font-size: 0.8125rem; color: var(--color-text-muted); line-height: 1.55; }
-.insight-card__text strong { color: var(--color-text); font-weight: 600; }
-.insight-card__text a { color: var(--color-text); white-space: nowrap; }
-.insight-card--up   { border-left-color: var(--color-income); }
-.insight-card--up   .insight-card__icon { color: var(--color-income); }
-.insight-card--down { border-left-color: var(--color-expense); }
-.insight-card--down .insight-card__icon { color: var(--color-expense); }
-.insight-card--info { border-left-color: var(--color-transfer); }
-.insight-card--info .insight-card__icon { color: var(--color-transfer); }
-
-.insight-skeleton { height: 62px; background: var(--color-surface); border: 1px solid var(--color-border); border-left: 3px solid var(--color-border); animation: skeletonPulse 1.4s ease-in-out infinite; }
-
-.insights-empty {
-  text-align: center; padding: 48px 24px; color: var(--color-text-muted);
-  background: var(--color-surface); border: 1px solid var(--color-border);
-}
-.insights-empty__title { font-weight: 600; color: var(--color-text); margin-bottom: 6px; font-size: 0.9375rem; }
-.insights-empty__text { font-size: 0.8125rem; line-height: 1.6; max-width: 420px; margin: 0 auto; }
 
 /* ── Category suggestion from history (Phase 4, no AI) ───────── */
 .cat-suggestion { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }

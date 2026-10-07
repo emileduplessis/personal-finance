@@ -4,7 +4,8 @@
   "framework": null,
   "cleanUrls": true,
   "redirects": [
-    { "source": "/welcome", "destination": "/", "permanent": true }
+    { "source": "/welcome", "destination": "/", "permanent": true },
+    { "source": "/insights", "destination": "/dashboard?insights=1", "permanent": false }
   ],
   "rewrites": [
     { "source": "/transactions", "destination": "/pages/accounts" },
@@ -14,7 +15,6 @@
     { "source": "/budget", "destination": "/pages/budget" },
     { "source": "/subscriptions", "destination": "/pages/subscriptions" },
     { "source": "/crypto", "destination": "/pages/crypto" },
-    { "source": "/insights", "destination": "/pages/insights" },
     { "source": "/settings", "destination": "/pages/settings" },
     { "source": "/import", "destination": "/pages/import" },
     { "source": "/privacy", "destination": "/pages/privacy" },

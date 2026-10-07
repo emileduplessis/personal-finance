@@ -121,7 +121,7 @@ async function renderBudgetPage() {
     html += `
       <div class="budget-onboarding-hint">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        Click <strong>Set limit</strong> on any category to define a monthly budget.
+        Use <strong>+ Set limit</strong> on any category to give it a monthly budget.
       </div>`;
   }
 
@@ -207,8 +207,8 @@ function categoryRowHTML(cat, spent, budget, rec) {
     ? `<button type="button" class="budget-suggest-chip" data-cat="${cat.id}" data-amount="${rec}" title="Apply suggested budget from your last 3 months">~${formatCurrency(rec)}</button>`
     : '';
   const budgetDisplay = budget > 0
-    ? `<span class="budget-amount-display" data-cat="${cat.id}" data-value="${budget}">${formatCurrency(budget)}</span>`
-    : `<span class="budget-amount-display budget-amount-display--empty" data-cat="${cat.id}" data-value="0">Set limit</span>${suggestChip}`;
+    ? `<button type="button" class="budget-amount-display" data-cat="${cat.id}" data-value="${budget}" title="Edit limit">${formatCurrency(budget)}</button>`
+    : `<button type="button" class="budget-amount-display budget-set-btn" data-cat="${cat.id}" data-value="0" aria-label="Set a monthly limit for ${escapeHTML(cat.name)}">+ Set limit</button>${suggestChip}`;
 
   return `
     <div class="budget-row" data-cat="${cat.id}">
@@ -224,8 +224,8 @@ function categoryRowHTML(cat, spent, budget, rec) {
         ` : `<div class="budget-bar-empty">— no budget</div>`}
       </div>
       <div class="budget-row__numbers">
-        <span class="budget-row__spent ${over ? 'budget-row__spent--over' : ''}">${formatCurrency(spent)}</span>
-        <span class="budget-row__sep">of</span>
+        ${budget > 0 || spent > 0 ? `<span class="budget-row__spent ${over ? 'budget-row__spent--over' : ''}">${formatCurrency(spent)}</span>` : ''}
+        ${budget > 0 ? '<span class="budget-row__sep">of</span>' : ''}
         ${budgetDisplay}
         ${budget > 0 ? `<span class="budget-row__pct" style="color:${barColor}">${Math.round(pct)}%</span>` : ''}
       </div>

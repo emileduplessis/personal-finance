@@ -1,8 +1,8 @@
 /* ============================================================
    tour.js — first-visit guided tour (replaces the old "Welcome
-   to Flow" card). A white frame marks one important control at a
-   time; a small popup beside it explains it, with Back / Skip /
-   Next and a progress bar. No dimming, no ambient motion.
+   to Flow" card). The rest of the page blurs and darkens; a white
+   frame marks one important control at a time and a small popup
+   beside it explains it, with Back / Skip / Next and a progress bar.
 
    Runs once per browser (pf_tour_done). Settings → "Replay tour"
    clears that and opens /dashboard?tour=1.
@@ -47,9 +47,9 @@
     },
     {
       id: 'insights', label: 'Insights',
-      sel: ['#topbar a[aria-label="Insights"]'],
+      sel: ['#topbar [data-insights-btn]'],
       title: 'Where did the month go?',
-      body: 'Patterns and alerts from your spending, updated as you log.',
+      body: 'Tap the lightbulb for patterns and alerts from your spending, updated as you log.',
     },
     {
       id: 'settings', label: 'Settings',
@@ -72,15 +72,15 @@
   };
   const findTarget = step => step.sel.map(s => document.querySelector(s)).find(isVisible) || null;
 
-  let steps = [], i = 0, frame = null, pop = null, target = null, onKey = null, onMove = null;
+  let steps = [], i = 0, frame = null, pop = null, shade = null, target = null, onKey = null, onMove = null;
 
   function done() {
     try { localStorage.setItem(DONE_KEY, '1'); } catch (_) {}
     window.removeEventListener('keydown', onKey, true);
     window.removeEventListener('resize', onMove);
     window.removeEventListener('scroll', onMove, true);
-    frame?.remove(); pop?.remove();
-    frame = pop = target = null;
+    frame?.remove(); pop?.remove(); shade?.remove();
+    frame = pop = shade = target = null;
   }
 
   function place() {
@@ -93,11 +93,25 @@
     });
 
     const vw = document.documentElement.clientWidth, vh = window.innerHeight;
+
+    /* blurred, darkened backdrop in four strips around the framed control,
+       so the control itself stays sharp and lit (a single overlay with a hole
+       can't exclude part of a backdrop-filter) */
+    const hole = {
+      t: Math.max(0, r.top - pad), l: Math.max(0, r.left - pad),
+      b: Math.min(vh, r.bottom + pad), r: Math.min(vw, r.right + pad),
+    };
+    const [sTop, sBottom, sLeft, sRight] = shade.children;
+    Object.assign(sTop.style,    { top: '0', left: '0', width: '100%', height: `${hole.t}px` });
+    Object.assign(sBottom.style, { top: `${hole.b}px`, left: '0', width: '100%', height: `${Math.max(0, vh - hole.b)}px` });
+    Object.assign(sLeft.style,   { top: `${hole.t}px`, left: '0', width: `${hole.l}px`, height: `${hole.b - hole.t}px` });
+    Object.assign(sRight.style,  { top: `${hole.t}px`, left: `${hole.r}px`, width: `${Math.max(0, vw - hole.r)}px`, height: `${hole.b - hole.t}px` });
     const pw = pop.offsetWidth, ph = pop.offsetHeight;
     /* below the target if it fits, else above, else pinned inside the viewport */
     let top = r.bottom + pad + gap;
     if (top + ph > vh - gutter) top = r.top - pad - gap - ph;
-    if (top < gutter) top = Math.min(vh - gutter - ph, Math.max(gutter, r.top + gutter));
+    /* neither fits (a tall panel): sit at the bottom edge, over its lower part */
+    if (top < gutter) top = vh - gutter - ph;
     const left = Math.min(vw - gutter - pw, Math.max(gutter, r.left + r.width / 2 - pw / 2));
     pop.style.top = `${Math.round(top)}px`;
     pop.style.left = `${Math.round(left)}px`;
@@ -116,7 +130,11 @@
        fixed chrome (top bar, bottom nav, sidebar) is always on screen */
     const r = target.getBoundingClientRect();
     const inChrome = target.closest('#topbar, #bottomNav, #sidebar');
-    if (!inChrome && (r.top < 64 || r.bottom > window.innerHeight - 80)) {
+    const tall = r.height > window.innerHeight * 0.4;
+    if (!inChrome && tall) {
+      /* tall panel: pin its top just under the top bar so the popup fits below */
+      window.scrollBy({ top: r.top - 72, behavior: 'instant' });
+    } else if (!inChrome && (r.top < 64 || r.bottom > window.innerHeight - 80)) {
       target.scrollIntoView({ block: 'center', behavior: 'instant' });
     }
 
@@ -146,6 +164,10 @@
     steps = STEPS.filter(s => findTarget(s));
     if (!steps.length) return;
 
+    shade = document.createElement('div');
+    shade.className = 'tour-shade';
+    shade.setAttribute('aria-hidden', 'true');
+    shade.innerHTML = '<div></div><div></div><div></div><div></div>';
     frame = document.createElement('div');
     frame.className = 'tour-frame';
     frame.setAttribute('aria-hidden', 'true');
@@ -154,7 +176,7 @@
     pop.setAttribute('role', 'dialog');
     pop.setAttribute('aria-labelledby', 'tourTitle');
     pop.setAttribute('aria-describedby', 'tourBody');
-    document.body.append(frame, pop);
+    document.body.append(shade, frame, pop);
 
     pop.addEventListener('click', e => {
       const a = e.target.closest('[data-tour]')?.dataset.tour;

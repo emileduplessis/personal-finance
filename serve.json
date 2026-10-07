@@ -4,7 +4,8 @@
     { "source": "**", "headers": [{ "key": "X-Frame-Options", "value": "SAMEORIGIN" }] }
   ],
   "redirects": [
-    { "source": "/welcome", "destination": "/", "type": 301 }
+    { "source": "/welcome", "destination": "/", "type": 301 },
+    { "source": "/insights", "destination": "/dashboard?insights=1", "type": 302 }
   ],
   "rewrites": [
     { "source": "/", "destination": "/index.html" },
@@ -15,7 +16,6 @@
     { "source": "/budget", "destination": "/pages/budget.html" },
     { "source": "/subscriptions", "destination": "/pages/subscriptions.html" },
     { "source": "/crypto", "destination": "/pages/crypto.html" },
-    { "source": "/insights", "destination": "/pages/insights.html" },
     { "source": "/settings", "destination": "/pages/settings.html" },
     { "source": "/import", "destination": "/pages/import.html" },
     { "source": "/privacy", "destination": "/pages/privacy.html" },

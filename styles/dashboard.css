@@ -1065,20 +1065,29 @@ body.dash-dragging { user-select: none; }
 }
 .bills-foot__sep { opacity: 0.5; }
 
-/* Focus question — one-time "money, hours or both?" */
-.focus-ask {
-  margin-bottom: 20px; padding: 20px;
-  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
-}
+/* Focus question — popup on an account's first login (dashboard.html) */
 .focus-ask[hidden] { display: none; }
-.focus-ask__title { font-size: 1.0625rem; font-weight: 700; margin: 4px 0 6px; }
-.focus-ask__sub { font-size: 0.8125rem; color: var(--color-text-muted); margin: 0; }
-.focus-ask__choices { display: flex; gap: 8px; flex-wrap: wrap; }
-@media (max-width: 480px) {
-  .focus-ask { padding: 16px 14px; }
-  .focus-ask__choices { width: 100%; }
-  .focus-ask__choices .btn { flex: 1; }
+.focus-ask__modal { max-width: 460px; width: 100%; }
+.focus-ask__title { font-size: 1.125rem; font-weight: 700; margin: 6px 0 6px; }
+.focus-ask__sub { font-size: 0.8125rem; line-height: 1.5; color: var(--color-text-muted); margin: 0 0 18px; }
+.focus-ask__choices { display: grid; gap: 8px; }
+.focus-opt {
+  display: flex; align-items: flex-start; gap: 14px; width: 100%; text-align: left;
+  padding: 14px; cursor: pointer; font: inherit; color: var(--color-text);
+  background: var(--color-bg); border: 1px solid var(--color-border);
+  transition: border-color var(--transition), background var(--transition);
 }
+.focus-opt:hover, .focus-opt:focus-visible { border-color: var(--mono-outline-strong); background: var(--color-surface-2); outline: none; }
+.focus-opt__icon { color: var(--color-text-muted); line-height: 0; margin-top: 1px; }
+.focus-opt:hover .focus-opt__icon { color: var(--color-text); }
+.focus-opt__body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.focus-opt__body strong { font-size: 0.875rem; font-weight: 600; }
+.focus-opt__body span { font-size: 0.75rem; line-height: 1.45; color: var(--color-text-muted); }
+.focus-ask__skip {
+  display: block; margin: 14px auto 0; padding: 6px 8px; background: none; border: 0; cursor: pointer;
+  font: inherit; font-size: 0.75rem; color: var(--color-text-light);
+}
+.focus-ask__skip:hover { color: var(--color-text); }
 
 /* Donut counterpart to .chart-skeleton — a pulsing ring behind the canvas.
    Used by the Cash-flow category donut and the Subscriptions category donut
@@ -1094,3 +1103,22 @@ body.dash-dragging { user-select: none; }
 @media (prefers-reduced-motion: reduce) {
   .chart-skeleton--donut::after { animation: none; opacity: 0.5; }
 }
+
+/* Swap accounts — controls only while customizing (dashboard.js initAccountReorder) */
+.acct-tile__move { display: none; }
+.dash-editing .acct-tile__move {
+  display: flex; align-items: center; justify-content: space-between; gap: 6px;
+  margin: -4px -6px 0; padding-bottom: 8px; border-bottom: 1px dashed var(--color-border);
+}
+.acct-tile__grip { display: flex; padding: 4px; color: var(--color-text-light); cursor: grab; touch-action: none; }
+.acct-tile__grip:hover { color: var(--color-text); }
+.acct-tile__swap {
+  display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 9px;
+  background: none; border: 1px solid var(--color-border); color: var(--color-text-muted); cursor: pointer;
+  font-family: var(--font-display); font-size: .6875rem; font-weight: 600; letter-spacing: .04em;
+}
+.acct-tile__swap:hover { color: var(--color-text); border-color: var(--mono-outline-strong); }
+.acct-tile__swap:focus-visible { outline: 1px solid var(--color-text); outline-offset: 1px; }
+.acct-swapmenu__label { padding: 6px 9px 4px; font-family: var(--font-display); font-size: .625rem; letter-spacing: .12em; text-transform: uppercase; color: var(--color-text-light); }
+.acct-tile--dragging { position: relative; z-index: 20; opacity: .92; outline: 1px solid var(--color-text); cursor: grabbing; pointer-events: none; }
+.acct-tile--drop { outline: 1px dashed var(--mono-outline-strong); outline-offset: -1px; background: var(--color-surface-2); }

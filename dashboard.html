@@ -48,21 +48,6 @@
 
     <main class="main-content">
 
-      <!-- FOCUS QUESTION: asked once, until answered (dashboard.js). Sets the
-           mobile bottom bar via SettingsStore.setNavPrefs; editable in Settings. -->
-      <section class="term focus-ask" id="focusAsk" hidden aria-labelledby="focusAskTitle">
-        <div class="focus-ask__text">
-          <div class="term-label">Quick question</div>
-          <h2 class="focus-ask__title" id="focusAskTitle">What will you use Flow for most?</h2>
-          <p class="focus-ask__sub">We'll put it one tap away on mobile. Change it any time in Settings.</p>
-        </div>
-        <div class="focus-ask__choices">
-          <button type="button" class="btn btn--ghost" data-focus="money">Money</button>
-          <button type="button" class="btn btn--ghost" data-focus="hours">Hours worked</button>
-          <button type="button" class="btn btn--ghost" data-focus="both">Both</button>
-        </div>
-      </section>
-
       <!-- STAT BAR (terminal): horizontal hairline cells -->
       <div class="term dash-statbar">
         <div class="statbar__cell statbar__cell--balance">
@@ -391,6 +376,41 @@
   </div>
 
   <nav class="bottom-nav" id="bottomNav" aria-label="Main navigation"></nav>
+
+  <!-- FOCUS QUESTION: a popup on an account's first login (never for guests),
+       until answered (dashboard.js). Sets the mobile bottom bar via
+       SettingsStore.setNavPrefs; editable in Settings. -->
+  <div class="modal-overlay focus-ask" id="focusAsk" hidden>
+    <div class="modal focus-ask__modal" role="dialog" aria-modal="true" aria-labelledby="focusAskTitle" aria-describedby="focusAskSub">
+      <div class="term-label">Welcome to Flow</div>
+      <h2 class="focus-ask__title" id="focusAskTitle">What do you want to keep track of?</h2>
+      <p class="focus-ask__sub" id="focusAskSub">We'll put the right shortcut in your bottom bar. You can change it any time in Settings.</p>
+      <div class="focus-ask__choices">
+        <button type="button" class="focus-opt" data-focus="money">
+          <span class="focus-opt__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 12h.01M18 12h.01"/></svg></span>
+          <span class="focus-opt__body">
+            <strong>My spending and budget</strong>
+            <span>Accounts, expenses, monthly budgets and subscriptions.</span>
+          </span>
+        </button>
+        <button type="button" class="focus-opt" data-focus="hours">
+          <span class="focus-opt__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+          <span class="focus-opt__body">
+            <strong>The hours I work and my pay</strong>
+            <span>Log shifts and see what you've earned before payday.</span>
+          </span>
+        </button>
+        <button type="button" class="focus-opt" data-focus="both">
+          <span class="focus-opt__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
+          <span class="focus-opt__body">
+            <strong>Both</strong>
+            <span>I'm paid by the hour and want to manage my money too.</span>
+          </span>
+        </button>
+      </div>
+      <button type="button" class="focus-ask__skip" data-focus-skip>Skip for now</button>
+    </div>
+  </div>
 
   <script src="scripts/components/error-overlay.js"></script>
 
