@@ -66,6 +66,7 @@
           <div class="card budget-summary-card">
             <div class="budget-summary-card__label">Spent</div>
             <div class="budget-summary-card__value budget-summary-card__value--expense" id="summarySpent"><span class="skeleton skeleton-num"></span></div>
+            <div class="budget-summary-card__sub" id="summarySpentSub"></div>
           </div>
           <div class="card budget-summary-card">
             <div class="budget-summary-card__label" id="summaryRemainingLabel">Remaining</div>
@@ -74,6 +75,8 @@
         </div>
 
         <!-- Copy from last month prompt -->
+        <div class="budget-carry-note" id="budgetCarryNote" hidden></div>
+
         <div class="card budget-copy-card" id="copyFromPrev" style="display:none;">
           <div class="budget-copy-card__text">
             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>

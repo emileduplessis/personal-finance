@@ -84,11 +84,30 @@ async function renderBudgetPage() {
   const totalBudget = expCats.reduce((s, c) => s + (budgets[c.id] || 0), 0);
   const totalSpent  = Object.values(spending).reduce((s, v) => s + v, 0);
   const noBudgets   = totalBudget === 0;
-  const remaining   = totalBudget - totalSpent;
+  /* Remaining / over is measured against what the budgets cover. Spending in
+     categories with no limit (rent, say) used to count too, which declared
+     the month "over budget" with every budgeted category under its limit. */
+  const budgetedSpent = expCats.reduce((s, c) => s + (budgets[c.id] > 0 ? (spending[c.id] || 0) : 0), 0);
+  const remaining   = totalBudget - budgetedSpent;
   const overBudget  = !noBudgets && remaining < 0;
 
   setText('summaryBudget',  formatCurrency(totalBudget));
-  setText('summarySpent',   formatCurrency(totalSpent));
+  setText('summarySpent',   formatCurrency(noBudgets ? totalSpent : budgetedSpent));
+  const spentSub = document.getElementById('summarySpentSub');
+  if (spentSub) {
+    const extra = totalSpent - budgetedSpent;
+    spentSub.textContent = !noBudgets && extra > 0.005
+      ? `in budgeted categories · ${formatCurrency(totalSpent)} in all`
+      : '';
+  }
+
+  /* carried forward from an earlier month? say so (and from when) */
+  const carry = document.getElementById('budgetCarryNote');
+  if (carry) {
+    const src = BudgetStore.isInherited(currentMonth) ? BudgetStore.sourceMonth(currentMonth) : null;
+    carry.hidden = !src;
+    if (src) carry.textContent = `Carried over from ${monthLabel(src)}. Change any limit to adjust ${monthLabel(currentMonth).split(' ')[0]} only.`;
+  }
   const remEl = document.getElementById('summaryRemaining');
   if (remEl) {
     /* with no budgets set, this isn't "over budget" — it's just unbudgeted */

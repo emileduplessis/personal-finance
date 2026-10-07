@@ -218,13 +218,17 @@ const InsightsEngine = {
 
     const out = [];
 
-    /* 1) overall spending vs last month */
-    const curExp = sumIn(exp, curKey), lastExp = sumIn(exp, lastKey);
+    /* 1) spending so far this month vs the SAME days of last month. Comparing
+          a week-old month against a whole one always read "spending is down". */
+    const dayOfMonth = new Date(asOf).getDate();
+    const upToDay = (t, k) => inMonth(t, k) && Number(t.date.slice(8, 10)) <= dayOfMonth;
+    const curExp  = exp.filter(t => upToDay(t, curKey)).reduce((s, t) => s + t.amount, 0);
+    const lastExp = exp.filter(t => upToDay(t, lastKey)).reduce((s, t) => s + t.amount, 0);
     if (lastExp > 0 && curExp > 0) {
       const diff = curExp - lastExp, pct = Math.round(Math.abs(diff) / lastExp * 100);
       if (Math.abs(diff) >= 50 && pct >= 15) {
         out.push({ id: 'spend-trend', kind: 'spendTrend', tone: diff > 0 ? 'down' : 'up',
-          severity: 0.5 + Math.min(0.49, pct / 200), current: curExp, previous: lastExp, diff, pct });
+          severity: 0.5 + Math.min(0.49, pct / 200), current: curExp, previous: lastExp, diff, pct, day: dayOfMonth });
       }
     }
 
@@ -240,19 +244,23 @@ const InsightsEngine = {
       }
     });
 
-    /* 3) savings rate vs last month */
+    /* 3) savings rate: last complete month vs the one before. A month in
+          progress (one paycheque in, rent already out) isn't a rate yet. */
     const rateFor = k => { const i = sumIn(inc, k); return i > 0 ? (i - sumIn(exp, k)) / i : null; };
-    const curSR = rateFor(curKey), lastSR = rateFor(lastKey);
+    const prevKey = monthsBack(2);
+    const curSR = rateFor(lastKey), lastSR = rateFor(prevKey);
     if (curSR != null && lastSR != null && Math.abs(curSR - lastSR) >= 0.12) {
       const delta = curSR - lastSR;
       out.push({ id: 'savings', kind: 'savingsRate', tone: delta >= 0 ? 'up' : 'down',
-        severity: 0.45 + Math.min(0.4, Math.abs(delta)), rate: curSR, prevRate: lastSR, delta });
+        severity: 0.45 + Math.min(0.4, Math.abs(delta)), rate: curSR, prevRate: lastSR, delta,
+        month: lastKey, prevMonth: prevKey });
     }
 
     /* 4) untracked recurring charges — roughly monthly, stable amount, not a
           tagged/known subscription */
     const known = new Set(subscriptions.map(s => (s.name || '').toLowerCase().trim()).filter(Boolean));
     const groups = {};
+    const recurring = [];
     exp.forEach(t => {
       const note = (t.note || '').toLowerCase().trim();
       if (!note || (t.tags || []).includes('subscription') || known.has(note)) return;
@@ -271,9 +279,14 @@ const InsightsEngine = {
       const mean = amts.reduce((s, a) => s + a, 0) / amts.length;
       const sd   = Math.sqrt(amts.reduce((s, a) => s + (a - mean) ** 2, 0) / amts.length);
       if (mean <= 0 || sd / mean > 0.2) return;
-      out.push({ id: 'recurring:' + (txs[0].note || '').toLowerCase().trim(), kind: 'untrackedRecurring', tone: 'info',
-        severity: 0.6, name: txs[txs.length - 1].note, amount: mean, count: txs.length, cadenceDays: Math.round(medGap) });
+      recurring.push({ id: 'recurring:' + (txs[0].note || '').toLowerCase().trim(), kind: 'untrackedRecurring', tone: 'info',
+        severity: 0.35, name: txs[txs.length - 1].note, amount: mean, count: txs.length, cadenceDays: Math.round(medGap) });
     });
+    /* rent, phone, internet… all qualify on a long history — show the two
+       biggest so they don't crowd out the spending insights, and say how many
+       more there are */
+    recurring.sort((a, b) => b.amount - a.amount);
+    recurring.slice(0, 2).forEach((r, i) => out.push(i === 0 ? { ...r, more: Math.max(0, recurring.length - 2) } : r));
 
     return out.sort((a, b) => b.severity - a.severity).slice(0, max);
   },
@@ -286,7 +299,7 @@ const InsightsEngine = {
      null.  opts: { type } */
   suggestCategory(note, transactions, opts = {}) {
     const { type } = opts;
-    const norm = s => String(s || '').toLowerCase()
+    const norm = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
       .replace(/[^a-z0-9\s]/g, ' ').replace(/\d+/g, ' ').replace(/\s+/g, ' ').trim();
     const target = norm(note);
     if (!target) return null;

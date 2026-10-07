@@ -88,8 +88,11 @@ function syncControlsFromFilters() {
 
 /* Client-side text search across note, category, account, tags and amount —
    the server query only matches the note, so richer matching happens here. */
+/* case- and accent-insensitive: "cafe" finds "Café Olimpico" */
+const foldText = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
 function matchesSearch(t, term) {
-  const q = (term || '').trim().toLowerCase();
+  const q = foldText(term).trim();
   if (!q) return true;
   const cat   = _catMap[t.categoryId];
   const acc   = _accMap[t.accountId];
@@ -98,8 +101,8 @@ function matchesSearch(t, term) {
     t.note, cat?.name, acc?.name, toAcc?.name,
     t.amount != null ? String(t.amount) : '',
     t.amount != null ? Number(t.amount).toFixed(2) : '',
-  ].filter(Boolean).join(' ').toLowerCase();
-  return hay.includes(q);
+  ].filter(Boolean).join(' ');
+  return foldText(hay).includes(q);
 }
 
 async function populateFilters() {

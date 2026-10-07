@@ -15,7 +15,7 @@ const assert = require('node:assert/strict');
 let CURRENCY = 'CAD';
 global.localStorage = { getItem: (k) => (k === 'pf_currency' ? CURRENCY : null) };
 
-const { CSVService, isoLocal, formatCurrency, formatBalance, formatSigned, signColor, formatDate, formatDateShort } = require('../scripts/data/store.js');
+const { CSVService, isoLocal, formatCurrency, formatBalance, formatSigned, signColor, formatDate, formatDateShort, resolveBudgetMonth } = require('../scripts/data/store.js');
 
 /* ---- CSV tokenizer (the RFC-4180-ish parser) ---- */
 test('CSVService._parse', async (t) => {
@@ -180,7 +180,9 @@ test('isoLocal', async (t) => {
 test('formatDate / formatDateShort', async (t) => {
   await t.test('formats an ISO date with and without the year', () => {
     assert.equal(formatDate('2026-06-09'), 'Jun 9, 2026');
-    assert.equal(formatDateShort('2026-06-09'), 'Jun 9');
+    const y = new Date().getFullYear();
+    assert.equal(formatDateShort(`${y}-06-09`), 'Jun 9', 'this year: no year');
+    assert.equal(formatDateShort(`${y - 2}-04-03`), `Apr 3, ${y - 2}`, 'other years: with year');
   });
 
   await t.test('blank input yields an empty string', () => {
@@ -246,5 +248,25 @@ test('formatBalance / formatSigned', async (t) => {
   await t.test('amounts that round to zero carry no minus', () => {
     assert.equal(formatBalance(-0.001), formatCurrency(0));
     assert.equal(formatSigned(-0.001), formatCurrency(0));
+  });
+});
+
+/* ---- budgets carry forward month to month ---- */
+test('resolveBudgetMonth', async (t) => {
+  const all = { '2025-01': { a: 100 }, '2025-03': { a: 150, b: 20 }, '2025-06': {} };
+  await t.test('a month with its own entry uses it', () => {
+    assert.deepEqual(resolveBudgetMonth(all, '2025-03'), { a: 150, b: 20 });
+  });
+  await t.test('a month without one inherits the latest earlier month', () => {
+    assert.deepEqual(resolveBudgetMonth(all, '2025-02'), { a: 100 });
+    assert.deepEqual(resolveBudgetMonth(all, '2025-05'), { a: 150, b: 20 });
+  });
+  await t.test('an explicit empty month stops the carry-over', () => {
+    assert.deepEqual(resolveBudgetMonth(all, '2025-06'), {});
+    assert.deepEqual(resolveBudgetMonth(all, '2025-09'), {});
+  });
+  await t.test('before the first budget there is nothing to inherit', () => {
+    assert.deepEqual(resolveBudgetMonth(all, '2024-12'), {});
+    assert.deepEqual(resolveBudgetMonth({}, '2025-01'), {});
   });
 });

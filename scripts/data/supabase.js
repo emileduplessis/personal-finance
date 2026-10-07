@@ -59,9 +59,44 @@ const GuestDB = {
     try { const v = JSON.parse(localStorage.getItem(this.PREFIX + table) || '[]'); return Array.isArray(v) ? v : []; }
     catch { return []; }
   },
+  /* Browsers give a site ~5 MB of localStorage (Safari counts it as about
+     2.5M characters). Years of guest data can fill it, so: free the
+     disposable caches and retry before failing, fail with words a person can
+     act on, and warn well before the wall. */
+  SOFT_LIMIT_CHARS: 1800000,
   write(table, rows) {
-    if (rows.length) localStorage.setItem(this.PREFIX + table, JSON.stringify(rows));   /* may throw on quota */
-    else localStorage.removeItem(this.PREFIX + table);
+    const key = this.PREFIX + table;
+    if (!rows.length) { localStorage.removeItem(key); return; }
+    const json = JSON.stringify(rows);
+    try {
+      localStorage.setItem(key, json);
+    } catch (e) {
+      ['pf_tx_cache', 'pf_acct_cache'].forEach(k => { try { localStorage.removeItem(k); } catch (_) {} });
+      try { localStorage.setItem(key, json); }
+      catch (_) {
+        const err = new Error("This device is out of storage for Flow. Create a free account to keep adding — everything you've entered moves into it.");
+        err.code = 'GUEST_STORAGE_FULL';
+        throw err;
+      }
+    }
+    this._warnIfNearlyFull();
+  },
+
+  usageChars() {
+    let n = 0;
+    try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i) || ''; n += k.length + (localStorage.getItem(k) || '').length; } } catch (_) {}
+    return n;
+  },
+
+  _warnIfNearlyFull() {
+    try {
+      if (sessionStorage.getItem('pf_storage_warned')) return;
+      if (this.usageChars() < this.SOFT_LIMIT_CHARS) return;
+      sessionStorage.setItem('pf_storage_warned', '1');
+      if (typeof showToast === 'function') {
+        showToast('Your data is close to this device’s storage limit. Create a free account to keep it safe and keep adding.', 'warning');
+      }
+    } catch (_) {}
   },
 
   /* Anything worth migrating? (sync, cheap — checked on every page load) */

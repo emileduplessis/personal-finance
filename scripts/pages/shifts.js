@@ -235,7 +235,7 @@ function updatePaidBonus() {
     el.textContent = `+${formatCurrency(s.bonus)} over the estimate (bonus)`;
     el.className = 'paid-bonus paid-bonus--up';
   } else if (s.bonus < -0.005) {
-    el.textContent = `${formatCurrency(s.bonus)} under the estimate`;
+    el.textContent = `${formatSigned(s.bonus)} under the estimate`;
     el.className = 'paid-bonus paid-bonus--down';
   } else {
     el.textContent = 'Matches the estimate exactly';
@@ -343,7 +343,7 @@ function renderPayouts() {
     const bonus = p.bonus > 0.005
       ? `<span class="payout__bonus payout__bonus--up">+${formatCurrency(p.bonus)}</span>`
       : p.bonus < -0.005
-      ? `<span class="payout__bonus payout__bonus--down">${formatCurrency(p.bonus)}</span>`
+      ? `<span class="payout__bonus payout__bonus--down">${formatSigned(p.bonus)}</span>`
       : '';
     const nTx = payoutTxIds(p).length;
     const merge = nTx > 1

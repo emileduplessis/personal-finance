@@ -18,13 +18,19 @@
     bulb:   '<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/></svg>',
   };
 
+  const monthName = k => {
+    if (!k) return 'that month';
+    const [y, m] = k.split('-').map(Number);
+    return new Date(y, m - 1, 1).toLocaleString('en-US', { month: 'long' });
+  };
+
   function copyFor(ins, catName) {
     switch (ins.kind) {
       case 'spendTrend':
         return {
           icon: ins.diff > 0 ? ICON.down : ICON.up,
           title: ins.diff > 0 ? 'Spending is up this month' : 'Spending is down this month',
-          text: `You've spent ${formatCurrency(ins.current)} so far this month — ${formatCurrency(Math.abs(ins.diff))} (${ins.pct}%) ${ins.diff > 0 ? 'more' : 'less'} than last month (${formatCurrency(ins.previous)}).`,
+          text: `You've spent ${formatCurrency(ins.current)} so far this month — ${formatCurrency(Math.abs(ins.diff))} (${ins.pct}%) ${ins.diff > 0 ? 'more' : 'less'} than by the same day last month (${formatCurrency(ins.previous)}).`,
         };
       case 'categorySpike':
         return {
@@ -35,14 +41,14 @@
       case 'savingsRate':
         return {
           icon: ins.tone === 'up' ? ICON.up : ICON.down,
-          title: ins.tone === 'up' ? "You're saving more" : "You're saving less",
-          text: `Your savings rate is ${Math.round(ins.rate * 100)}% this month, vs ${Math.round(ins.prevRate * 100)}% last month.`,
+          title: ins.tone === 'up' ? "You saved more last month" : "You saved less last month",
+          text: `You kept ${Math.round(ins.rate * 100)}% of your income in ${monthName(ins.month)}, vs ${Math.round(ins.prevRate * 100)}% in ${monthName(ins.prevMonth)}.`,
         };
       case 'untrackedRecurring':
         return {
           icon: ICON.repeat,
-          title: 'Possible untracked subscription',
-          text: `<strong>${escapeHTML(ins.name)}</strong> looks recurring — about ${formatCurrency(ins.amount)} every ${ins.cadenceDays} days, logged ${ins.count} times. <a href="/subscriptions">Track it →</a>`,
+          title: 'Recurring payment not tracked',
+          text: `<strong>${escapeHTML(ins.name)}</strong> repeats about every ${ins.cadenceDays} days (~${formatCurrency(ins.amount)}). Track it as a recurring bill to see it in Upcoming bills and your forecast. <a href="/subscriptions">Track it →</a>${ins.more ? `<br><span class="insight-card__more">+${ins.more} more recurring payment${ins.more === 1 ? '' : 's'} like this.</span>` : ''}`,
         };
       default:
         return null;

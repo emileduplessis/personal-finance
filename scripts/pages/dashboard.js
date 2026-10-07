@@ -784,7 +784,27 @@ function renderAccounts(accounts, balanceMap, allTx) {
         </div>
       </div>`;
   }).join('');
+  fillLastTileRow();
 }
+
+/* The tiles are hairline cells in an auto-fit grid: 5 accounts in a 4-wide
+   row left three empty grey cells beside the 5th. Stretch the last tile
+   across whatever its row has left. Re-run on resize (column count changes). */
+function fillLastTileRow() {
+  const el = document.getElementById('accountTiles');
+  if (!el) return;
+  const tiles = [...el.querySelectorAll(':scope > .acct-tile')];
+  tiles.forEach(t => { t.style.gridColumn = ''; });
+  if (tiles.length < 2) return;
+  const cols = getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length;
+  const rem = tiles.length % cols;
+  if (cols > 1 && rem) tiles[tiles.length - 1].style.gridColumn = `span ${cols - rem + 1}`;
+}
+let _tileResizeTimer = null;
+window.addEventListener('resize', () => {
+  clearTimeout(_tileResizeTimer);
+  _tileResizeTimer = setTimeout(fillLastTileRow, 120);
+});
 
 /* ---- Swap accounts (dashboard customize mode) ------------------------------
    Same model as the panels: two accounts trade places. Drag one by its grip

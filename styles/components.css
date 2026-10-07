@@ -427,6 +427,7 @@ body.addtx-open { overflow: hidden; }
 }
 .toast--success { background: var(--color-income-light);  border-color: rgba(0,209,143,.35);  color: var(--color-income); }
 .toast--error   { background: var(--color-expense-light); border-color: rgba(255,92,122,.35); color: var(--color-expense); }
+.toast--warning { background: rgba(212,166,74,.12); border-color: rgba(212,166,74,.4); color: var(--color-transfer); }
 
 @keyframes toastIn {
   from { transform: translateX(110%); opacity: 0; }
@@ -699,6 +700,7 @@ textarea[data-loading]::placeholder { color: transparent; }
 .insight-card__title { font-size: 0.875rem; font-weight: 600; color: var(--color-text); margin-bottom: 3px; }
 .insight-card__text { font-size: 0.8125rem; color: var(--color-text-muted); line-height: 1.55; }
 .insight-card__text strong { color: var(--color-text); font-weight: 600; }
+.insight-card__more { display: inline-block; margin-top: 6px; font-size: .75rem; color: var(--color-text-light); }
 .insight-card__text a { color: var(--color-text); white-space: nowrap; }
 .insight-card--up   { border-left-color: var(--color-income); }
 .insight-card--up   .insight-card__icon { color: var(--color-income); }

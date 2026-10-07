@@ -182,15 +182,32 @@ test('generateInsights', async (t) => {
     assert.equal(spike.pct, 300);             // 200 vs avg 50 = +300%
   });
 
-  await t.test('flags a change in savings rate', () => {
+  await t.test('only compares the same days of last month', () => {
+    // ASOF is the 16th: last month's spending after the 16th doesn't count
+    const txns = [ ex(6,10,300,'food','x'), ex(5,10,300,'food','x'), ex(5,25,900,'food','x') ];
+    const trend = InsightsEngine.generateInsights(txns, { asOf: ASOF }).find(i => i.kind === 'spendTrend');
+    assert.equal(trend, undefined, 'same pace → no "spending is down" alarm');
+  });
+
+  await t.test('flags a change in savings rate between complete months', () => {
     const txns = [
-      income(6,1,1000), ex(6,2,200,'food','x'),   // rate 0.8
-      income(5,1,1000), ex(5,2,600,'food','x'),   // rate 0.4
+      income(5,1,1000), ex(5,2,200,'food','x'),   // May (last complete month): rate 0.8
+      income(4,1,1000), ex(4,2,600,'food','x'),   // April: rate 0.4
+      income(6,1,1000), ex(6,2,990,'food','x'),   // June is in progress — ignored
     ];
     const sr = InsightsEngine.generateInsights(txns, { asOf: ASOF }).find(i => i.kind === 'savingsRate');
     assert.ok(sr, 'has savingsRate');
     assert.equal(sr.tone, 'up');              // saving more = good
     assert.ok(Math.abs(sr.delta - 0.4) < 1e-9);
+    assert.equal(sr.month, '2026-05');
+  });
+
+  await t.test('caps untracked recurring charges at two, biggest first', () => {
+    const rec = (note, amt) => [3,4,5].map(m => ex(m,5,amt,'bills',note));
+    const txns = [...rec('Rent', 1200), ...rec('Phone', 55), ...rec('Internet', 65), ...rec('Gym', 40)];
+    const r = InsightsEngine.generateInsights(txns, { asOf: ASOF }).filter(i => i.kind === 'untrackedRecurring');
+    assert.deepEqual(r.map(x => x.name), ['Rent', 'Internet']);
+    assert.equal(r[0].more, 2);
   });
 
   await t.test('detects an untracked, roughly-monthly recurring charge', () => {
@@ -229,6 +246,13 @@ test('suggestCategory', async (t) => {
     tx('Starbucks Coffee', 'coffee', 'expense', '2026-05-02'),
     tx('Payroll deposit', 'salary', 'income', '2026-05-03'),
   ];
+
+  await t.test('accents do not split a merchant', () => {
+    const h = [tx('Café Myriade', 'coffee'), tx('Cafe Myriade', 'coffee')];
+    const r = InsightsEngine.suggestCategory('café myriade', h, { type: 'expense' });
+    assert.equal(r.confidence, 'exact');
+    assert.equal(r.count, 2);
+  });
 
   await t.test('exact normalized match (ignores digits/punctuation)', () => {
     const r = InsightsEngine.suggestCategory('loblaws #99', history, { type: 'expense' });

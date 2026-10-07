@@ -66,7 +66,15 @@ const TransactionStore = {
      data instead of a blank page (Account/Transaction stores used to throw) */
   _cacheKey: 'pf_tx_cache',
   _readCache() { try { return JSON.parse(localStorage.getItem(this._cacheKey) || 'null'); } catch { return null; } },
-  _writeCache(list) { try { localStorage.setItem(this._cacheKey, JSON.stringify(list)); } catch (_) {} },
+  /* guests already read from localStorage (GuestDB) — a second full copy
+     would only halve how much history fits on the device */
+  _writeCache(list) {
+    if (typeof GuestDB !== 'undefined' && localStorage.getItem(GuestDB.PREFIX + 'transactions') !== null) {
+      try { localStorage.removeItem(this._cacheKey); } catch (_) {}
+      return;
+    }
+    try { localStorage.setItem(this._cacheKey, JSON.stringify(list)); } catch (_) {}
+  },
 
   /* PostgREST/Supabase caps a response at 1000 rows; without paging, heavy
      accounts silently lost transactions (wrong balances/charts). Page through
@@ -674,11 +682,30 @@ const BudgetStore = {
     return SettingsStore.getBudgets();
   },
 
-  getMonth(monthKey) { return this._all()[monthKey] || {}; },
+  /* Budgets carry forward: a month with no saved entry uses the most recent
+     earlier month that has one, so a new month (or one you forgot to copy)
+     isn't suddenly "no budgets". An explicit entry — even an empty one, left
+     after removing every limit — is that month's own. */
+  getMonth(monthKey) { return resolveBudgetMonth(this._all(), monthKey); },
+
+  /* true when getMonth() is borrowing from an earlier month */
+  isInherited(monthKey) {
+    const all = this._all();
+    return !Object.prototype.hasOwnProperty.call(all, monthKey) && Object.keys(resolveBudgetMonth(all, monthKey)).length > 0;
+  },
+
+  /* the month a carried-forward budget comes from (YYYY-MM), or null */
+  sourceMonth(monthKey) {
+    const all = this._all();
+    if (Object.prototype.hasOwnProperty.call(all, monthKey)) return monthKey;
+    return Object.keys(all).filter(k => k < monthKey).sort().pop() || null;
+  },
 
   async set(monthKey, categoryId, limit) {
     const all = this._all();
-    if (!all[monthKey]) all[monthKey] = {};
+    /* editing a carried-forward month materializes it first, so changing one
+       limit doesn't drop the others it was inheriting */
+    if (!all[monthKey]) all[monthKey] = { ...resolveBudgetMonth(all, monthKey) };
     if (!limit || limit <= 0) delete all[monthKey][categoryId];
     else all[monthKey][categoryId] = Number(limit);
     await SettingsStore.setBudgets(all);
@@ -694,6 +721,15 @@ const BudgetStore = {
     return all[monthKey];
   },
 };
+
+/* Pure: the budget map in effect for `monthKey` (YYYY-MM) — its own entry,
+   else the latest earlier month's, else {}. */
+function resolveBudgetMonth(all, monthKey) {
+  if (!all || typeof all !== 'object') return {};
+  if (Object.prototype.hasOwnProperty.call(all, monthKey)) return all[monthKey] || {};
+  const prev = Object.keys(all).filter(k => /^\d{4}-\d{2}$/.test(k) && k < monthKey).sort().pop();
+  return prev ? (all[prev] || {}) : {};
+}
 
 /* ============================================================
    SHARED ID / DATE HELPERS (used by SubscriptionStore)
@@ -1370,11 +1406,14 @@ function formatDate(isoDate) {
   });
 }
 
+/* "Jun 9" this year, "Jun 9, 2024" otherwise — with years of history a
+   bare "Apr 3" is ambiguous */
 function formatDateShort(isoDate) {
   if (!isoDate) return '';
-  return new Date(isoDate + 'T00:00:00').toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric',
-  });
+  const d = new Date(isoDate + 'T00:00:00');
+  const opts = { month: 'short', day: 'numeric' };
+  if (d.getFullYear() !== new Date().getFullYear()) opts.year = 'numeric';
+  return d.toLocaleDateString('en-US', opts);
 }
 
 function showToast(message, type = '') {
@@ -1397,7 +1436,8 @@ function showToast(message, type = '') {
     toast.addEventListener('animationend', () => toast.remove(), { once: true });
   };
   toast.addEventListener('click', dismiss);
-  setTimeout(dismiss, 3200);
+  /* longer messages (errors, warnings) need time to be read */
+  setTimeout(dismiss, type === 'error' || type === 'warning' ? 7000 : 3200);
 }
 
 /* ============================================================
@@ -1607,5 +1647,5 @@ const CSVService = {
    are exposed (the CSV tokenizer + formatters); the store methods need a live
    Supabase client and aren't unit-testable here. */
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { CSVService, isoLocal, formatCurrency, formatBalance, formatSigned, signColor, formatDate, formatDateShort };
+  module.exports = { CSVService, isoLocal, formatCurrency, formatBalance, formatSigned, signColor, formatDate, formatDateShort, resolveBudgetMonth };
 }

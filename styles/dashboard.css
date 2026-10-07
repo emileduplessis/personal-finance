@@ -389,9 +389,15 @@ body.dash-dragging { user-select: none; }
 .dash-tiles {
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
 }
-/* one tile per row on phones — 2-up is too narrow and truncates balances */
+/* one tile per row on phones — 2-up is too narrow and truncates balances.
+   Each is a compact row (name left, balance right, no sparkline): five full
+   tiles used to fill the whole first screen before the month summary. */
 @media (max-width: 560px) {
   .dash-tiles { grid-template-columns: 1fr; }
+  .dash-tiles .acct-tile { flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; }
+  .dash-tiles .acct-tile__chart { display: none; }
+  .dash-tiles .acct-tile__row1 { flex: 1; min-width: 0; }
+  .dash-tiles .acct-tile__row2 { flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; }
 }
 .dash-tiles .empty-state { background: var(--color-surface); grid-column: 1 / -1; }
 
@@ -487,6 +493,15 @@ body.dash-dragging { user-select: none; }
 .acct-tile__row1 .acct-tile__top { flex: 1; min-width: 0; }
 .acct-tile__row1 .acct-tile__chart { flex: 0 0 38%; max-width: 38%; height: 40px; }
 .acct-tile__row2 { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+
+/* A narrow tile (several accounts side by side) can't hold the name AND a
+   38%-wide sparkline on one row — names were cut to "Desjar…". Below ~260px,
+   the sparkline drops under the name at full width instead. */
+.acct-tile { container-type: inline-size; }
+@container (max-width: 260px) {
+  .acct-tile__row1 { flex-direction: column; align-items: stretch; gap: 8px; }
+  .acct-tile__row1 .acct-tile__chart { flex: none; max-width: none; width: 100%; height: 30px; }
+}
 .acct-tile__row2 .acct-tile__figures { min-width: 0; }
 
 /* Grid designs (focus/tracker/compact) stretch a tile taller than its content

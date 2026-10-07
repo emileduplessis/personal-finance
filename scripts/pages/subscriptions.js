@@ -115,10 +115,10 @@ function subRowHTML(sub, paused) {
         <button class="btn btn--ghost btn--sm sub-edit-btn" data-id="${sub.id}" title="Edit">
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         </button>
-        <button class="btn btn--ghost btn--sm sub-toggle-btn" data-id="${sub.id}" title="${paused ? 'Resume' : 'Pause'}">
+        <button class="btn btn--ghost btn--sm sub-toggle-btn" data-id="${sub.id}" title="${paused ? 'Resume' : 'Pause'}" aria-label="${paused ? 'Resume' : 'Pause'} ${escapeHTML(sub.name)}">
           ${paused
-            ? `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>`
-            : `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>`
+            ? `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="6 4 19 12 6 20 6 4"/></svg>`
+            : `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="9" y1="5" x2="9" y2="19"/><line x1="15" y1="5" x2="15" y2="19"/></svg>`
           }
         </button>
         ${!paused && days <= 0
@@ -553,8 +553,11 @@ function renderPatternInsights(subs, allTx) {
   });
 
   /* total subscription spend trend */
-  const thisMonth = todayISO().slice(0,7);
-  const lastMonth = (() => { const d=new Date(); d.setMonth(d.getMonth()-1); return d.toISOString().slice(0,7); })();
+  /* compare the last two COMPLETE months — the current one is still filling
+     up, so it always looked "lower than last month" early on */
+  const monthKey = back => { const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - back); return isoLocal(d).slice(0, 7); };
+  const thisMonth = monthKey(1);
+  const lastMonth = monthKey(2);
   const subNames = new Set(subs.map(s => s.name.toLowerCase()));
   const sumMonth = (m) => allTx
     .filter(tx => tx.type==='expense' && tx.date.startsWith(m) && (
@@ -569,7 +572,7 @@ function renderPatternInsights(subs, allTx) {
       insights.push({
         icon: diff > 0 ? '▲' : '▼',
         color: diff > 0 ? 'var(--color-expense)' : 'var(--color-income)',
-        text: `Total subscription spend is <strong>${formatCurrency(Math.abs(diff))} ${diff > 0 ? 'higher' : 'lower'}</strong> than last month.`,
+        text: `Subscription spend in ${new Date(thisMonth + '-01T00:00:00').toLocaleString('en-US', { month: 'long' })} was <strong>${formatCurrency(Math.abs(diff))} ${diff > 0 ? 'higher' : 'lower'}</strong> than the month before.`,
       });
     }
   }

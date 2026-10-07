@@ -17,10 +17,18 @@ let _incomeCats = [];
 let _jobs = [];
 let _onLogged = null;
 
-/* The default job chosen in Settings (a JobStore job), or null. */
+/* The job to log against: the default chosen in Settings, else the one last
+   used in the Hours Tracker, else the only active job. Without the fallbacks a
+   user with exactly one job (and no "default" picked) saw "No pay rate yet"
+   next to pay computed at that job's rate. */
 function defaultJob() {
   if (typeof JobStore === 'undefined') return null;
-  return _jobs.find(j => j.id === JobStore.getDefaultId()) || null;
+  const active = _jobs.filter(j => !j.archived);
+  let lastUsed = null;
+  try { lastUsed = localStorage.getItem('pf_quick_job'); } catch (_) {}
+  return _jobs.find(j => j.id === JobStore.getDefaultId())
+      || active.find(j => j.id === lastUsed)
+      || (active.length === 1 ? active[0] : null);
 }
 let _selected = null;            /* selected day, YYYY-MM-DD */
 let _mode = 'hours';             /* 'hours' | 'times' */
