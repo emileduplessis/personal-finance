@@ -9,9 +9,8 @@
   <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg" />
   <link rel="apple-touch-icon" href="/icons/icon-180.png" />
   <title>Flow — Settings</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/styles/fonts.css" />
   <link rel="stylesheet" href="../styles/main.css" />
   <link rel="stylesheet" href="../styles/layout.css" />
   <link rel="stylesheet" href="../styles/components.css" />
@@ -108,10 +107,10 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
               </span>
               <div class="settings-row__info">
-                <div class="settings-row__title">Currency</div>
+                <div class="settings-row__title" id="currencySelectLabel">Currency</div>
                 <div class="settings-row__sub">Formats how amounts display — it doesn't convert existing values</div>
               </div>
-              <select id="currencySelect" class="settings-select" data-loading>
+              <select id="currencySelect" aria-labelledby="currencySelectLabel" class="settings-select" data-loading>
                 <option value="USD">USD — US Dollar</option>
                 <option value="EUR">EUR — Euro</option>
                 <option value="GBP">GBP — British Pound</option>
@@ -130,10 +129,10 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
               </span>
               <div class="settings-row__info">
-                <div class="settings-row__title">Default account</div>
+                <div class="settings-row__title" id="defaultAccountSelectLabel">Default account</div>
                 <div class="settings-row__sub">Pre-selected when adding a transaction</div>
               </div>
-              <select id="defaultAccountSelect" class="settings-select" data-loading></select>
+              <select id="defaultAccountSelect" aria-labelledby="defaultAccountSelectLabel" class="settings-select" data-loading></select>
             </div>
 
           </div>
@@ -185,10 +184,10 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
               </span>
               <div class="settings-row__info">
-                <div class="settings-row__title">Main use</div>
+                <div class="settings-row__title" id="navFocusSelectLabel">Main use</div>
                 <div class="settings-row__sub">Hours makes the + button on mobile log hours</div>
               </div>
-              <select id="navFocusSelect" class="settings-select">
+              <select id="navFocusSelect" aria-labelledby="navFocusSelectLabel" class="settings-select">
                 <option value="money">Tracking money</option>
                 <option value="hours">Tracking hours</option>
                 <option value="both">Both</option>
@@ -200,10 +199,10 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M5 17h14"/></svg>
               </span>
               <div class="settings-row__info">
-                <div class="settings-row__title">Bottom bar shortcut</div>
+                <div class="settings-row__title" id="navSlotSelectLabel">Bottom bar shortcut</div>
                 <div class="settings-row__sub">The section pinned next to + on mobile</div>
               </div>
-              <select id="navSlotSelect" class="settings-select">
+              <select id="navSlotSelect" aria-labelledby="navSlotSelectLabel" class="settings-select">
                 <option value="money">Money</option>
                 <option value="shifts">Hours Tracker</option>
                 <option value="crypto">Crypto</option>
@@ -221,10 +220,10 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
               </span>
               <div class="settings-row__info">
-                <div class="settings-row__title">Default job</div>
+                <div class="settings-row__title" id="jobDefaultSelectLabel">Default job</div>
                 <div class="settings-row__sub">What quick-logged hours are logged against</div>
               </div>
-              <select id="jobDefaultSelect" class="settings-select" data-loading></select>
+              <select id="jobDefaultSelect" aria-labelledby="jobDefaultSelectLabel" class="settings-select" data-loading></select>
             </div>
             <div class="settings-divider"></div>
             <div class="settings-row">
@@ -243,10 +242,10 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
               </span>
               <div class="settings-row__info">
-                <div class="settings-row__title">Deposit to</div>
+                <div class="settings-row__title" id="jobAccountSelectLabel">Deposit to</div>
                 <div class="settings-row__sub">Where logged hours land as income</div>
               </div>
-              <select id="jobAccountSelect" class="settings-select" data-loading></select>
+              <select id="jobAccountSelect" aria-labelledby="jobAccountSelectLabel" class="settings-select" data-loading></select>
             </div>
           </div>
         </section>
@@ -296,7 +295,7 @@
             <div class="settings-row" style="gap:10px;flex-wrap:wrap;padding:14px 18px;">
               <input type="text" id="newCatName" class="form-control" placeholder="Category name" maxlength="30" style="flex:1;min-width:120px;font-size:.875rem;padding:7px 10px;" />
               <input type="hidden" id="newCatIcon" />
-              <select id="newCatType" class="settings-select">
+              <select id="newCatType" class="settings-select" aria-label="Category type">
                 <option value="expense">Expense</option>
                 <option value="income">Income</option>
                 <option value="both">Both</option>
@@ -319,6 +318,16 @@
               <div class="settings-row__info">
                 <div class="settings-row__title settings-row__title--danger">Delete all my data</div>
                 <div class="settings-row__sub">Permanently removes all transactions, accounts, and budgets. Cannot be undone.</div>
+              </div>
+            </button>
+            <div class="settings-divider"></div>
+            <button type="button" id="deleteAccountBtn" class="settings-row settings-row--btn settings-row--delete">
+              <span class="settings-row__icon settings-row__icon--danger">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="17" y1="8" x2="22" y2="13"/><line x1="22" y1="8" x2="17" y2="13"/></svg>
+              </span>
+              <div class="settings-row__info">
+                <div class="settings-row__title settings-row__title--danger">Delete my account</div>
+                <div class="settings-row__sub">Removes your login and email along with all your data. Cannot be undone.</div>
               </div>
             </button>
           </div>
@@ -405,9 +414,30 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="deleteAccountModal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="deleteAccountTitle">
+      <div class="modal-header">
+        <h3 class="modal-title" id="deleteAccountTitle" style="color:var(--color-expense)">Delete your account?</h3>
+        <button class="modal-close" id="closeDeleteAccountModal" aria-label="Close">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <p style="color:var(--color-text-muted);font-size:.875rem;line-height:1.6;">
+        This permanently deletes your login, your email address, and every record in your account.
+        It can't be undone. Export a CSV first if you want a copy.
+      </p>
+      <label for="deleteAccountConfirmInput" style="display:block;margin-top:12px;font-size:.8125rem;color:var(--color-text-muted);">Type <strong>DELETE</strong> to confirm</label>
+      <input type="text" id="deleteAccountConfirmInput" class="form-control" autocomplete="off" autocapitalize="characters" spellcheck="false" style="margin-top:6px;width:100%;" />
+      <div class="modal-footer">
+        <button class="btn btn--ghost" id="cancelDeleteAccount">Cancel</button>
+        <button class="btn btn--danger" id="confirmDeleteAccount" disabled>Delete account</button>
+      </div>
+    </div>
+  </div>
+
   <script src="../scripts/components/error-overlay.js"></script>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="/scripts/vendor/supabase-2.117.3.min.js"></script>
   <script src="../scripts/data/supabase.js"></script>
   <script src="../scripts/data/store.js"></script>
   <script src="../scripts/components/icons.js"></script>

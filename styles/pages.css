@@ -203,6 +203,7 @@
   cursor: pointer; outline: none; flex-shrink: 0;
 }
 .settings-select:focus { border-color: var(--color-text-muted); }
+.settings-select:focus-visible { outline: 1px solid var(--color-text); outline-offset: 2px; }
 
 /* --- Dashboard account groups (assets / debts) --- */
 .acc-group { margin-bottom: 14px; }
@@ -1442,7 +1443,10 @@
   transition: background var(--transition);
 }
 .cal-cell:hover { background: var(--color-surface-2); }
-.cal-cell--out { opacity: 0.34; }
+/* days from the neighbouring month: dim everything but the date number,
+   which stays readable (WCAG AA) — it's still a tappable button */
+.cal-cell--out > :not(.cal-cell__num) { opacity: 0.34; }
+.cal-cell--out .cal-cell__num { color: var(--color-text-light); font-weight: 400; }
 /* the heat fill IS the value — everything else on the cell is neutral */
 .cal-cell__fill { position: absolute; inset: 0; background: var(--color-income); opacity: 0; pointer-events: none; }
 .cal-cell__num {

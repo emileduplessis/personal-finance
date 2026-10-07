@@ -119,9 +119,8 @@
   }
   </script>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/styles/fonts.css" />
   <link rel="stylesheet" href="styles/main.css" />
   <style>
     .lp { max-width: 1280px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 48px) 90px; }
@@ -266,7 +265,7 @@
       <h2>Your data is the product you keep — not the one we sell</h2>
       <ul>
         <li><strong>Free to use.</strong> No card needed — not even to sign up.</li>
-        <li><strong>No ads, no trackers, no selling data.</strong> There's nothing to monetize you with.</li>
+        <li><strong>No ads, no tracking cookies, no selling data.</strong> Just cookie-free, anonymous page counts.</li>
         <li><strong>Isolated per account.</strong> Row-level security means your rows are yours alone.</li>
         <li><strong>Leave anytime.</strong> One-click CSV export and permanent delete live in Settings.</li>
         <li>The fine print, in plain language: <a href="/privacy" style="color:var(--color-text);">Privacy</a> · <a href="/terms" style="color:var(--color-text);">Terms</a>.</li>

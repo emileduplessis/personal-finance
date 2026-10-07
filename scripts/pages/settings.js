@@ -364,14 +364,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       const btn = document.getElementById('confirmDeleteAll');
       btn.classList.add('btn--loading'); btn.disabled = true;
       try {
-        await sb.from('transactions').delete().eq('user_id', user.id);
-        await sb.from('subscriptions').delete().eq('user_id', user.id);     /* no-op if table not created yet */
-        await sb.from('accounts').delete().eq('user_id', user.id);
-        /* Hours Tracker + Crypto data (no-op if a table isn't created yet) */
-        await sb.from('shift_payouts').delete().eq('user_id', user.id);
-        await sb.from('shifts').delete().eq('user_id', user.id);
-        await sb.from('jobs').delete().eq('user_id', user.id);
-        await sb.from('crypto_wallets').delete().eq('user_id', user.id);
+        /* supabase-js reports failures in { error } instead of throwing, so
+           check each result — otherwise a failed delete still says "deleted".
+           A table that was never created (optional features) is fine to skip. */
+        const MISSING_TABLE = ['42P01', 'PGRST205'];
+        const TABLES = ['transactions', 'subscriptions', 'accounts',
+                        'shift_payouts', 'shifts', 'jobs', 'crypto_wallets'];
+        for (const table of TABLES) {
+          const { error } = await sb.from(table).delete().eq('user_id', user.id);
+          if (error && !MISSING_TABLE.includes(error.code)) {
+            throw new Error(`Couldn't delete ${table.replace('_', ' ')}: ${error.message}`);
+          }
+        }
         await SettingsStore.setBudgets({});
         await SettingsStore.setSubscriptions([]);
         await SettingsStore.setCustomCategories([]);
@@ -388,5 +392,46 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
     document.getElementById('cancelDeleteAll')?.addEventListener('click', () => modal.classList.remove('open'), { once: true });
     document.getElementById('closeDeleteAllModal')?.addEventListener('click', () => modal.classList.remove('open'), { once: true });
+  });
+
+  /* Delete account: removes the login itself (email + password) and, through
+     ON DELETE CASCADE, every row the user owns. Runs the delete_my_account()
+     database function (supabase-delete-account.sql); signed-in users only. */
+  const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+  if (user.isGuest) deleteAccountBtn?.remove();
+  deleteAccountBtn?.addEventListener('click', () => {
+    const modal   = document.getElementById('deleteAccountModal');
+    const input   = document.getElementById('deleteAccountConfirmInput');
+    const confirm = document.getElementById('confirmDeleteAccount');
+    if (!modal || !input || !confirm) return;
+    input.value = '';
+    confirm.disabled = true;
+    input.oninput = () => { confirm.disabled = input.value.trim().toUpperCase() !== 'DELETE'; };
+    modal.classList.add('open');
+    setTimeout(() => input.focus(), 50);
+
+    confirm.onclick = async () => {
+      confirm.classList.add('btn--loading'); confirm.disabled = true;
+      const { error } = await sb.rpc('delete_my_account');
+      if (error) {
+        confirm.classList.remove('btn--loading'); confirm.disabled = false;
+        const notSetUp = error.code === 'PGRST202';
+        showToast(notSetUp
+          ? "Account deletion isn't available yet. Email support@flownetworth.com and we'll delete it for you."
+          : (error.message || 'Failed to delete account.'), 'error');
+        return;
+      }
+      /* the account is gone; drop this device's copy of the session and app data */
+      try {
+        Object.keys(localStorage)
+          .filter(k => k.startsWith('pf_') && k !== 'pf_theme')
+          .forEach(k => localStorage.removeItem(k));
+      } catch (_) {}
+      try { await sb.auth.signOut({ scope: 'local' }); } catch (_) {}
+      window.location.replace('/');
+    };
+    const close = () => modal.classList.remove('open');
+    document.getElementById('cancelDeleteAccount')?.addEventListener('click', close, { once: true });
+    document.getElementById('closeDeleteAccountModal')?.addEventListener('click', close, { once: true });
   });
 });

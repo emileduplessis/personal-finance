@@ -6,18 +6,17 @@
   <meta name="theme-color" content="#000000" />
   <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg" />
   <title>Privacy Policy — Flow Net Worth</title>
-  <meta name="description" content="How Flow Net Worth handles your data: what is stored, who can see it, and how to export or permanently delete it." />
+  <meta name="description" content="How Flow Net Worth handles your data: what is stored, who can see it, and how to export it or permanently delete it and your account." />
   <link rel="canonical" href="https://flownetworth.com/privacy" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Flow Net Worth" />
   <meta property="og:url" content="https://flownetworth.com/privacy" />
   <meta property="og:title" content="Privacy Policy — Flow Net Worth" />
-  <meta property="og:description" content="How Flow Net Worth handles your data: what is stored, who can see it, and how to export or permanently delete it." />
+  <meta property="og:description" content="How Flow Net Worth handles your data: what is stored, who can see it, and how to export it or permanently delete it and your account." />
   <meta property="og:image" content="https://flownetworth.com/icons/og-image.png" />
   <meta name="twitter:card" content="summary_large_image" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/styles/fonts.css" />
   <link rel="stylesheet" href="../styles/main.css" />
   <style>
     .legal-wrap { max-width: 720px; margin: 0 auto; padding: 48px 20px 80px; }
@@ -36,56 +35,99 @@
   <div class="legal-wrap">
     <a class="legal-back" href="/login">← Back</a>
     <h1>Privacy Policy</h1>
-    <div class="legal-updated">Last updated · 2026-07-11</div>
+    <div class="legal-updated">Last updated · 2026-10-07</div>
 
     <p><strong>The short version:</strong> your financial data belongs to you. We store it so the
-    app works across your devices, we can't browse it, we don't sell it, and you can export or
-    permanently delete all of it yourself at any time from Settings.</p>
+    app works across your devices, we can't browse it, we don't sell it, and you can export it or
+    permanently delete it — or your whole account — yourself at any time from Settings.</p>
 
     <h2>What we collect</h2>
     <ul>
       <li><strong>Account:</strong> your email address and a password (stored hashed by our
-        authentication provider — we never see the password itself).</li>
+        authentication provider — we never see the password itself). If you use
+        <strong>Continue with Google</strong>, Google shares your email address and basic profile
+        (name and picture) with us instead of a password.</li>
       <li><strong>Financial records you enter:</strong> accounts, transactions, budgets,
         subscriptions, work shifts, and settings. This data exists because you typed it in.</li>
       <li><strong>Crypto public addresses (optional):</strong> if you use the crypto feature, the
         public wallet addresses you paste. <strong>Never private keys or seed phrases</strong> —
         the app actively refuses them.</li>
+      <li><strong>Anonymous usage statistics:</strong> page views, referring site, country, device
+        type, and page-load speed, collected by Vercel Web Analytics and Speed Insights. These use
+        no cookies, don't identify you, and aren't linked to your account or financial data.</li>
+      <li><strong>Error reports:</strong> if the app crashes, your browser sends the error message,
+        the page it happened on, and your browser version so we can fix it. No financial data,
+        email, or account id is included.</li>
     </ul>
-    <p>There is no advertising, no tracking pixels, and no sale or sharing of your data with
-    third parties for their own use.</p>
+    <p>There is no advertising, no tracking pixels, no cross-site tracking, and no sale or sharing
+    of your data with third parties for their own use. We only collect what the app needs to work.</p>
 
-    <h2>Where it lives</h2>
+    <h2>Who processes it</h2>
+    <p>These services handle data on our behalf, only to run the app:</p>
     <ul>
-      <li><strong>Supabase</strong> (database &amp; authentication): stores your data, isolated
-        per account with row-level security — one user can never read another's rows.</li>
-      <li><strong>Your device</strong> (guest mode): if you use Flow without an account, your data
-        is kept only in this browser's local storage and never sent to us. When you sign in or
-        create an account on that device, it's copied into your account and removed from the browser.</li>
-      <li><strong>Vercel</strong> (hosting): serves the app itself.</li>
+      <li><strong>Supabase</strong> (database &amp; authentication): stores your account and
+        records, isolated per account with row-level security — one user can never read another's rows.</li>
+      <li><strong>Vercel</strong> (hosting, anonymous analytics, error logs): serves the app.
+        Like any web host, it sees your IP address when your browser loads a page.</li>
+      <li><strong>Google</strong> (only if you choose Continue with Google): verifies your sign-in.</li>
       <li><strong>Price &amp; balance services:</strong> crypto prices come from CoinGecko;
         wallet balances are looked up via public blockchain APIs (Blockstream, publicnode).
         These services receive only the public address being queried — never your identity,
         email, or financial records.</li>
     </ul>
+    <p>The app's fonts and code libraries are served from our own site, so loading a page doesn't
+    contact Google Fonts or a third-party CDN. These providers may store data on servers outside
+    your country; each is bound by its own data-protection terms.</p>
 
-    <h2>Your controls</h2>
+    <h2>Guest mode</h2>
+    <p>If you use Flow without an account, your data is kept only in this browser's local storage
+    and never sent to us. When you sign in or create an account on that device, it's copied into
+    your account and removed from the browser.</p>
+
+    <h2>How long we keep it</h2>
     <ul>
-      <li><strong>Export:</strong> download all transactions as CSV from Settings, anytime.</li>
-      <li><strong>Delete:</strong> Settings → delete all data permanently removes your records.</li>
-      <li><strong>Sign out</strong> on any device from Settings.</li>
+      <li><strong>Your account and records:</strong> for as long as you have an account. Delete a
+        record and it's gone immediately; delete your account and everything goes with it.</li>
+      <li><strong>Backups:</strong> deleted data can remain in our database provider's routine
+        backups for a short period until those backups are overwritten. Backups are never used
+        to restore data you deleted.</li>
+      <li><strong>Error logs:</strong> kept only briefly by our host, then discarded automatically.</li>
+    </ul>
+
+    <h2>Your rights and controls</h2>
+    <ul>
+      <li><strong>Access &amp; export:</strong> everything is visible in the app; download your
+        transactions as CSV from Settings, anytime.</li>
+      <li><strong>Correct:</strong> edit any record directly in the app.</li>
+      <li><strong>Delete your data:</strong> Settings → <em>Delete all my data</em> removes your
+        records but keeps your login.</li>
+      <li><strong>Delete your account:</strong> Settings → <em>Delete my account</em> permanently
+        removes your login, email address, and all records.</li>
+      <li><strong>Ask us:</strong> for anything you can't do in the app — a copy of all your data,
+        a question about how it's handled, or an objection — email us and we'll respond within
+        30 days. You also have the right to complain to your local data-protection authority.</li>
     </ul>
 
     <h2>Cookies &amp; local storage</h2>
-    <p>The app uses browser local storage for your session and device preferences (theme,
-    default job, dismissed hints). No third-party cookies.</p>
+    <p>Flow sets no cookies. It uses your browser's local storage only for things the app needs:
+    keeping you signed in, guest-mode data, and device preferences (theme, default job, dismissed
+    hints). Because nothing is used for tracking or advertising, no cookie banner is needed.</p>
+
+    <h2>Children</h2>
+    <p>Flow is not intended for anyone under 16, and we don't knowingly collect data from
+    children. If you believe a child has created an account, email us and we'll delete it.</p>
+
+    <h2>Security</h2>
+    <p>Data travels over encrypted connections (HTTPS) and is encrypted at rest by our database
+    provider. Access is restricted per account by row-level security. No system is perfectly
+    secure; if a breach ever affects your data, we'll tell you without undue delay.</p>
 
     <h2>Not financial advice</h2>
     <p>Flow is a record-keeping tool. Nothing it shows — including forecasts, insights, and
     budget suggestions — is financial, investment, tax, or legal advice.</p>
 
     <h2>Contact</h2>
-    <p>Questions, concerns, or a security issue to report:
+    <p>Questions, data requests, or a security issue to report:
     <a href="mailto:support@flownetworth.com">support@flownetworth.com</a>.</p>
 
     <h2>Changes</h2>

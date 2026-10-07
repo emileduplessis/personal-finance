@@ -16,12 +16,12 @@
   /* muted bumped from #6e6e78 (~3.7:1, failed WCAG AA) to ~4.8:1 on the
      dark surfaces; light is for very-low-emphasis text only */
   --color-text-muted:   #8a8a94;
-  --color-text-light:   #5c5c66;
+  --color-text-light:   #7e7e88;   /* 4.5:1 on surface-2 (WCAG AA); was #5c5c66 */
 
   /* Sidebar */
   --color-sidebar-bg:          #000000;
   --color-sidebar-border:      #161619;
-  --color-sidebar-text:        #5c5c66;
+  --color-sidebar-text:        #7e7e88;
   --color-sidebar-active-bg:   rgba(255,255,255,.08);
   --color-sidebar-active-text: #ffffff;
 
@@ -96,11 +96,11 @@ html[data-theme="light"] {
   --color-border-light: #e7e7ec;
   --color-text:         #101014;
   --color-text-muted:   #5c5c66;
-  --color-text-light:   #8a8a94;
+  --color-text-light:   #696973;   /* 4.6:1 on surface-2 (WCAG AA); was #8a8a94 */
 
   --color-sidebar-bg:          #ffffff;
   --color-sidebar-border:      #e7e7ec;
-  --color-sidebar-text:        #8a8a94;
+  --color-sidebar-text:        #696973;
   --color-sidebar-active-bg:   rgba(0,0,0,.07);
   --color-sidebar-active-text: #000000;
 
@@ -112,8 +112,8 @@ html[data-theme="light"] {
   /* Semantic — darkened for AA contrast on white */
   --color-income:        #00875d;
   --color-income-light:  rgba(0,135,93,.10);
-  --color-expense:       #d4315b;
-  --color-expense-light: rgba(212,49,91,.10);
+  --color-expense:       #bf2850;   /* 5:1 on its tint (WCAG AA); was #d4315b */
+  --color-expense-light: rgba(191,40,80,.10);
   --color-transfer:      #96731f;
   --color-transfer-light:rgba(150,115,31,.12);
 
@@ -162,6 +162,8 @@ body {
 
 a { color: var(--color-primary); text-decoration: none; }
 a:hover { text-decoration: underline; }
+/* links inside running text need more than color to stand out (WCAG 1.4.1) */
+p a:not(.btn) { text-decoration: underline; text-underline-offset: 2px; }
 
 button { font-family: inherit; cursor: pointer; border: none; background: none; }
 

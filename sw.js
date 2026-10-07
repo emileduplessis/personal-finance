@@ -10,7 +10,7 @@
    Bump CACHE_VERSION when shipping changes to force a refresh.
    ============================================================ */
 
-const CACHE_VERSION = 'pf-v59';
+const CACHE_VERSION = 'pf-v60';
 
 /* Clean URLs (vercel.json cleanUrls:true / serve.json): pages are served
    without the ".html" suffix; "/dashboard" is the app, "/" the landing page. Precache the
@@ -28,11 +28,15 @@ const PRECACHE = [
   '/subscriptions',
   '/crypto',
   '/hours-tracker',
+  '/styles/fonts.css',
+  '/fonts/inter-latin.woff2',
+  '/fonts/jetbrains-mono-latin.woff2',
   '/styles/main.css',
   '/styles/layout.css',
   '/styles/components.css',
   '/styles/dashboard.css',
   '/styles/pages.css',
+  '/scripts/vendor/supabase-2.117.3.min.js',
   '/scripts/data/supabase.js',
   '/scripts/data/store.js',
   '/scripts/data/crypto.js',

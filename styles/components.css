@@ -311,7 +311,7 @@ select.form-control {
   padding: 40px 24px; text-align: center;
   color: var(--color-text-muted); font-size: 0.875rem; line-height: 1.7;
 }
-.empty-state a { color: var(--color-primary); }
+.empty-state a { color: var(--color-primary); text-decoration: underline; text-underline-offset: 2px; }
 
 /* --- Error state (shared; see showErrorState in ui.js) --- */
 .error-state {
@@ -524,7 +524,7 @@ body.addtx-open { overflow: hidden; }
 .crypto-hero__row { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-top: 6px; }
 .crypto-hero__total { font-size: 2.1rem; font-weight: 700; letter-spacing: -0.02em; color: var(--color-text); }
 .crypto-hero__meta { font-size: 0.75rem; color: var(--color-text-muted); margin-top: 12px; }
-.crypto-hero__meta a { color: var(--color-text-light); }
+.crypto-hero__meta a { color: var(--color-text); text-decoration: underline; text-underline-offset: 2px; }
 
 .crypto-alloc { display: flex; height: 6px; gap: 2px; margin-top: 14px; overflow: hidden; }
 .crypto-alloc__seg { height: 100%; min-width: 3px; }
