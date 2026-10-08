@@ -501,6 +501,10 @@ body.dash-dragging { user-select: none; }
 @container (max-width: 260px) {
   .acct-tile__row1 { flex-direction: column; align-items: stretch; gap: 8px; }
   .acct-tile__row1 .acct-tile__chart { flex: none; max-width: none; width: 100%; height: 30px; }
+  /* the % change goes under the balance, and the figure scales with the tile,
+     so seven-figure balances ("1.186.319,78 €") aren't cut to "1.186.319,7…" */
+  .acct-tile__row2 { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .acct-tile__bal { font-size: clamp(.8125rem, 7.6cqi, 1.0625rem); }
 }
 .acct-tile__row2 .acct-tile__figures { min-width: 0; }
 

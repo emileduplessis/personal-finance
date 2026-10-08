@@ -175,6 +175,9 @@ select.form-control {
   transition: border-color var(--transition);
   font-family: inherit;
 }
+/* a long custom category or account name used to stretch a filter select
+   across the toolbar and knock the rest onto extra rows */
+.tx-toolbar__row--filters .select--sm { max-width: 170px; text-overflow: ellipsis; }
 .select--sm:focus { border-color: var(--color-accent); box-shadow: 0 0 0 2px var(--color-accent-light); }
 
 /* Type toggle */

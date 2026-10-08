@@ -78,19 +78,22 @@ async function renderCategoryPanel(kind, rangeTx, from, to, ids) {
   const total = slices.reduce((s, sl) => s + sl.value, 0);
   if (!breakdownEl) return;
   breakdownEl.innerHTML = slices.map((sl, i) => {
-    const pct = total > 0 ? Math.round((sl.value / total) * 100) : 0;
+    const exact = total > 0 ? (sl.value / total) * 100 : 0;
+    const pct = Math.round(exact);
+    /* "0%" next to 12,88 € read as nothing spent */
+    const pctLabel = exact > 0 && pct < 1 ? '<1' : String(pct);
     return `
       <div class="spending-item" data-cat="${sl.catId || ''}" role="link" tabindex="0" title="View these transactions" style="cursor:pointer;">
         <div class="spending-item__icon">${categoryIconHTML(sl.cat, 18)}</div>
         <div class="spending-item__info">
           <div class="spending-item__name">${sl.label}</div>
           <div class="spending-item__bar-wrap">
-            <div class="spending-item__bar" style="width:${pct}%;background:${Charts.COLORS[i % Charts.COLORS.length]}"></div>
+            <div class="spending-item__bar" style="width:${exact.toFixed(2)}%;background:${Charts.COLORS[i % Charts.COLORS.length]}"></div>
           </div>
         </div>
         <div class="spending-item__meta">
           <div class="spending-item__amount" style="color:${amtColor}">${formatCurrency(sl.value)}</div>
-          <div class="spending-item__pct">${pct}%</div>
+          <div class="spending-item__pct">${pctLabel}%</div>
         </div>
       </div>`;
   }).join('');

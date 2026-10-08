@@ -150,7 +150,7 @@ async function initDashboard() {
   /* crypto folds into net worth (not the cash balance); non-blocking so a
      wallet/network hiccup never breaks the rest of the dashboard */
   renderCrypto(totalBalance).catch(console.error);
-  await renderRecentTransactions(allTx.slice(0, RECENT_TX_COUNT));
+  await renderRecentTransactions(allTx.slice(0, RECENT_TX_COUNT), accounts);
 }
 
 /* ---- Balance vs. Net-worth chart -------------------------------------------
@@ -965,7 +965,7 @@ function renderAllocation(accounts, balanceMap) {
   }).join('');
 }
 
-async function renderRecentTransactions(txs) {
+async function renderRecentTransactions(txs, accounts = []) {
   const el = document.getElementById('recentTransactions');
   if (!el) return;
   if (!txs.length) {
@@ -973,7 +973,8 @@ async function renderRecentTransactions(txs) {
     return;
   }
   const cats = await Promise.all(txs.map(t => CategoryStore.getById(t.categoryId)));
-  el.innerHTML = txs.map((t, i) => txItemHTML(t, cats[i])).join('');
+  const accName = Object.fromEntries(accounts.map(a => [a.id, a.name]));
+  el.innerHTML = txs.map((t, i) => txItemHTML(t, cats[i], accName)).join('');
   /* tap a recent row to edit it; return here (dashboard) when done */
   el.querySelectorAll('.tx-item[data-id]').forEach(item => {
     item.style.cursor = 'pointer';
@@ -984,14 +985,19 @@ async function renderRecentTransactions(txs) {
   });
 }
 
-function txItemHTML(t, cat) {
-  const sign = t.type === 'income' ? '+' : t.type === 'expense' ? '−' : '↔';
+function txItemHTML(t, cat, accName = {}) {
+  /* a transfer moves money, it doesn't add or remove it: no sign (the "↔"
+     prefix rendered as a stray glyph), and the meta line says from → to */
+  const sign = t.type === 'income' ? '+' : t.type === 'expense' ? '−' : '';
+  const meta = t.type === 'transfer'
+    ? `${escapeHTML(accName[t.accountId] || '—')} → ${escapeHTML(accName[t.toAccountId] || '—')}`
+    : escapeHTML(cat?.name || '—');
   return `
     <div class="tx-item" data-id="${t.id}">
       <div class="tx-icon tx-icon--${t.type}">${categoryIconHTML(cat, 18)}</div>
       <div class="tx-info">
-        <div class="tx-name">${escapeHTML(t.note) || cat?.name || 'Transaction'}</div>
-        <div class="tx-meta">${formatDate(t.date)} · ${cat?.name || '—'}</div>
+        <div class="tx-name">${escapeHTML(t.note) || escapeHTML(cat?.name) || 'Transaction'}</div>
+        <div class="tx-meta">${formatDate(t.date)} · ${meta}</div>
       </div>
       <div class="tx-amount tx-amount--${t.type}">${sign}${formatCurrency(t.amount)}</div>
     </div>

@@ -15,7 +15,9 @@ const SUB_PRESETS = [
   { name: 'Phone plan',      amount: 45,    frequency: 'monthly', color: '#10b981' },
 ];
 const FREQ_LABEL  = { monthly: 'Monthly', yearly: 'Yearly', weekly: 'Weekly' };
-const FREQ_FACTOR = { monthly: 1, yearly: 1/12, weekly: 4.33 };
+/* 52/12, not 4.33 — the same factor the dashboard uses, so the two pages'
+   monthly totals agree to the cent */
+const FREQ_FACTOR = { monthly: 1, yearly: 1/12, weekly: 52 / 12 };
 
 /* tax rates by region — only Quebec for now (GST 5% + QST 9.975%) */
 const TAX_RATES = { qc: 0.14975 };
@@ -416,19 +418,21 @@ async function renderAnalytics(subs) {
   /* ---- upcoming 30 days ---- */
   const upcomingEl = document.getElementById('upcomingList');
   if (upcomingEl) {
-    const today = todayISO();
-    const cutoff = new Date(); cutoff.setDate(cutoff.getDate() + 30);
-    const cutoffISO = isoLocal(cutoff);
-    const upcoming = subs
-      .filter(s => s.active !== false && s.nextDue >= today && s.nextDue <= cutoffISO)
-      .sort((a, b) => a.nextDue.localeCompare(b.nextDue));
+    /* same list as the dashboard's Upcoming bills: overdue bills stay on it
+       (they used to vanish the day after their due date), and a weekly bill
+       shows each time it falls due */
+    const byId = Object.fromEntries(subs.map(s => [s.id, s]));
+    const upcoming = (typeof InsightsEngine !== 'undefined'
+      ? InsightsEngine.upcomingBills(subs, { withinDays: 30, max: 50 }).bills
+      : []).map(b => ({ ...byId[b.id], nextDue: b.date, _days: b.daysUntil }));
 
     if (!upcoming.length) {
       upcomingEl.innerHTML = `<div style="padding:24px;text-align:center;color:var(--color-text-muted);font-size:.8125rem;">No bills due in the next 30 days.</div>`;
     } else {
       upcomingEl.innerHTML = upcoming.map(s => {
-        const d = daysUntil(s.nextDue);
-        const badge = d === 0 ? `<span class="subs-badge subs-badge--today">Today</span>`
+        const d = s._days;
+        const badge = d < 0 ? `<span class="subs-badge subs-badge--today">${-d}d overdue</span>`
+          : d === 0 ? `<span class="subs-badge subs-badge--today">Today</span>`
           : d <= 3 ? `<span class="subs-badge subs-badge--soon">In ${d}d</span>`
           : `<span class="subs-badge subs-badge--normal">${formatDateShort(s.nextDue)}</span>`;
         return `

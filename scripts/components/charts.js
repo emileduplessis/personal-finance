@@ -65,13 +65,40 @@ const Charts = {
     catch { return '$'; }
   },
 
+  /* Room for the widest y-axis label (68px fit "$75.6k" but cut seven-figure
+     euro amounts to ".260.027 €") */
+  _axisWidth(ctx, labels) {
+    ctx.save();
+    ctx.font = '11px "Inter", sans-serif';
+    const widest = Math.max(0, ...labels.map(l => ctx.measureText(l).width));
+    ctx.restore();
+    return Math.max(68, Math.ceil(widest) + 16);
+  },
+
   _fmt(val) {
+    /* Compact, in the currency's own convention — "$1.8k" for CAD/USD but
+       "1,8 k €" for EUR, matching how formatCurrency() writes full amounts
+       (the old hand-rolled "€2.7k" put the symbol on the wrong side). */
     const sym = this._currencySymbol();
+    const { suffix, decimal } = this._currencyShape();
     const abs = Math.abs(val);
     const sign = Math.round(val) < 0 ? '−' : '';     /* −$400, not $-400 */
-    if (abs >= 1000000) return `${sign}${sym}${(abs / 1000000).toFixed(1)}M`;
-    if (abs >= 1000)    return `${sign}${sym}${(abs / 1000).toFixed(1)}k`;
-    return `${sign}${sym}${Math.round(abs)}`;
+    const num = abs >= 1000000 ? (abs / 1000000).toFixed(1).replace('.', decimal) + 'M'
+              : abs >= 1000    ? (abs / 1000).toFixed(1).replace('.', decimal) + 'k'
+              : String(Math.round(abs));
+    return suffix ? `${sign}${num} ${sym}` : `${sign}${sym}${num}`;
+  },
+
+  /* where the currency's locale puts the symbol, and its decimal mark */
+  _currencyShape() {
+    const currency = localStorage.getItem('pf_currency') || 'CAD';
+    try {
+      const parts = new Intl.NumberFormat(this._locale(), { style: 'currency', currency }).formatToParts(1.5);
+      const cur = parts.findIndex(p => p.type === 'currency');
+      const int = parts.findIndex(p => p.type === 'integer');
+      const dec = parts.find(p => p.type === 'decimal');
+      return { suffix: cur > int, decimal: dec ? dec.value : '.' };
+    } catch (_) { return { suffix: false, decimal: '.' }; }
   },
 
   /* Axis tick labels: compact ("$1.8k") unless that would print the same
@@ -121,10 +148,6 @@ const Charts = {
     const all      = proj.length ? points.concat(proj) : points;
     const splitIdx = points.length;          /* first projected index */
 
-    const pad = { top: 28, right: 20, bottom: 44, left: 68 };
-    const cw  = w - pad.left - pad.right;
-    const ch  = h - pad.top  - pad.bottom;
-
     const values   = all.map(p => p.balance);
     const bandVals = proj.flatMap(p => [p.lower ?? p.balance, p.upper ?? p.balance]);
     const minVal   = Math.min(...values, ...bandVals);
@@ -134,13 +157,17 @@ const Charts = {
     const hiVal = maxVal + rawRange * 0.12;
     const range = hiVal - lo;
 
+    const gridCount = 4;
+    const tickVals = Array.from({ length: gridCount + 1 }, (_, g) => lo + (g / gridCount) * range);
+    const tickLabels = this._fmtTicks(tickVals);
+    const pad = { top: 28, right: 20, bottom: 44, left: this._axisWidth(ctx, tickLabels) };
+    const cw  = w - pad.left - pad.right;
+    const ch  = h - pad.top  - pad.bottom;
+
     const toX = i => pad.left + (i / Math.max(all.length - 1, 1)) * cw;
     const toY = v => pad.top + ch - ((v - lo) / range) * ch;
 
     /* Grid + Y labels */
-    const gridCount = 4;
-    const tickVals = Array.from({ length: gridCount + 1 }, (_, g) => lo + (g / gridCount) * range);
-    const tickLabels = this._fmtTicks(tickVals);
     for (let g = 0; g <= gridCount; g++) {
       const v = tickVals[g];
       const y = toY(v);
@@ -418,17 +445,17 @@ const Charts = {
     const { ctx, w, h } = _redraw ? this._clear(s) : { ctx: s._ctx, w: s._w, h: s._h };
     if (!_redraw) ctx.clearRect(0, 0, w, h);
 
-    const pad = { top: 24, right: 16, bottom: 44, left: 68 };
+    const maxVal    = Math.max(...months.flatMap(m => [m.income, m.expense]), 1);
+    const barTicks  = this._fmtTicks([0, 1, 2, 3, 4].map(g => maxVal * (1 - g / 4)));
+    const pad = { top: 24, right: 16, bottom: 44, left: this._axisWidth(ctx, barTicks) };
     const cw  = w - pad.left - pad.right;
     const ch  = h - pad.top  - pad.bottom;
 
-    const maxVal    = Math.max(...months.flatMap(m => [m.income, m.expense]), 1);
     const barGroupW = cw / months.length;
     const gap       = Math.max(6, barGroupW * 0.12);
     const barW      = Math.max(4, (barGroupW - gap * 3) / 2);
 
     /* Grid */
-    const barTicks = this._fmtTicks([0, 1, 2, 3, 4].map(g => maxVal * (1 - g / 4)));
     for (let g = 0; g <= 4; g++) {
       const y = pad.top + (g / 4) * ch;
       ctx.strokeStyle = this._gridColor(); ctx.lineWidth = 1;

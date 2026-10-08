@@ -236,7 +236,9 @@ function categoryRowHTML(cat, spent, budget, rec) {
   const pct      = budget > 0 ? (spent / budget) * 100 : 0;
   const over     = budget > 0 && spent > budget;
   const barPct   = Math.min(pct, 100);
-  const barColor = pct >= 100 ? 'var(--color-expense)' : pct >= 75 ? 'var(--color-transfer)' : 'var(--color-income)';
+  /* red only once you're actually over — a fixed cost spent exactly to its
+     limit (daycare 620 of 620) isn't an alarm */
+  const barColor = over ? 'var(--color-expense)' : pct >= 75 ? 'var(--color-transfer)' : 'var(--color-income)';
 
   const suggestChip = (!(budget > 0) && rec > 0)
     ? `<button type="button" class="budget-suggest-chip" data-cat="${cat.id}" data-amount="${rec}" title="Apply suggested budget from your last 3 months">~${formatCurrency(rec)}</button>`

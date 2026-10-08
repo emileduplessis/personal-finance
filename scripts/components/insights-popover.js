@@ -24,6 +24,13 @@
     return new Date(y, m - 1, 1).toLocaleString('en-US', { month: 'long' });
   };
 
+  /* a negative savings rate isn't "you kept −41%" — it's spending more than came in */
+  const keptPhrase = rate => {
+    const pct = Math.round(Math.abs(rate) * 100);
+    if (rate < 0) return `you spent ${pct}% more than you earned`;
+    return `you kept ${pct}% of your income`;
+  };
+
   function copyFor(ins, catName) {
     switch (ins.kind) {
       case 'spendTrend':
@@ -42,7 +49,7 @@
         return {
           icon: ins.tone === 'up' ? ICON.up : ICON.down,
           title: ins.tone === 'up' ? "You saved more last month" : "You saved less last month",
-          text: `You kept ${Math.round(ins.rate * 100)}% of your income in ${monthName(ins.month)}, vs ${Math.round(ins.prevRate * 100)}% in ${monthName(ins.prevMonth)}.`,
+          text: `${monthName(ins.month)}: ${keptPhrase(ins.rate)}. ${monthName(ins.prevMonth)}: ${keptPhrase(ins.prevRate)}.`,
         };
       case 'untrackedRecurring':
         return {

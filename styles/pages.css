@@ -55,7 +55,7 @@
 .budget-list-card { padding: 0; overflow: hidden; }
 .budget-list-header {
   display: grid;
-  grid-template-columns: 180px 1fr 220px;
+  grid-template-columns: minmax(180px, 260px) 1fr 220px;
   gap: 12px;
   padding: 10px 20px;
   border-bottom: 1px solid var(--color-border);
@@ -66,7 +66,7 @@
 /* Category rows */
 .budget-row {
   display: grid;
-  grid-template-columns: 180px 1fr 220px;
+  grid-template-columns: minmax(180px, 260px) 1fr 220px;
   gap: 12px;
   align-items: center;
   padding: 14px 20px;
@@ -1675,7 +1675,9 @@
   .accounts-drawer .acc-card.is-active { background: var(--color-surface-2); box-shadow: inset 2px 0 0 var(--color-text); }
   .accounts-drawer .acc-card__head { display: contents; }
   .accounts-drawer .acc-card__avatar { grid-column: 1; grid-row: 1 / span 2; width: 28px; height: 28px; font-size: .8125rem; }
-  .accounts-drawer .acc-card__name { grid-column: 2; grid-row: 1; }
+  /* up to two lines: one line cut "ING Compte à vue — joint…" to "ING Compt…" */
+  .accounts-drawer .acc-card__name { grid-column: 2; grid-row: 1; white-space: normal; overflow-wrap: anywhere;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3; }
   .accounts-drawer .acc-card__type { grid-column: 2; grid-row: 2; margin-top: 0; }
   .accounts-drawer .acc-card__balance { grid-column: 3; grid-row: 1; margin-top: 0; font-size: .875rem; text-align: right; }
   .accounts-drawer .acc-card__actions { grid-column: 3; grid-row: 2; justify-content: flex-end; }

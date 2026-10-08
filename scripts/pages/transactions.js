@@ -98,7 +98,7 @@ function matchesSearch(t, term) {
   const acc   = _accMap[t.accountId];
   const toAcc = _accMap[t.toAccountId];
   const hay = [
-    t.note, cat?.name, acc?.name, toAcc?.name,
+    t.note, cat?.name, acc?.name, toAcc?.name, ...(t.tags || []),
     t.amount != null ? String(t.amount) : '',
     t.amount != null ? Number(t.amount).toFixed(2) : '',
   ].filter(Boolean).join(' ');
@@ -238,6 +238,10 @@ function txItemFullHTML(t, cat, acc, showDate = false) {
     meta = `${escapeHTML(cat?.name) || 'Uncategorized'} · ${escapeHTML(acc?.name) || 'No account'}`;
   }
   if (showDate) meta = `${formatDateShort(t.date)} · ${meta}`;
+  /* the user's own tags (the app's bookkeeping tags stay out of sight) —
+     they were saved but never shown anywhere */
+  const userTags = (t.tags || []).filter(tag => !['subscription', 'shift', 'bonus'].includes(tag));
+  if (userTags.length) meta += ` · ${userTags.map(tag => `#${escapeHTML(tag)}`).join(' ')}`;
   const checkbox = selectMode
     ? `<input type="checkbox" class="tx-select" data-id="${t.id}" ${selectedIds.has(t.id) ? 'checked' : ''} style="margin-right:6px;flex-shrink:0;width:16px;height:16px;">`
     : '';
