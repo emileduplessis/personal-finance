@@ -13,8 +13,10 @@
     rows: [],            /* raw string[][] */
     accounts: [],
     cats: [],
-    existingKeys: new Set(),
-    allTx: [],           /* for history-based category suggestions */
+    allTx: [],           /* for history-based category suggestions + dedupe */
+    detect: null,        /* column roles from CSVService.analyze */
+    bank: null,          /* recognised export, e.g. 'RBC' (label only) */
+    isOFX: false,        /* QFX/OFX skips the column step entirely */
     accountId: null,
     parsed: [],          /* [{ date, note, amount, type, categoryId, dup, include, ok }] */
     catOptionsHTML: '',
@@ -37,8 +39,40 @@
   }
 
   /* ---------- helpers ---------- */
-  const norm = s => String(s || '').toLowerCase().trim();
-  const dupKey = (accId, date, amount, note) => `${accId}|${date}|${Number(amount).toFixed(2)}|${norm(note)}`;
+  const OFX_RE = /\.(ofx|qfx|qbo)$/i;
+
+  /* Banks in Quebec still export Windows-1252; decoding that as UTF-8 turns
+     "Épicerie" into "?picerie". Retry as 1252 when replacement chars appear. */
+  async function readFileText(file) {
+    const buf = await file.arrayBuffer();
+    let text = new TextDecoder('utf-8').decode(buf);
+    if (text.includes('\uFFFD')) {
+      try { text = new TextDecoder('windows-1252').decode(buf); } catch (_) {}
+    }
+    return text.replace(/^\uFEFF/, '');
+  }
+
+  /* Category for an imported row: an exact match from your own history wins,
+     then a known merchant name, then a looser history match. (Bank strings
+     share filler tokens like "POS PURCHASE", which make loose history matches
+     noisy — so they go last.) */
+  function suggestCategory(note, type) {
+    if (type === 'transfer') return null;
+    const hist = typeof InsightsEngine !== 'undefined'
+      ? InsightsEngine.suggestCategory(note, state.allTx, { type }) : null;
+    if (hist && hist.confidence === 'exact') return hist.categoryId;
+    const known = CSVService.guessCategory(note, type);
+    if (known && state.cats.some(c => c.id === known)) return known;
+    return hist ? hist.categoryId : null;
+  }
+
+  /* categories + duplicate flags; unreadable and duplicate rows start unchecked */
+  function enrich(parsed) {
+    parsed.forEach(r => { r.categoryId = r.ok ? suggestCategory(r.note, r.type) : null; });
+    CSVService.markDuplicates(parsed, state.allTx, state.accountId);
+    parsed.forEach(r => { r.include = r.ok && !r.dup; });
+    return parsed;
+  }
 
   function colOptions(selectedIdx, { allowNone = false } = {}) {
     let html = allowNone ? `<option value="-1">— None —</option>` : '';
@@ -67,26 +101,43 @@
 
   async function handleLoad() {
     const file = $('impFile').files?.[0];
-    if (!file) { showToast('Choose a CSV file first', 'error'); return; }
+    if (!file) { showToast('Choose a file first', 'error'); return; }
     state.accountId = $('impAccount').value || state.accounts[0]?.id;
     if (!state.accountId) { showToast('Create an account first', 'error'); return; }
 
     const btn = $('impLoadBtn');
     btn.classList.add('btn--loading'); btn.disabled = true;
     try {
-      const text = await file.text();
-      const { header, rows } = CSVService.splitRows(text);
-      if (!rows.length) throw new Error('That file has no data rows.');
-      state.header = header;
-      state.rows = rows;
+      const text = await readFileText(file);
+      state.isOFX = OFX_RE.test(file.name) || /<OFX>/i.test(text);
 
       /* load categories + existing tx once, for suggestions & dedupe */
       const [cats, allTx] = await Promise.all([CategoryStore.getAll(), TransactionStore.getAll()]);
       state.cats = cats;
       state.allTx = allTx;
-      state.existingKeys = new Set(allTx.map(t => dupKey(t.accountId, t.date, t.amount, t.note)));
       state.catOptionsHTML = `<option value="">Uncategorized</option>` +
         cats.map(c => `<option value="${c.id}">${escapeHTML(c.name)}</option>`).join('');
+
+      if (state.isOFX) {
+        /* OFX is self-describing (signed amounts, real dates) — no mapping step */
+        const txs = CSVService.parseOFX(text);
+        if (!txs.length) throw new Error('No transactions found in that file.');
+        state.parsed = enrich(txs.map(t => ({
+          date: t.date, note: t.note, amount: Math.abs(t.amount),
+          type: t.amount < 0 ? 'expense' : 'income', ok: t.amount !== 0,
+        })));
+        renderPreview();
+        showStep(3);
+        return;
+      }
+
+      const a = CSVService.analyze(text);
+      if (!a.rows.length) throw new Error('That file has no data rows.');
+      state.header = a.header;
+      state.rows = a.rows;
+      state.detect = a.detect;
+      state.bank = a.bank;
+      state.headerless = a.headerless;
 
       buildMappingUI();
       showStep(2);
@@ -99,28 +150,36 @@
 
   /* ---------- STEP 2: mapping ---------- */
   function buildMappingUI() {
-    const det = CSVService.autoDetect(state.header);
+    const det = state.detect;
 
     $('mapDate').innerHTML   = colOptions(det.dateIdx);
     $('mapDesc').innerHTML   = colOptions(det.descIdx);
+    $('mapDesc2').innerHTML  = colOptions(det.desc2Idx, { allowNone: true });
     $('mapAmount').innerHTML = colOptions(det.amountIdx);
     $('mapDebit').innerHTML  = colOptions(det.debitIdx, { allowNone: true });
     $('mapCredit').innerHTML = colOptions(det.creditIdx, { allowNone: true });
 
-    /* stash the detected type column (our own export) for parse time */
-    state._typeIdx = det.typeIdx;
-
     const dc = det.mode === 'debitcredit';
     setAmountMode(dc ? 'debitcredit' : 'signed');
+    guessSign();
 
     const named = i => i >= 0 ? `“${state.header[i] || 'Column ' + (i + 1)}”` : null;
     const bits = [named(det.dateIdx) && `date ${named(det.dateIdx)}`,
                   named(det.descIdx) && `description ${named(det.descIdx)}`,
                   dc ? 'separate debit/credit columns' : (named(det.amountIdx) && `amount ${named(det.amountIdx)}`)]
                   .filter(Boolean);
+    const lead = state.bank ? `Looks like a ${state.bank} export. `
+      : state.headerless ? `This file has no header row, so columns were read from the values. ` : '';
     $('impDetectNote').textContent = bits.length
-      ? `Auto-detected ${bits.join(', ')}. Change anything that looks wrong.`
+      ? `${lead}Auto-detected ${bits.join(', ')}. Change anything that looks wrong.`
       : `Couldn’t confidently detect the columns — please pick them below.`;
+  }
+
+  /* pre-pick "Expenses appear as" from which sign dominates the amount column */
+  function guessSign() {
+    const i = +$('mapAmount').value;
+    if (!(i >= 0)) return;
+    $('mapSign').value = CSVService.guessExpensesPositive(state.rows.map(r => r[i])) ? 'pos' : 'neg';
   }
 
   function setAmountMode(mode) {
@@ -132,57 +191,36 @@
 
   /* ---------- STEP 2 → 3: parse rows ---------- */
   function buildPreview() {
-    const dateIdx = +$('mapDate').value;
-    const descIdx = +$('mapDesc').value;
     const mode    = state._amode;
     const amtIdx  = +$('mapAmount').value;
     const debIdx  = +$('mapDebit').value;
     const creIdx  = +$('mapCredit').value;
-    const signPos = $('mapSign').value === 'pos';    /* expenses shown as positive */
+    const dateIdx = +$('mapDate').value;
     const fmt     = $('mapDateFmt').value;
-    const dayFirst = fmt === 'dmy';
-    const typeIdx = state._typeIdx;
 
     if (mode === 'signed' && !(amtIdx >= 0)) { showToast('Pick the amount column', 'error'); return false; }
     if (mode === 'debitcredit' && debIdx < 0 && creIdx < 0) { showToast('Pick a debit or credit column', 'error'); return false; }
 
-    const cell = (row, i) => (i >= 0 && i < row.length ? String(row[i] || '').trim() : '');
-    const parsed = [];
+    const dayFirst = fmt === 'dmy' ? true : fmt === 'mdy' ? false
+      : CSVService.guessDayFirst(state.rows.map(r => r[dateIdx]));
 
-    for (const row of state.rows) {
-      const note = cell(row, descIdx);
-      const date = CSVService.parseDate(cell(row, dateIdx), dayFirst);
-      let amount = NaN, type = 'expense';
-
-      if (mode === 'debitcredit') {
-        const deb = debIdx >= 0 ? CSVService.parseAmount(cell(row, debIdx)) : NaN;
-        const cre = creIdx >= 0 ? CSVService.parseAmount(cell(row, creIdx)) : NaN;
-        if (!isNaN(deb) && Math.abs(deb) > 0)      { amount = Math.abs(deb); type = 'expense'; }
-        else if (!isNaN(cre) && Math.abs(cre) > 0) { amount = Math.abs(cre); type = 'income'; }
-      } else {
-        /* our own export carries an explicit type column — honour it */
-        const explicit = typeIdx >= 0 ? cell(row, typeIdx).toLowerCase() : '';
-        const n = CSVService.parseAmount(cell(row, amtIdx));
-        if (!isNaN(n)) {
-          amount = Math.abs(n);
-          if (['income', 'expense', 'transfer'].includes(explicit)) type = explicit;
-          else type = signPos ? (n > 0 ? 'expense' : 'income') : (n < 0 ? 'expense' : 'income');
-        }
-      }
-
-      const ok = !!date && !isNaN(amount) && amount > 0;
-      let categoryId = null;
-      if (ok && type !== 'transfer' && typeof InsightsEngine !== 'undefined') {
-        const s = InsightsEngine.suggestCategory(note, state.allTx, { type });
-        if (s && s.categoryId) categoryId = s.categoryId;
-      }
-      const dup = ok && state.existingKeys.has(dupKey(state.accountId, date, amount, note));
-      parsed.push({ date, note, amount, type, categoryId, ok, dup, include: ok && !dup });
-    }
-
-    state.parsed = parsed;
+    state.parsed = enrich(CSVService.mapRows(state.rows, {
+      dateIdx, descIdx: +$('mapDesc').value, desc2Idx: +$('mapDesc2').value,
+      mode, amountIdx: amtIdx, debitIdx: debIdx, creditIdx: creIdx,
+      /* our own export carries an explicit type column — honour it */
+      typeIdx: mode === 'signed' ? state.detect.typeIdx : -1,
+      expensesPositive: $('mapSign').value === 'pos', dayFirst,
+    }));
     renderPreview();
     return true;
+  }
+
+  function dupBadge(r) {
+    if (r.dup === 'exact') return '<span class="imp-dup-badge">dup</span>';
+    if (r.dup !== 'likely') return '';
+    const m = r.match || {};
+    const tip = `Same amount as “${m.note || 'a transaction'}” on ${m.date || ''}`;
+    return `<span class="imp-dup-badge" title="${escapeHTML(tip)}">logged?</span>`;
   }
 
   function renderPreview() {
@@ -200,7 +238,7 @@
       return `<tr class="${r.dup ? 'is-dup' : ''}" data-i="${gi}">
         <td><input type="checkbox" class="imp-row-chk" data-i="${gi}" ${r.include ? 'checked' : ''} /></td>
         <td>${escapeHTML(r.date)}</td>
-        <td title="${escapeHTML(r.note)}">${escapeHTML(r.note.slice(0, 42))}${r.dup ? '<span class="imp-dup-badge">dup</span>' : ''}</td>
+        <td title="${escapeHTML(r.note)}">${escapeHTML(r.note.slice(0, 42))}${dupBadge(r)}</td>
         <td class="imp-amt ${amtCls}">${sign}${formatCurrency(r.amount)}</td>
         <td><select class="form-control imp-cat-select" data-i="${gi}">${state.catOptionsHTML}</select></td>
       </tr>`;
@@ -220,8 +258,8 @@
       ? `Showing the first ${MAX_RENDER} of ${okRows.length} rows. Category guesses apply to the rest; you can edit them after import.`
       : '';
     $('impReviewNote').innerHTML = dupRows.length
-      ? `<strong>${dupRows.length}</strong> row(s) look like transactions you already have in this account — they’re unchecked so you don’t double-count. Check them if you want them anyway.`
-      : `Categories were guessed from your history where possible. Adjust any before importing.`;
+      ? `<strong>${dupRows.length}</strong> row(s) look like transactions you already have in this account: “dup” is an exact match, “logged?” is the same amount within 3 days (hover to see which). They’re unchecked so you don’t double-count — check any you want anyway.`
+      : `Categories were guessed from your history and common store names. Adjust any before importing.`;
 
     refreshCounts();
   }
@@ -278,7 +316,8 @@
     $('impBackTo1').addEventListener('click', () => showStep(1));
     $('impToReview').addEventListener('click', () => { if (buildPreview()) showStep(3); });
 
-    $('impBackTo2').addEventListener('click', () => showStep(2));
+    $('impBackTo2').addEventListener('click', () => showStep(state.isOFX ? 1 : 2));
+    $('mapAmount').addEventListener('change', guessSign);
     $('impCheckAll').addEventListener('change', e => {
       const on = e.target.checked;
       state.parsed.forEach(r => { if (r.ok) r.include = on; });
@@ -288,7 +327,7 @@
     $('impCommit').addEventListener('click', commit);
 
     $('impAnother').addEventListener('click', () => {
-      state.parsed = []; state.rows = []; state.header = [];
+      state.parsed = []; state.rows = []; state.header = []; state.isOFX = false;
       $('impFile').value = ''; $('impFileName').textContent = '';
       $('impLoadBtn').disabled = true;
       showStep(1);

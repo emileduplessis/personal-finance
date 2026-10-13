@@ -91,7 +91,9 @@
         <section class="card form-card" id="step1">
           <h2 class="form-section-title" style="margin-bottom:6px;">Import from your bank</h2>
           <p class="imp-note" style="margin-bottom:18px;">
-            Export a CSV of transactions from your bank or credit-card site, then load it here.
+            In your bank or credit-card site, open the account and look for
+            <strong>Download</strong> or <strong>Export transactions</strong>. Choose
+            <strong>Quicken (QFX)</strong> or <strong>OFX</strong> if offered (most reliable), otherwise CSV.
             Nothing is saved until you review it on the last step.
           </p>
 
@@ -104,8 +106,8 @@
           </div>
 
           <div class="form-group" style="margin-bottom:20px;">
-            <label class="form-label" for="impFile">CSV file</label>
-            <input type="file" id="impFile" accept=".csv,text/csv" class="form-control" />
+            <label class="form-label" for="impFile">Statement file (CSV, QFX or OFX)</label>
+            <input type="file" id="impFile" accept=".csv,.txt,.qfx,.ofx,.qbo,text/csv" class="form-control" />
             <div class="imp-note" id="impFileName" style="margin-top:6px;"></div>
           </div>
 
@@ -128,6 +130,10 @@
             <div class="form-group">
               <label class="form-label" for="mapDesc">Description column</label>
               <select id="mapDesc" class="form-control"></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="mapDesc2">Extra description <span style="color:var(--color-text-muted);font-weight:400;">(optional)</span></label>
+              <select id="mapDesc2" class="form-control"></select>
             </div>
           </div>
 

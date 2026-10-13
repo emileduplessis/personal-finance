@@ -1416,7 +1416,7 @@ const CSVService = {
      escaped quotes ("") and embedded newlines. Returns an array of rows,
      each an array of cell strings. (The old line-split + regex broke on any
      note that contained a comma or a line break.) */
-  _parse(text) {
+  _parse(text, delim = ',') {
     const rows = [];
     let row = [], field = '', inQuotes = false;
     const pushField = () => { row.push(field); field = ''; };
@@ -1427,7 +1427,7 @@ const CSVService = {
         if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else inQuotes = false; }
         else field += c;
       } else if (c === '"') { inQuotes = true; }
-      else if (c === ',') { pushField(); }
+      else if (c === delim) { pushField(); }
       else if (c === '\n' || c === '\r') {
         if (c === '\r' && text[i + 1] === '\n') i++;
         pushField(); pushRow();
@@ -1490,6 +1490,12 @@ const CSVService = {
     if ((m = s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/))) {
       return `${m[1]}-${pad(+m[2])}-${pad(+m[3])}`;
     }
+    /* compact YYYYMMDD (OFX, BMO) — optional time suffix "120000[-5:EST]" */
+    if ((m = s.match(/^(\d{4})(\d{2})(\d{2})(?:\d{6}|$|[\s.[])/))) {
+      const mm = +m[2], dd = +m[3];
+      if (mm < 1 || mm > 12 || dd < 1 || dd > 31) return '';
+      return `${m[1]}-${m[2]}-${m[3]}`;
+    }
     /* numeric D/M/Y or M/D/Y (2- or 4-digit year) */
     if ((m = s.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})/))) {
       let a = +m[1], b = +m[2];
@@ -1519,15 +1525,305 @@ const CSVService = {
       return -1;
     };
     const dateIdx   = find('date', 'posted', 'time');
-    const descIdx   = find('description', 'details', 'narrative', 'memo', 'payee', 'merchant', 'name', 'reference', 'note', 'transaction');
+    /* payee/name before memo: Tangerine's "Name" is the merchant, "Memo" is noise */
+    const descIdx   = find('description', 'details', 'narrative', 'payee', 'merchant', 'name', 'memo', 'reference', 'note', 'transaction');
     const debitIdx  = find('debit', 'withdrawal', 'money out', 'paid out', 'outflow', 'spent');
     const creditIdx = find('credit', 'deposit', 'money in', 'paid in', 'inflow', 'received');
-    const amountIdx = find('amount', 'value');
-    const typeIdx   = find('type');
+    const amountIdx = find('amount', 'value', 'cad$', 'cad');
+    /* exact names only — "Account Type" (RBC) holds "Chequing", not a direction */
+    const typeIdx   = h.findIndex(c => c === 'type' || c === 'transaction type');
     let mode = 'signed';
     if (typeIdx >= 0 && amountIdx >= 0)          mode = 'typed';
     else if (debitIdx >= 0 || creditIdx >= 0)    mode = 'debitcredit';
-    return { dateIdx, descIdx, amountIdx, debitIdx, creditIdx, typeIdx, mode };
+    return { dateIdx, descIdx, desc2Idx: -1, amountIdx, debitIdx, creditIdx, typeIdx, mode };
+  },
+
+  /* Strict "is this cell a date?" — regex only. new Date() is far too lenient
+     (Chrome parses "Coffee 12" as a date), so content sniffing can't use it. */
+  _looksLikeDate(raw) {
+    const s = String(raw || '').trim();
+    return /^\d{4}[-/.]\d{1,2}[-/.]\d{1,2}/.test(s)
+      || /^\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}$/.test(s)
+      || /^\d{8}(\d{6})?(\[.*\])?$/.test(s)
+      || /^\d{1,2}[ -][A-Za-z]{3,9}\.?[ -,]+\d{2,4}$/.test(s)
+      || /^[A-Za-z]{3,9}\.? \d{1,2},? \d{4}$/.test(s);
+  },
+
+  _looksLikeAmount(raw) {
+    const s = String(raw || '').trim();
+    if (!s || this._looksLikeDate(s)) return false;
+    return /^[-+(]?\s*(?:[A-Z]{0,3}\$|[€£])?\s*-?\d[\d,\s]*(?:[.,]\d+)?\s*\)?-?$/.test(s);
+  },
+
+  /* Separator sniffing: French-locale exports often use ";" (with "," as the
+     decimal mark) and some tools emit tabs. Counts on the first line only. */
+  detectDelimiter(text) {
+    const first = String(text || '').split(/\r?\n/).find(l => l.trim()) || '';
+    const count = ch => first.split(ch).length - 1;
+    const best = [',', ';', '\t'].map(d => [d, count(d)]).sort((a, b) => b[1] - a[1])[0];
+    return best[1] > 0 ? best[0] : ',';
+  },
+
+  /* Ambiguous numeric dates (03/04/2026): read the whole column — one value
+     whose first part is > 12 proves day-first, second part > 12 proves month-first. */
+  guessDayFirst(values) {
+    for (const v of values) {
+      const m = String(v || '').trim().match(/^(\d{1,2})[-/.](\d{1,2})[-/.]\d{2,4}/);
+      if (!m) continue;
+      if (+m[1] > 12) return true;
+      if (+m[2] > 12) return false;
+    }
+    return false;
+  },
+
+  /* Single-amount statements disagree on sign: bank accounts show spending as
+     negative, most credit cards as positive. Spending outnumbers income on
+     nearly every statement, so whichever sign dominates is "expense". */
+  guessExpensesPositive(values) {
+    let pos = 0, neg = 0;
+    for (const v of values) {
+      const n = this.parseAmount(v);
+      if (isNaN(n) || n === 0) continue;
+      if (n > 0) pos++; else neg++;
+    }
+    return pos > neg * 1.5;
+  },
+
+  /* Index of the header row, skipping preamble lines (BMO prefixes the CSV
+     with "Following data is valid as of…"). −1 when the file has no header
+     at all (TD, CIBC and Scotiabank export bare data rows). */
+  findHeaderRow(records) {
+    const isData = row => row.some(c => this._looksLikeDate(c)) && row.some(c => this._looksLikeAmount(c));
+    if (!records.length || isData(records[0])) return -1;
+    for (let i = 0; i < Math.min(records.length, 15); i++) {
+      const row = records[i];
+      if (isData(row)) break;
+      const d = this.autoDetect(row);
+      if (d.dateIdx >= 0 && (d.amountIdx >= 0 || d.debitIdx >= 0 || d.creditIdx >= 0)) return i;
+    }
+    return 0;
+  },
+
+  /* Column roles for a header-less file, read from the cells themselves.
+     A balance column is filled on every row; debit/credit columns take turns
+     (one is blank on each row) — that's how the two layouts are told apart. */
+  inferColumns(rows) {
+    const sample = rows.slice(0, 60);
+    const n = sample.length;
+    const width = Math.max(0, ...sample.map(r => r.length));
+    const stats = [];
+    for (let j = 0; j < width; j++) {
+      let filled = 0, dates = 0, amts = 0, neg = 0, len = 0;
+      const has = [];
+      sample.forEach((r, ri) => {
+        const v = String(r[j] || '').trim();
+        if (!v) return;
+        filled++; has.push(ri); len += v.length;
+        if (this._looksLikeDate(v)) dates++;
+        else if (this._looksLikeAmount(v)) { amts++; if (this.parseAmount(v) < 0) neg++; }
+      });
+      stats.push({ j, filled, dates, amts, neg, avgLen: filled ? len / filled : 0, rows: new Set(has) });
+    }
+    const out = { dateIdx: -1, descIdx: -1, desc2Idx: -1, amountIdx: -1, debitIdx: -1, creditIdx: -1, typeIdx: -1, mode: 'signed' };
+    if (!n) return out;
+
+    const dateCol = stats.filter(s => s.filled >= n * 0.8 && s.dates >= s.filled * 0.8)[0];
+    if (dateCol) out.dateIdx = dateCol.j;
+    const numeric = stats.filter(s => s.j !== out.dateIdx && s.filled && s.amts >= s.filled * 0.8);
+    const text = stats.filter(s => s.j !== out.dateIdx && s.filled && !numeric.includes(s))
+      .sort((a, b) => b.avgLen - a.avgLen);
+    if (text[0]) out.descIdx = text[0].j;
+
+    /* any two columns that never share a row (a full debit column on a card
+       statement plus a sparse payments column still counts) */
+    let pair = null;
+    for (let a = 0; a < numeric.length && !pair; a++) {
+      for (let b = a + 1; b < numeric.length && !pair; b++) {
+        let both = 0;
+        numeric[a].rows.forEach(ri => { if (numeric[b].rows.has(ri)) both++; });
+        if (both <= n * 0.05 && Math.min(numeric[a].filled, numeric[b].filled) < n * 0.95 && numeric[a].filled + numeric[b].filled >= n * 0.8) pair = [numeric[a], numeric[b]];
+      }
+    }
+    if (pair) {
+      out.mode = 'debitcredit';
+      out.debitIdx = pair[0].j;     /* Canadian banks list money-out first */
+      out.creditIdx = pair[1].j;
+    } else {
+      const full = numeric.filter(s => s.filled >= n * 0.95);
+      const signed = full.find(s => s.neg > 0) || full[0] || numeric[0];
+      if (signed) out.amountIdx = signed.j;
+    }
+    return out;
+  },
+
+  /* Known exports whose headers the generic matcher reads wrong. Returns
+     { bank, map } or null. Signatures are header-based only; header-less
+     exports fall through to inferColumns. */
+  detectBank(header) {
+    const h = header.map(x => String(x).toLowerCase().trim());
+    const at = name => h.indexOf(name);
+    const base = { dateIdx: -1, descIdx: -1, desc2Idx: -1, amountIdx: -1, debitIdx: -1, creditIdx: -1, typeIdx: -1, mode: 'signed' };
+    if (at('cad$') >= 0 && at('description 1') >= 0) {
+      return { bank: 'RBC', map: { ...base, dateIdx: at('transaction date'), descIdx: at('description 1'),
+        desc2Idx: at('description 2'), amountIdx: at('cad$') } };
+    }
+    if (at('date posted') >= 0 && at('transaction amount') >= 0) {
+      return { bank: 'BMO', map: { ...base, dateIdx: at('date posted'), descIdx: at('description'),
+        amountIdx: at('transaction amount') } };
+    }
+    if (at('transaction date') >= 0 && at('name') >= 0 && at('memo') >= 0 && at('amount') >= 0) {
+      return { bank: 'Tangerine', map: { ...base, dateIdx: at('transaction date'), descIdx: at('name'),
+        amountIdx: at('amount') } };
+    }
+    return null;
+  },
+
+  /* One call from raw text to { header, rows, headerless, bank, detect }. */
+  analyze(text) {
+    const delim = this.detectDelimiter(text);
+    const records = this._parse(String(text || '').replace(/^﻿/, ''), delim)
+      .filter(r => r.some(c => String(c || '').trim()));
+    if (!records.length) return { header: [], rows: [], headerless: false, bank: null, detect: null };
+    const hi = this.findHeaderRow(records);
+    if (hi < 0) {
+      const width = Math.max(...records.slice(0, 60).map(r => r.length));
+      return {
+        header: Array.from({ length: width }, (_, i) => `Column ${i + 1}`),
+        rows: records, headerless: true, bank: null, detect: this.inferColumns(records),
+      };
+    }
+    const header = records[hi].map(x => String(x || '').trim());
+    const rows = records.slice(hi + 1);
+    const known = this.detectBank(header);
+    return { header, rows, headerless: false, bank: known ? known.bank : null,
+             detect: known ? known.map : this.autoDetect(header) };
+  },
+
+  /* Apply a column mapping to raw rows → [{ date, note, amount, type, ok }].
+     amount is always positive; direction lives in `type`. */
+  mapRows(rows, m) {
+    const cell = (row, i) => (i >= 0 && i < row.length ? String(row[i] || '').trim() : '');
+    return rows.map(row => {
+      const note = [cell(row, m.descIdx), cell(row, m.desc2Idx)].filter(Boolean).join(' · ');
+      const date = this.parseDate(cell(row, m.dateIdx), !!m.dayFirst);
+      let amount = NaN, type = 'expense';
+      if (m.mode === 'debitcredit') {
+        const deb = this.parseAmount(cell(row, m.debitIdx));
+        const cre = this.parseAmount(cell(row, m.creditIdx));
+        if (!isNaN(deb) && deb !== 0)      { amount = Math.abs(deb); type = 'expense'; }
+        else if (!isNaN(cre) && cre !== 0) { amount = Math.abs(cre); type = 'income'; }
+      } else {
+        const explicit = cell(row, m.typeIdx).toLowerCase();
+        const n = this.parseAmount(cell(row, m.amountIdx));
+        if (!isNaN(n)) {
+          amount = Math.abs(n);
+          if (['income', 'expense', 'transfer'].includes(explicit)) type = explicit;
+          else if (explicit === 'debit' || explicit === 'dr')  type = 'expense';
+          else if (explicit === 'credit' || explicit === 'cr') type = 'income';
+          else type = m.expensesPositive ? (n > 0 ? 'expense' : 'income') : (n < 0 ? 'expense' : 'income');
+        }
+      }
+      return { date, note, amount, type, ok: !!date && !isNaN(amount) && amount > 0 };
+    });
+  },
+
+  /* OFX / QFX / QBO (the "Quicken" / "Money" download every Canadian bank
+     offers). Handles SGML OFX 1.x (unclosed tags) and XML OFX 2.x alike.
+     Returns [{ date, note, amount (signed), fitid }]. */
+  parseOFX(text) {
+    const decode = s => s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
+      .replace(/&apos;|&#39;/g, "'").replace(/&amp;/g, '&');
+    const out = [];
+    const blocks = String(text || '').match(/<STMTTRN>[\s\S]*?(?=<\/STMTTRN>|<STMTTRN>|<\/BANKTRANLIST>|$)/gi) || [];
+    for (const b of blocks) {
+      const tag = t => { const m = b.match(new RegExp(`<${t}>([^<\\r\\n]*)`, 'i')); return m ? decode(m[1].trim()) : ''; };
+      const amount = this.parseAmount(tag('TRNAMT'));
+      const date = this.parseDate(tag('DTPOSTED') || tag('DTUSER'));
+      const name = tag('NAME'), memo = tag('MEMO');
+      const note = memo && !name.toLowerCase().includes(memo.toLowerCase())
+        ? [name, memo].filter(Boolean).join(' · ') : (name || memo);
+      if (!date || isNaN(amount)) continue;
+      out.push({ date, note, amount, fitid: tag('FITID') });
+    }
+    return out;
+  },
+
+  /* Flag rows that already exist in the target account, so a re-import or a
+     switch from manual logging doesn't double-count. Two passes:
+       'exact'  — same date, amount and description (a re-imported file)
+       'likely' — same direction and amount within ±windowDays, whatever the
+                  description (you typed "coffee", the bank says "STARBUCKS #12")
+     Each existing transaction can only absorb ONE imported row, so two real
+     identical coffees on the same day don't both vanish. A transfer counts as
+     money out of its source account and money into its destination.
+     Mutates and returns rows, setting r.dup ('exact'|'likely'|null) + r.match. */
+  markDuplicates(rows, existing, accountId, { windowDays = 3 } = {}) {
+    const norm = s => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+    const cents = a => Math.round(Number(a) * 100);
+    const dayNum = iso => Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) / 86400000;
+    const fits = (r, t) => t.type === 'transfer'
+      ? (r.type === 'expense' && t.accountId === accountId) || (r.type === 'income' && t.toAccountId === accountId)
+      : t.accountId === accountId && t.type === r.type;
+    const pool = (existing || []).filter(t => t && t.date && (t.accountId === accountId || t.toAccountId === accountId));
+    const used = new Set();
+    rows.forEach(r => { r.dup = null; r.match = null; });
+
+    rows.forEach(r => {
+      if (!r.ok) return;
+      const hit = pool.find(t => !used.has(t) && t.date === r.date && cents(t.amount) === cents(r.amount)
+        && norm(t.note) === norm(r.note) && fits(r, t));
+      if (hit) { used.add(hit); r.dup = 'exact'; r.match = hit; }
+    });
+    rows.forEach(r => {
+      if (!r.ok || r.dup) return;
+      const d = dayNum(r.date);
+      let best = null, gap = Infinity;
+      for (const t of pool) {
+        if (used.has(t) || cents(t.amount) !== cents(r.amount) || !fits(r, t)) continue;
+        const g = Math.abs(dayNum(t.date) - d);
+        if (g <= windowDays && g < gap) { best = t; gap = g; }
+      }
+      if (best) { used.add(best); r.dup = 'likely'; r.match = best; }
+    });
+    return rows;
+  },
+
+  /* Cold-start category guess from well-known (mostly Canadian) merchant names,
+     for when the user's own history has nothing to go on yet. Returns a
+     default-category id or null. Word-boundary matches, so "shell" never
+     fires on "shellfish". Order matters: "uber eats" before "uber". */
+  MERCHANT_RULES: [
+    ['cat-food',      ['taco bell', 'uber eats', 'ubereats', 'doordash', 'skip the dishes', 'skipthedishes', 'tim hortons', 'tims', 'starbucks', 'mcdonald', 'mcdonalds', 'a&w', 'subway', 'second cup', 'pizza', 'restaurant', 'resto', 'cafe', 'café', 'bistro', 'sushi', 'burger', 'harvey', 'harveys', 'st-hubert', 'boston pizza', 'chipotle', 'poutine']],
+    ['cat-groceries', ['loblaws', 'no frills', 'nofrills', 'sobeys', 'metro', 'iga', 'maxi', 'provigo', 'superstore', 'real canadian superstore', 'food basics', 'freshco', 'safeway', 'save on foods', 'save-on-foods', 'farm boy', 'longos', 'super c', 'adonis', 'grocery', 'epicerie', 'épicerie', 'zehrs', 'fortinos', 'foodland', 't&t']],
+    ['cat-transport', ['petro-canada', 'petro canada', 'esso', 'shell', 'ultramar', 'husky', 'irving', 'pioneer', 'uber', 'lyft', 'presto', 'ttc', 'stm', 'opus', 'go transit', 'via rail', 'translink', 'compass', 'parking', 'impark', 'indigo park', 'stationnement', 'gas station']],
+    ['cat-subs',      ['netflix', 'spotify', 'disney plus', 'disney+', 'crave', 'prime video', 'amazon prime', 'apple.com/bill', 'youtube premium', 'youtubepremium', 'icloud', 'patreon', 'chatgpt', 'openai', 'adobe', 'microsoft 365', 'xbox game pass', 'playstation plus']],
+    ['cat-bills',     ['hydro', 'hydro-quebec', 'hydro quebec', 'hydro one', 'bc hydro', 'enbridge', 'fortis', 'epcor', 'bell', 'rogers', 'videotron', 'vidéotron', 'telus', 'fido', 'koodo', 'virgin plus', 'freedom mobile', 'public mobile', 'fizz', 'cogeco', 'shaw', 'eastlink']],
+    ['cat-health',    ['shoppers drug', 'shoppers drug mart', 'pharmaprix', 'jean coutu', 'uniprix', 'familiprix', 'rexall', 'london drugs', 'pharmacy', 'pharmacie', 'dentist', 'dentaire', 'clinic', 'clinique', 'physio']],
+    ['cat-fitness',   ['goodlife', 'ymca', 'econofitness', 'planet fitness', 'anytime fitness', 'gym', 'sport chek', 'sportchek', 'decathlon']],
+    ['cat-entertain', ['cineplex', 'steam', 'steamgames', 'playstation', 'nintendo', 'xbox', 'ticketmaster', 'eventbrite', 'cinema', 'cinéma']],
+    ['cat-travel',    ['air canada', 'westjet', 'porter', 'flair', 'airbnb', 'expedia', 'booking.com', 'hotel', 'marriott', 'hilton']],
+    ['cat-pets',      ['petsmart', 'pet valu', 'mondou', 'veterinary', 'vet clinic', 'veterinaire', 'vétérinaire']],
+    ['cat-shopping',  ['amazon', 'amzn', 'canadian tire', 'best buy', 'ikea', 'walmart', 'costco', 'winners', 'homesense', 'marshalls', 'simons', 'dollarama', 'staples', 'bureau en gros', 'the bay', 'hudson', 'sephora', 'uniqlo', 'h&m', 'zara', 'apple store', 'home depot', 'rona', 'lowes']],
+    ['cat-insurance', ['insurance', 'assurance', 'intact', 'desjardins assurance', 'belairdirect', 'td insurance', 'sun life', 'manulife', 'canada life']],
+    ['cat-taxes',     ['cra', 'canada revenue', 'revenu quebec', 'revenu québec', 'property tax', 'taxes municipales']],
+    ['cat-education', ['tuition', 'university', 'universite', 'université', 'college', 'cégep', 'cegep', 'coursera', 'udemy']],
+    ['cat-salary',    ['payroll', 'salary', 'salaire', 'paie', 'direct deposit pay', 'pay ']],
+    ['cat-refund',    ['refund', 'remboursement', 'reversal']],
+  ],
+
+  guessCategory(note, type) {
+    const s = ' ' + String(note || '').toLowerCase().replace(/[^\p{L}\p{N}&+./\- ]/gu, ' ').replace(/\s+/g, ' ') + ' ';
+    if (!s.trim()) return null;
+    const esc = k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    for (const [id, keys] of this.MERCHANT_RULES) {
+      const income = id === 'cat-salary' || id === 'cat-refund';
+      if (type && (type === 'income') !== income) continue;
+      for (const k of keys) {
+        const word = k.trimEnd();
+        if (new RegExp(`(^|[^\\p{L}\\p{N}])${esc(word)}([^\\p{L}\\p{N}]|$)`, 'u').test(s)) return id;
+      }
+    }
+    return null;
   },
 
   async import(file) {
