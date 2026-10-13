@@ -1,0 +1,47 @@
+/* Public guide pages (/guides/*): long-form reading layout on the Flow tokens. */
+.guide { max-width: 720px; margin: 0 auto; padding: 0 20px 80px; }
+.guide-nav { display: flex; align-items: center; justify-content: space-between; padding: 22px 0 40px; }
+.guide-nav .mark { font-family: var(--font-display); font-weight: 700; font-size: 1.0625rem; letter-spacing: .04em;
+                   color: var(--color-text); text-decoration: none; }
+.guide-nav .open { color: var(--color-text); text-decoration: none; font-size: .8125rem; font-family: var(--font-display);
+                   border: 1px solid var(--color-border); padding: 7px 16px; }
+.guide-nav .open:hover { border-color: var(--color-text); }
+
+.guide-kicker { font-family: var(--font-display); font-size: .6875rem; letter-spacing: .18em; text-transform: uppercase;
+                color: var(--color-text-light); margin-bottom: 14px; }
+.guide h1 { font-size: clamp(1.75rem, 5vw, 2.5rem); line-height: 1.12; letter-spacing: -.02em; margin: 0 0 16px; }
+.guide-lede { font-size: 1.0625rem; line-height: 1.6; color: var(--color-text-muted); margin: 0 0 12px; }
+.guide-meta { font-family: var(--font-display); font-size: .75rem; color: var(--color-text-light); margin-bottom: 36px; }
+
+.guide h2 { font-size: 1.1875rem; margin: 40px 0 12px; padding-top: 22px; border-top: 1px solid var(--color-border); }
+.guide h3 { font-size: 1rem; margin: 24px 0 8px; }
+.guide p, .guide li { font-size: .9375rem; line-height: 1.7; color: var(--color-text-muted); }
+.guide strong { color: var(--color-text); }
+.guide a { color: var(--color-text); }
+.guide ul, .guide ol { padding-left: 22px; margin: 8px 0 16px; }
+.guide li { margin-bottom: 6px; }
+
+.guide-table { width: 100%; border-collapse: collapse; margin: 12px 0 20px; font-size: .875rem; }
+.guide-table th, .guide-table td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--color-border); }
+.guide-table th { color: var(--color-text-light); font-weight: 600; font-family: var(--font-display); font-size: .75rem;
+                  letter-spacing: .06em; text-transform: uppercase; }
+.guide-table td { color: var(--color-text-muted); }
+.guide-table td.num { font-family: var(--font-display); color: var(--color-text); text-align: right; }
+.guide-table th.num { text-align: right; }
+.guide-scroll { overflow-x: auto; }
+
+.guide-note { border: 1px solid var(--color-border); padding: 16px 18px; margin: 20px 0; }
+.guide-note p { margin: 0; font-size: .875rem; }
+
+.guide-cta { border: 1px solid var(--color-border); padding: 24px 22px; margin: 44px 0 0; }
+.guide-cta h2 { border: 0; padding: 0; margin: 0 0 8px; }
+.guide-cta p { margin: 0 0 18px; }
+.guide-cta a.btn-cta { display: inline-block; background: var(--color-primary); color: var(--color-primary-contrast, #000);
+                       text-decoration: none; font-weight: 600; font-size: .9375rem; padding: 12px 26px;
+                       font-family: var(--font-display); }
+.guide-cta a.btn-cta:hover { background: var(--color-primary-dark); }
+
+.guide-foot { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 56px; font-size: .75rem;
+              font-family: var(--font-display); color: var(--color-text-light); }
+.guide-foot a { color: var(--color-text-muted); text-decoration: none; }
+.guide-foot a:hover { color: var(--color-text); }

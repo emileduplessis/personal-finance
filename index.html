@@ -139,7 +139,8 @@
 
     .lp-hero { padding: 72px 0 56px; border-bottom: 1px solid var(--color-border); }
     .lp-kicker { font-family: var(--font-display); font-size: .6875rem; letter-spacing: .18em;
-                 text-transform: uppercase; color: var(--color-text-light); margin-bottom: 18px; }
+                 text-transform: uppercase; color: var(--color-text-light); margin-bottom: 18px;
+                 display: block; font-weight: 400; line-height: 1.5; }
     .lp-hero h1 { font-size: clamp(2rem, 6vw, 3.25rem); line-height: 1.08; margin: 0 0 18px; letter-spacing: -.02em; }
     .lp-hero p { font-size: 1rem; line-height: 1.65; color: var(--color-text-muted); max-width: 56ch; margin: 0 0 30px; }
     .lp-cta { display: inline-block; background: var(--color-primary); color: var(--color-primary-contrast, #000); text-decoration: none;
@@ -170,7 +171,7 @@
     .lp-trust li { font-size: .8125rem; line-height: 1.7; color: var(--color-text-muted); }
     .lp-trust strong { color: var(--color-text); }
 
-    .lp-foot { display: flex; align-items: center; gap: 16px; font-size: .75rem;
+    .lp-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; font-size: .75rem;
                color: var(--color-text-light); font-family: var(--font-display); }
     .lp-foot a { color: var(--color-text-muted); text-decoration: none; }
     .lp-foot a:hover { color: var(--color-text); }
@@ -221,8 +222,10 @@
 
     <header class="lp-hero">
       <div>
-        <div class="lp-kicker"><span class="lp-free">FREE</span>Personal finance · precise / minimal / fast</div>
-        <h1>Know your financial state in seconds.</h1>
+        <!-- The kicker sits inside the h1 so the headline carries the searchable
+             phrase ("free budget & personal finance tracker") without changing the look. -->
+        <h1><span class="lp-kicker"><span class="lp-free">FREE</span>Budget &amp; personal finance tracker<span class="sr-only">:</span></span>
+          Know your financial state in seconds.</h1>
       </div>
       <div class="lp-hero__pitch">
         <p>Flow Net Worth is a free personal finance tracker with the temperament of a pro tool: no gradients,
@@ -324,6 +327,8 @@
 
     <footer class="lp-foot">
       <span>Flow</span><span>·</span>
+      <a href="/guides/track-cash-pay">Tracking cash pay</a>
+      <a href="/guides/budget-without-linking-bank">Budgeting without a bank link</a>
       <a href="/privacy">Privacy</a>
       <a href="/terms">Terms</a>
       <a href="mailto:support@flownetworth.com">Contact</a>

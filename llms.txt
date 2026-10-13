@@ -18,5 +18,7 @@
 ## Pages
 
 - [Home](https://flownetworth.com/): product overview and FAQ
+- [How to track cash and irregular hourly pay](https://flownetworth.com/guides/track-cash-pay): log hours, estimate pay, reconcile on payday
+- [How to budget without linking your bank account](https://flownetworth.com/guides/budget-without-linking-bank): manual entry plus CSV/QFX/OFX statement imports
 - [Privacy Policy](https://flownetworth.com/privacy): what data is stored and how to export or delete it
 - [Terms of Service](https://flownetworth.com/terms)

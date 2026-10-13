@@ -89,6 +89,8 @@ unchecked item. `[user]` = needs an action only the account owner can do.
       can't, e.g. "track irregular / cash pay", "budget without linking your
       bank", "read-only crypto net worth". One page each, add to sitemap.xml
       + llms.txt, link from the landing footer.
+      2026-10-13: /guides/track-cash-pay and /guides/budget-without-linking-bank
+      shipped (styles/guide.css). Still to write: read-only crypto net worth.
 - [ ] Add `sameAs` links to the Organization JSON-LD once social profiles /
       Product Hunt exist
 - [ ] Optional: screenshots on the landing page, swap `/` to the landing
