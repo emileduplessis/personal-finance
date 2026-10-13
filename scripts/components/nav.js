@@ -173,7 +173,7 @@
   /* ---- bottom nav: Dashboard · Transactions · [+] · <slot> · More ----
      <slot> is the user's pinned section (Money by default; Settings picks it).
      With focus 'hours' the + logs hours instead of adding a transaction. */
-  const SHORT_LABEL = { shifts: 'Hours' };
+  const SHORT_LABEL = { shifts: 'Work' };
   function renderBottomNav() {
     const el = document.getElementById('bottomNav');
     if (!el) return;
