@@ -475,7 +475,7 @@ function renderQuickMeta() {
 async function quickLog(e) {
   e.preventDefault();
   const hoursVal = parseFloat(document.getElementById('qlHours').value) || 0;
-  if (hoursVal <= 0) { showToast('Enter hours worked', 'error'); return; }
+  if (hoursVal <= 0) { setFieldError('qlHours', 'Enter hours worked'); return; }
   const job = activeJob();
   if (!job) { showToast('Add a job first', 'error'); openJobModal(); return; }
   localStorage.setItem('pf_quick_job', job.id);   /* remember the pick on this device */
@@ -1168,7 +1168,7 @@ function closeJobModal() {
 async function saveJob() {
   const id   = document.getElementById('jEditId').value;
   const name = document.getElementById('jName').value.trim();
-  if (!name) { showToast('Name the job', 'error'); return; }
+  if (!name) { setFieldError('jName', 'Name the job'); return; }
   const data = {
     name,
     rate:       parseFloat(document.getElementById('jRate').value) || 0,

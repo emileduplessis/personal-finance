@@ -109,6 +109,7 @@ function renderHint() {
 
 function setMode(mode) {
   _mode = (mode === 'times' || mode === 'pay') ? mode : 'hours';
+  clearFieldErrors(document.getElementById('quicklogForm') || document);   /* don't leave a message under a hidden row */
   document.querySelectorAll('#qlMode .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === _mode));
   document.getElementById('qlHoursRow').hidden = _mode !== 'hours';
   document.getElementById('qlTimesRow').hidden = _mode !== 'times';
@@ -135,17 +136,17 @@ async function submitForm(e) {
   let data;
   if (_mode === 'pay') {
     const amt = parseFloat(document.getElementById('qlPay').value) || 0;
-    if (amt <= 0) { showToast('Enter the amount you were paid', 'error'); return; }
+    if (amt <= 0) { setFieldError('qlPay', 'Enter the amount you were paid'); return; }
     data = { ...base, start: '', end: '', payMode: 'fixed', rate: 0, fixedPay: amt };
   } else {
     let start, end;
     if (_mode === 'times') {
       start = document.getElementById('qlStart').value;
       end   = document.getElementById('qlEnd').value;
-      if (!start || !end) { showToast('Enter a start and end time', 'error'); return; }
+      if (!start || !end) { setFieldError(start ? 'qlEnd' : 'qlStart', 'Enter a start and end time'); return; }
     } else {
       const hours = parseFloat(document.getElementById('qlHours').value) || 0;
-      if (hours <= 0) { showToast('Enter the number of hours', 'error'); return; }
+      if (hours <= 0) { setFieldError('qlHours', 'Enter the number of hours'); return; }
       start = '09:00'; end = addHours(start, hours);
     }
     data = { ...base, start, end, payMode: 'hourly', rate: (dj ? dj.rate : job.rate) || 0, fixedPay: 0 };

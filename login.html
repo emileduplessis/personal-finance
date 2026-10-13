@@ -5,10 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex" />
   <meta name="theme-color" content="#000000" />
-  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" href="/icons/favicon.ico" sizes="48x48" />
   <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32.png" />
   <link rel="apple-touch-icon" href="/icons/icon-180.png" />
-  <title>Flow — Sign In</title>
+  <link rel="manifest" href="/manifest.json" />
+  <title>Sign In — Flow Net Worth</title>
+  <meta name="description" content="Sign in or create a free Flow Net Worth account to sync your budgets, transactions and hours across devices." />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Flow Net Worth" />
+  <meta property="og:title" content="Sign In — Flow Net Worth" />
+  <meta property="og:description" content="Sign in or create a free Flow Net Worth account to sync your budgets, transactions and hours across devices." />
+  <meta property="og:image" content="https://flownetworth.com/icons/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Flow Net Worth — Know your financial state in seconds." />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://flownetworth.com/icons/og-image.png" />
   <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="/styles/fonts.css" />
   <style>
@@ -252,6 +265,9 @@
     .field-hint.show { display: block; }
     .field-hint--warn  { color: #94a3b8; }
     .field-hint--error { color: #ff5c7a; }
+    .form-control[aria-invalid="true"],
+    .form-control[aria-invalid="true"]:focus { border-color: #ff5c7a; }
+    .form-control[aria-invalid="true"]:focus { box-shadow: 0 0 0 3px rgba(255,92,122,.15); }
 
     /* Forgot-password link, right-aligned under the password field */
     .forgot-row { display: flex; justify-content: flex-end; margin: -2px 0 4px; }
@@ -270,15 +286,15 @@
       <div class="card-title" id="formTitle">Welcome back</div>
       <div class="card-sub" id="formSub">Sign in to your account to continue</div>
 
-      <div class="msg msg--error" id="errorMsg"></div>
-      <div class="msg msg--info"  id="infoMsg"></div>
+      <div class="msg msg--error" id="errorMsg" role="alert"></div>
+      <div class="msg msg--info"  id="infoMsg" role="status"></div>
 
       <form id="authForm" novalidate>
         <div class="form-group">
           <label class="form-label" for="email">Email</label>
           <input class="form-control" type="email" id="email"
             placeholder="you@example.com" autocomplete="email" required />
-          <div class="field-hint field-hint--error" id="emailHint">Enter a valid email address.</div>
+          <div class="field-hint field-hint--error" id="emailHint" role="alert"></div>
         </div>
         <div class="form-group">
           <label class="form-label" for="password">Password</label>
@@ -287,6 +303,7 @@
               placeholder="••••••••" autocomplete="current-password" required />
             <button type="button" class="pw-toggle" id="pwToggle" aria-label="Show password"></button>
           </div>
+          <div class="field-hint field-hint--error" id="passwordHint" role="alert"></div>
           <div class="field-hint field-hint--warn" id="capsHint">Caps Lock is on</div>
         </div>
         <div class="forgot-row" id="forgotRow">
@@ -331,13 +348,14 @@
     <div id="resetView" style="display:none;">
       <div class="card-title">Reset password</div>
       <div class="card-sub">Enter your email and we'll send you a link to set a new password.</div>
-      <div class="msg msg--error" id="resetError"></div>
-      <div class="msg msg--info"  id="resetInfo"></div>
+      <div class="msg msg--error" id="resetError" role="alert"></div>
+      <div class="msg msg--info"  id="resetInfo" role="status"></div>
       <form id="resetForm" novalidate>
         <div class="form-group">
           <label class="form-label" for="resetEmail">Email</label>
           <input class="form-control" type="email" id="resetEmail"
             placeholder="you@example.com" autocomplete="email" required />
+          <div class="field-hint field-hint--error" id="resetEmailHint" role="alert"></div>
         </div>
         <button class="btn" type="submit" id="resetSubmit"><span>Send reset link</span></button>
       </form>
@@ -350,7 +368,7 @@
     <div id="newPwView" style="display:none;">
       <div class="card-title">Set a new password</div>
       <div class="card-sub">Choose a new password for your account.</div>
-      <div class="msg msg--error" id="newPwError"></div>
+      <div class="msg msg--error" id="newPwError" role="alert"></div>
       <form id="newPwForm" novalidate>
         <div class="form-group">
           <label class="form-label" for="newPw">New password</label>
@@ -359,6 +377,7 @@
               placeholder="••••••••" autocomplete="new-password" required />
             <button type="button" class="pw-toggle" id="newPwToggle" aria-label="Show password"></button>
           </div>
+          <div class="field-hint field-hint--error" id="newPwHint" role="alert"></div>
           <div class="field-hint field-hint--warn" id="newCapsHint">Caps Lock is on</div>
         </div>
         <button class="btn" type="submit" id="newPwSubmit"><span>Update password</span></button>
@@ -420,6 +439,23 @@
     function clearMsgs() {
       errorMsg.classList.remove('show');
       infoMsg.classList.remove('show');
+      document.querySelectorAll('.form-control[aria-invalid="true"]').forEach(clearFieldError);
+    }
+    /* Inline field error: red border + aria-invalid on the input, message right
+       under it (aria-describedby). Clears as soon as the field is edited. */
+    function fieldError(input, msg) {
+      const hint = document.getElementById(input.id + 'Hint');
+      hint.textContent = msg;
+      hint.classList.add('show');
+      input.setAttribute('aria-invalid', 'true');
+      input.setAttribute('aria-describedby', hint.id);
+      input.addEventListener('input', () => clearFieldError(input), { once: true });
+    }
+    function clearFieldError(input) {
+      const hint = document.getElementById(input.id + 'Hint');
+      if (hint) hint.classList.remove('show');
+      input.removeAttribute('aria-invalid');
+      input.removeAttribute('aria-describedby');
     }
     function showError(msg) {
       errorMsg.textContent = msg;
@@ -505,11 +541,17 @@
     document.getElementById('authForm').addEventListener('submit', async e => {
       e.preventDefault();
       clearMsgs();
-      const email    = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      if (!email || !password) { showError('Please enter your email and password.'); return; }
-      if (!validEmail(email)) { document.getElementById('emailHint').classList.add('show'); showError('Enter a valid email address.'); return; }
-      if (isSignUp && password.length < 6) { showError('Password must be at least 6 characters.'); return; }
+      const emailEl  = document.getElementById('email');
+      const pwEl     = document.getElementById('password');
+      const email    = emailEl.value.trim();
+      const password = pwEl.value;
+      const emailErr = !email ? 'Enter your email address.'
+                     : !validEmail(email) ? 'Enter a valid email address, like you@example.com.' : '';
+      const pwErr    = !password ? (isSignUp ? 'Choose a password.' : 'Enter your password.')
+                     : (isSignUp && password.length < 6) ? 'Password must be at least 6 characters.' : '';
+      if (emailErr) fieldError(emailEl, emailErr);
+      if (pwErr)    fieldError(pwEl, pwErr);
+      if (emailErr || pwErr) { (emailErr ? emailEl : pwEl).focus(); return; }
 
       setLoading(true);
       try {
@@ -583,8 +625,6 @@
 
     wirePwToggle('pwToggle', 'password');
     wireCaps('password', 'capsHint');
-    document.getElementById('email').addEventListener('input', () =>
-      document.getElementById('emailHint').classList.remove('show'));
 
     /* ---- view switching ---- */
     const resetView = document.getElementById('resetView');
@@ -612,8 +652,12 @@
       const email  = document.getElementById('resetEmail').value.trim();
       const errEl  = document.getElementById('resetError');
       const infoEl = document.getElementById('resetInfo');
-      errEl.classList.remove('show'); infoEl.classList.remove('show');
-      if (!validEmail(email)) { errEl.textContent = 'Enter a valid email address.'; errEl.classList.add('show'); return; }
+      const emailEl = document.getElementById('resetEmail');
+      errEl.classList.remove('show'); infoEl.classList.remove('show'); clearFieldError(emailEl);
+      if (!validEmail(email)) {
+        fieldError(emailEl, email ? 'Enter a valid email address, like you@example.com.' : 'Enter your email address.');
+        emailEl.focus(); return;
+      }
       const btn = document.getElementById('resetSubmit');
       btnLoading(btn, true, 'Send reset link', 'Sending…');
       try {
@@ -642,8 +686,9 @@
       e.preventDefault();
       const pw    = document.getElementById('newPw').value;
       const errEl = document.getElementById('newPwError');
-      errEl.classList.remove('show');
-      if (pw.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; errEl.classList.add('show'); return; }
+      const pwEl  = document.getElementById('newPw');
+      errEl.classList.remove('show'); clearFieldError(pwEl);
+      if (pw.length < 6) { fieldError(pwEl, 'Password must be at least 6 characters.'); pwEl.focus(); return; }
       const btn = document.getElementById('newPwSubmit');
       btnLoading(btn, true, 'Update password', 'Updating…');
       try {

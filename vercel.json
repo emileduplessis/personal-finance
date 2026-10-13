@@ -12,6 +12,7 @@
     { "source": "/insights", "destination": "/dashboard?insights=1", "permanent": false }
   ],
   "rewrites": [
+    { "source": "/favicon.ico", "destination": "/icons/favicon.ico" },
     { "source": "/transactions", "destination": "/pages/accounts" },
     { "source": "/hours-tracker", "destination": "/pages/shifts" },
     { "source": "/hours-calendar", "destination": "/pages/hours-calendar" },

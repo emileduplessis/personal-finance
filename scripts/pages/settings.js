@@ -66,12 +66,12 @@ async function saveCustomCat() {
   const name = document.getElementById('newCatName')?.value.trim().slice(0, 30);
   const lucide = document.getElementById('newCatIcon')?.value.trim() || 'tag';
   const type = document.getElementById('newCatType')?.value || 'expense';
-  if (!name) { showToast('Enter a category name', 'error'); return; }
+  if (!name) { setFieldError('newCatName', 'Enter a category name'); return; }
 
   /* duplicate guard against defaults + other customs (case-insensitive) */
   const all = await CategoryStore.getAll();
   if (all.some(c => c.name.toLowerCase() === name.toLowerCase() && c.id !== editingCatId)) {
-    showToast(`A category named “${name}” already exists`, 'error');
+    setFieldError('newCatName', `A category named “${name}” already exists`);
     return;
   }
 

@@ -125,7 +125,8 @@
   background: var(--color-surface);
 }
 .form-control::placeholder { color: var(--color-text-light); }
-.form-control--error { border-color: var(--color-expense); }
+.form-control--error,
+.form-control--error:focus { border-color: var(--color-expense); }
 .form-control--error:focus { box-shadow: 0 0 0 3px rgba(255,92,122,.15); }
 
 /* Native date/time inputs (iOS/WebKit) keep an intrinsic content width that
@@ -139,7 +140,7 @@ input[type="time"]::-webkit-date-and-time-value { margin: 0; text-align: left; }
 input[type="date"]::-webkit-calendar-picker-indicator,
 input[type="time"]::-webkit-calendar-picker-indicator { margin-left: 2px; }
 
-.form-error { font-size: 0.75rem; color: var(--color-expense); }
+.form-error { font-size: 0.75rem; line-height: 1.4; color: var(--color-expense); margin-top: 4px; }
 .form-hint  { font-size: 0.75rem; color: var(--color-text-muted); margin-top: 2px; }
 
 .input-with-prefix { position: relative; }

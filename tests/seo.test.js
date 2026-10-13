@@ -107,12 +107,44 @@ for (const url of sitemapUrls) {
   });
 }
 
+const files = [
+  ...fs.readdirSync(ROOT).filter((f) => f.endsWith('.html')),
+  ...fs.readdirSync(path.join(ROOT, 'pages')).filter((f) => f.endsWith('.html')).map((f) => 'pages/' + f),
+];
+
+/* Every real page (not a bare redirect stub) gets its own title + description,
+   the full favicon set and a link-preview image — app pages get shared too. */
+for (const file of files) {
+  const html = read(file);
+  if (/http-equiv="refresh"/i.test(html)) continue;
+  test(`page head is complete: ${file}`, () => {
+    const metas = metaTags(html);
+    const title = ((html.match(/<title>([^<]*)<\/title>/i) || [])[1] || '').trim();
+    assert.ok(/Flow Net Worth/.test(title), `title "${title}" should name the brand`);
+    const desc = metaContent(metas, 'name', 'description') || '';
+    assert.ok(desc.length >= 50 && desc.length <= 170, `meta description should be 50–170 chars (is ${desc.length})`);
+    for (const href of ['/icons/favicon.ico', '/icons/favicon.svg', '/icons/icon-32.png', '/icons/icon-180.png', '/manifest.json']) {
+      assert.ok(html.includes(`href="${href}"`), `missing <link> to ${href}`);
+      assert.ok(fs.existsSync(path.join(ROOT, href)), `${href} does not exist`);
+    }
+    for (const prop of ['og:title', 'og:description', 'og:image']) {
+      assert.ok(metaContent(metas, 'property', prop), `missing ${prop}`);
+    }
+    assert.equal(metaContent(metas, 'name', 'twitter:card'), 'summary_large_image');
+  });
+}
+
+test('every <img> has an alt attribute', () => {
+  const sources = [...files.map(read), ...fs.readdirSync(path.join(ROOT, 'scripts'), { recursive: true })
+    .filter((f) => f.endsWith('.js') && !f.includes('vendor'))
+    .map((f) => read(path.join('scripts', f)))];
+  const missing = sources.flatMap((s) => [...s.matchAll(/<img\b[^>]*>/gi)].map((m) => m[0]))
+    .filter((tag) => !/\balt\s*=/.test(tag));
+  assert.deepEqual(missing, []);
+});
+
 test('every HTML page is either in the sitemap or noindex', () => {
   const inSitemap = new Set(sitemapUrls.map((u) => fileForPath(new URL(u).pathname)));
-  const files = [
-    ...fs.readdirSync(ROOT).filter((f) => f.endsWith('.html')),
-    ...fs.readdirSync(path.join(ROOT, 'pages')).filter((f) => f.endsWith('.html')).map((f) => 'pages/' + f),
-  ];
   const stray = files.filter((f) => {
     if (inSitemap.has(f)) return false;
     const robots = metaContent(metaTags(read(f)), 'name', 'robots') || '';

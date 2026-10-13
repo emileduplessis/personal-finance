@@ -150,11 +150,11 @@ function openNewCatModal() {
 async function saveQuickCat() {
   const name = document.getElementById('quickCatName')?.value.trim().slice(0, 30);
   const lucide = document.getElementById('quickCatIcon')?.value.trim() || 'tag';
-  if (!name) { showToast('Enter a category name', 'error'); return; }
+  if (!name) { setFieldError('quickCatName', 'Enter a category name'); return; }
 
   const all = await CategoryStore.getAll();
   if (all.some(c => c.name.toLowerCase() === name.toLowerCase())) {
-    showToast(`A category named “${name}” already exists`, 'error');
+    setFieldError('quickCatName', `A category named “${name}” already exists`);
     return;
   }
 
@@ -254,33 +254,18 @@ function setType(type) {
 function validateForm() {
   const amount    = parseFloat(document.getElementById('txAmount')?.value);
   const accountId = document.getElementById('txAccount')?.value;
-  clearErrors();
-  let valid = true;
-  if (!amount || amount <= 0) { showError('txAmount', 'Enter a valid amount greater than 0'); valid = false; }
-  if (!accountId)             { showError('txAccount', 'Select an account'); valid = false; }
+  clearFieldErrors();
+  const errors = [];
+  if (!amount || amount <= 0) errors.push(['txAmount', 'Enter a valid amount greater than 0']);
+  if (!accountId)             errors.push(['txAccount', 'Select an account']);
   if (selectedType === 'transfer') {
     const toId = document.getElementById('txToAccount')?.value;
-    if (!toId) {
-      showError('txToAccount', 'Select a destination account'); valid = false;
-    } else if (toId === accountId) {
-      showError('txToAccount', 'Choose a different destination account'); valid = false;
-    }
+    if (!toId)                  errors.push(['txToAccount', 'Select a destination account']);
+    else if (toId === accountId) errors.push(['txToAccount', 'Choose a different destination account']);
   }
-  return valid;
-}
-
-function showError(fieldId, message) {
-  const field = document.getElementById(fieldId);
-  if (!field) return;
-  field.classList.add('form-control--error');
-  const err = document.createElement('div');
-  err.className = 'form-error'; err.textContent = message;
-  const container = field.closest('.form-group') || field.parentNode;
-  container.appendChild(err);
-}
-function clearErrors() {
-  document.querySelectorAll('.form-control--error').forEach(el => el.classList.remove('form-control--error'));
-  document.querySelectorAll('.form-error').forEach(el => el.remove());
+  /* focus lands on the first invalid field */
+  errors.forEach(([id, msg], i) => setFieldError(id, msg, { focus: i === 0 }));
+  return errors.length === 0;
 }
 function setValue(id, val) { const el = document.getElementById(id); if (el) el.value = val; }
 function todayISO() { return isoLocal(new Date()); }

@@ -4,13 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#000000" />
+  <link rel="icon" href="/icons/favicon.ico" sizes="48x48" />
   <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32.png" />
+  <link rel="apple-touch-icon" href="/icons/icon-180.png" />
+  <link rel="manifest" href="/manifest.json" />
   <title>Free Budget &amp; Personal Finance Tracker | Flow Net Worth</title>
   <meta name="description" content="Free personal finance tracker. Log spending in seconds, set budgets, forecast cash flow, and track hourly pay and crypto. No ads, no account needed." />
   <link rel="canonical" href="https://flownetworth.com/" />
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
-  <link rel="apple-touch-icon" href="/icons/icon-180.png" />
-  <link rel="manifest" href="/manifest.json" />
   <link rel="alternate" type="text/plain" href="/llms.txt" title="LLM summary" />
 
   <!-- Returning visitors (signed in, guest data, or been in the app before) skip
@@ -132,6 +134,9 @@
     }
     .lp-nav a.lp-signin:hover { border-color: var(--color-text); }
 
+    /* sticky CTA bar (phones only) */
+    .lp-sticky { display: none; }
+
     .lp-hero { padding: 72px 0 56px; border-bottom: 1px solid var(--color-border); }
     .lp-kicker { font-family: var(--font-display); font-size: .6875rem; letter-spacing: .18em;
                  text-transform: uppercase; color: var(--color-text-light); margin-bottom: 18px; }
@@ -196,7 +201,15 @@
       .lp-features { grid-template-columns: 1fr; }
       .lp-hero { padding: 48px 0 40px; }
       .lp-cta { display: block; text-align: center; padding: 14px 16px; }
+      .lp-sticky {
+        display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+        padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+        background: var(--color-bg); border-top: 1px solid var(--color-border);
+        transition: transform .2s ease, visibility .2s;
+      }
+      .lp-sticky.is-hidden { transform: translateY(100%); visibility: hidden; }
     }
+    @media (prefers-reduced-motion: reduce) { .lp-sticky { transition: none; } }
   </style>
 </head>
 <body>
@@ -215,8 +228,8 @@
         <p>Flow Net Worth is a free personal finance tracker with the temperament of a pro tool: no gradients,
         no mascots, no motivational quotes. Log a transaction in seconds, see exactly where the
         month went, and let the numbers speak.</p>
-        <a class="lp-cta" href="/dashboard">Try it free — no account needed →</a>
-        <span class="lp-cta-sub">free · no card · data stays on your device until you <a href="/login?mode=signup" style="color:inherit;">create an account</a></span>
+        <a class="lp-cta" id="heroCta" href="/dashboard">Open Flow — no account needed →</a>
+        <span class="lp-cta-sub">free forever · no card · data stays on your device until you <a href="/login?mode=signup" style="color:inherit;">create an account</a></span>
       </div>
     </header>
 
@@ -316,6 +329,26 @@
       <a href="mailto:support@flownetworth.com">Contact</a>
     </footer>
   </div>
+
+  <!-- Sticky mobile CTA: phones only, appears once the hero button has scrolled
+       out of view (without JS it simply stays visible). -->
+  <div class="lp-sticky" id="stickyCta">
+    <a class="lp-cta" href="/dashboard">Open Flow — no account needed →</a>
+  </div>
+  <script>
+    (function () {
+      var bar = document.getElementById('stickyCta'), hero = document.getElementById('heroCta');
+      if (!bar || !hero) return;
+      function update() {
+        var heroOnScreen = hero.getBoundingClientRect().bottom > 0;   /* hero button not yet scrolled past */
+        bar.classList.toggle('is-hidden', heroOnScreen);
+        bar.inert = heroOnScreen;
+      }
+      addEventListener('scroll', update, { passive: true });
+      addEventListener('resize', update);
+      update();
+    })();
+  </script>
 
   <!-- Vercel Web Analytics + Speed Insights (framework-agnostic script tags) -->
   <script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments);};window.si=window.si||function(){(window.siq=window.siq||[]).push(arguments);};</script>

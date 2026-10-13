@@ -193,6 +193,47 @@ function showErrorState(target, message, onRetry) {
   clearFieldLoading(el);
 }
 
+/* --- Inline form-field errors ---
+   One look for every validation message: red border + aria-invalid on the
+   control, the message right under it (linked with aria-describedby and
+   announced via role="alert"), focus moved to the field. The error clears
+   itself as soon as the user edits the field. */
+function setFieldError(target, message, { focus = true } = {}) {
+  const field = typeof target === 'string' ? document.getElementById(target) : target;
+  if (!field) return;
+  clearFieldError(field);
+  const err = document.createElement('div');
+  err.className = 'form-error';
+  err.id = (field.id || 'field') + 'Error';
+  err.setAttribute('role', 'alert');
+  err.textContent = message;
+  /* inside a labelled .form-group; otherwise just below the inline row the field sits in */
+  const group = field.closest('.form-group');
+  if (group) group.appendChild(err);
+  else field.parentNode.insertAdjacentElement('afterend', err);
+
+  field.classList.add('form-control--error');
+  field.setAttribute('aria-invalid', 'true');
+  field.setAttribute('aria-describedby', [field.getAttribute('aria-describedby'), err.id].filter(Boolean).join(' '));
+  const clear = () => clearFieldError(field);
+  field.addEventListener('input', clear, { once: true });
+  field.addEventListener('change', clear, { once: true });
+  if (focus) field.focus();
+}
+function clearFieldError(target) {
+  const field = typeof target === 'string' ? document.getElementById(target) : target;
+  if (!field || !field.classList.contains('form-control--error')) return;
+  const errId = (field.id || 'field') + 'Error';
+  document.getElementById(errId)?.remove();
+  field.classList.remove('form-control--error');
+  field.removeAttribute('aria-invalid');
+  const rest = (field.getAttribute('aria-describedby') || '').split(' ').filter(t => t && t !== errId).join(' ');
+  if (rest) field.setAttribute('aria-describedby', rest); else field.removeAttribute('aria-describedby');
+}
+function clearFieldErrors(root = document) {
+  root.querySelectorAll('.form-control--error').forEach(clearFieldError);
+}
+
 /* --- First-paint loading state on form controls ---
    Inputs/selects whose options or value come from the network ship with
    data-loading in the static HTML (see .form-control[data-loading]) so they
