@@ -5,6 +5,10 @@
   "cleanUrls": true,
   "redirects": [
     { "source": "/welcome", "destination": "/", "permanent": true },
+    { "source": "/pages/privacy.html", "destination": "/privacy", "permanent": true },
+    { "source": "/pages/privacy", "destination": "/privacy", "permanent": true },
+    { "source": "/pages/terms.html", "destination": "/terms", "permanent": true },
+    { "source": "/pages/terms", "destination": "/terms", "permanent": true },
     { "source": "/insights", "destination": "/dashboard?insights=1", "permanent": false }
   ],
   "rewrites": [
