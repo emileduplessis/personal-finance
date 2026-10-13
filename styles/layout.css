@@ -286,7 +286,9 @@ body.page-exit .main-wrapper {
   flex-direction: column;
   gap: 12px;
   width: 100%;
-  max-width: 1440px;
+  /* 1440 left big empty gutters on large monitors; filling all of a 2560px
+     screen stretched panels too far, so stop in between */
+  max-width: 1800px;
   margin: 0 auto;
 }
 
