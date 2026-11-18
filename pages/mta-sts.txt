@@ -1,0 +1,6 @@
+version: STSv1
+mode: enforce
+mx: mx.zohocloud.ca
+mx: mx2.zohocloud.ca
+mx: mx3.zohocloud.ca
+max_age: 604800
